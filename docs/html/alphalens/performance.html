@@ -1,0 +1,2040 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>alphalens.performance API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>alphalens.performance</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="alphalens.performance.average_cumulative_return_by_quantile"><code class="name flex">
+<span>def <span class="ident">average_cumulative_return_by_quantile</span></span>(<span>factor_data,<br>returns,<br>periods_before=10,<br>periods_after=15,<br>demeaned=True,<br>group_adjust=False,<br>by_group=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def average_cumulative_return_by_quantile(
+    factor_data,
+    returns,
+    periods_before=10,
+    periods_after=15,
+    demeaned=True,
+    group_adjust=False,
+    by_group=False,
+):
+    &#34;&#34;&#34;
+    Plots average cumulative returns by factor quantiles in the period range
+    defined by -periods_before to periods_after
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    returns : pd.DataFrame
+        A wide form Pandas DataFrame indexed by date with assets in the
+        columns. Returns data should span the factor analysis time period
+        plus/minus an additional buffer window corresponding to periods_after/
+        periods_before parameters.
+    periods_before : int, optional
+        How many periods before factor to plot
+    periods_after  : int, optional
+        How many periods after factor to plot
+    demeaned : bool, optional
+        Compute demeaned mean returns (long short portfolio)
+    group_adjust : bool
+        Returns demeaning will occur on the group level (group
+        neutral portfolio)
+    by_group : bool
+        If True, compute cumulative returns separately for each group
+
+    Returns
+    -------
+    cumulative returns and std deviation : pd.DataFrame
+        A MultiIndex DataFrame indexed by quantile (level 0) and mean/std
+        (level 1) and the values on the columns in range from
+        -periods_before to periods_after
+        If by_group=True the index will have an additional &#39;group&#39; level
+        ::
+            ---------------------------------------------------
+                        |       | -2  | -1  |  0  |  1  | ...
+            ---------------------------------------------------
+              quantile  |       |     |     |     |     |
+            ---------------------------------------------------
+                        | mean  |  x  |  x  |  x  |  x  |
+                 1      ---------------------------------------
+                        | std   |  x  |  x  |  x  |  x  |
+            ---------------------------------------------------
+                        | mean  |  x  |  x  |  x  |  x  |
+                 2      ---------------------------------------
+                        | std   |  x  |  x  |  x  |  x  |
+            ---------------------------------------------------
+                ...     |                 ...
+            ---------------------------------------------------
+    &#34;&#34;&#34;
+
+    def cumulative_return_around_event(q_fact, demean_by):
+        return common_start_returns(
+            q_fact,
+            returns,
+            periods_before,
+            periods_after,
+            cumulative=True,
+            mean_by_date=True,
+            demean_by=demean_by,
+        )
+
+    def average_cumulative_return(q_fact, demean_by):
+        q_returns = cumulative_return_around_event(q_fact, demean_by)
+        q_returns.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+        return pd.DataFrame(
+            {
+                &#34;mean&#34;: q_returns.mean(skipna=True, axis=1),
+                &#34;std&#34;: q_returns.std(skipna=True, axis=1),
+            }
+        ).T
+
+    if by_group:
+        #
+        # Compute quantile cumulative returns separately for each group
+        # Deman those returns accordingly to &#39;group_adjust&#39; and &#39;demeaned&#39;
+        #
+        returns_bygroup = []
+
+        for group, g_data in factor_data.groupby(&#34;group&#34;, observed=True):
+            g_fq = g_data[&#34;factor_quantile&#34;]
+            if group_adjust:
+                demean_by = g_fq  # demeans at group level
+            elif demeaned:
+                demean_by = factor_data[&#34;factor_quantile&#34;]  # demean by all
+            else:
+                demean_by = None
+            #
+            # Align cumulative return from different dates to the same index
+            # then compute mean and std
+            #
+            avgcumret = g_fq.groupby(g_fq).apply(average_cumulative_return, demean_by)
+            if len(avgcumret) == 0:
+                continue
+
+            avgcumret[&#34;group&#34;] = group
+            avgcumret.set_index(&#34;group&#34;, append=True, inplace=True)
+            returns_bygroup.append(avgcumret)
+
+        return pd.concat(returns_bygroup, axis=0)
+
+    else:
+        #
+        # Compute quantile cumulative returns for the full factor_data
+        # Align cumulative return from different dates to the same index
+        # then compute mean and std
+        # Deman those returns accordingly to &#39;group_adjust&#39; and &#39;demeaned&#39;
+        #
+        if group_adjust:
+            all_returns = []
+            for group, g_data in factor_data.groupby(&#34;group&#34;, observed=True):
+                g_fq = g_data[&#34;factor_quantile&#34;]
+                avgcumret = g_fq.groupby(g_fq).apply(
+                    cumulative_return_around_event, g_fq
+                )
+                all_returns.append(avgcumret)
+            q_returns = pd.concat(all_returns, axis=1)
+            q_returns = pd.DataFrame(
+                {&#34;mean&#34;: q_returns.mean(axis=1), &#34;std&#34;: q_returns.std(axis=1)}
+            )
+            return q_returns.unstack(level=1).stack(level=0)
+        elif demeaned:
+            fq = factor_data[&#34;factor_quantile&#34;]
+            return fq.groupby(fq).apply(average_cumulative_return, fq)
+        else:
+            fq = factor_data[&#34;factor_quantile&#34;]
+            return fq.groupby(fq).apply(average_cumulative_return, None)</code></pre>
+</details>
+<div class="desc"><p>Plots average cumulative returns by factor quantiles in the period range
+defined by -periods_before to periods_after</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>A wide form Pandas DataFrame indexed by date with assets in the
+columns. Returns data should span the factor analysis time period
+plus/minus an additional buffer window corresponding to periods_after/
+periods_before parameters.</dd>
+<dt><strong><code>periods_before</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>How many periods before factor to plot</dd>
+<dt>periods_after
+: int, optional</dt>
+<dt>How many periods after factor to plot</dt>
+<dt><strong><code>demeaned</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Compute demeaned mean returns (long short portfolio)</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Returns demeaning will occur on the group level (group
+neutral portfolio)</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, compute cumulative returns separately for each group</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>cumulative returns and std deviation : pd.DataFrame</code></dt>
+<dd>A MultiIndex DataFrame indexed by quantile (level 0) and mean/std
+(level 1) and the values on the columns in range from
+-periods_before to periods_after
+If by_group=True the index will have an additional 'group' level
+::
+---------------------------------------------------
+|
+| -2
+| -1
+|
+0
+|
+1
+| &hellip;
+---------------------------------------------------
+quantile
+|
+|
+|
+|
+|
+|
+---------------------------------------------------
+| mean
+|
+x
+|
+x
+|
+x
+|
+x
+|
+1
+---------------------------------------
+| std
+|
+x
+|
+x
+|
+x
+|
+x
+|
+---------------------------------------------------
+| mean
+|
+x
+|
+x
+|
+x
+|
+x
+|
+2
+---------------------------------------
+| std
+|
+x
+|
+x
+|
+x
+|
+x
+|
+---------------------------------------------------
+&hellip;
+|
+&hellip;
+---------------------------------------------------</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.common_start_returns"><code class="name flex">
+<span>def <span class="ident">common_start_returns</span></span>(<span>factor, returns, before, after, cumulative=False, mean_by_date=False, demean_by=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def common_start_returns(
+    factor,
+    returns,
+    before,
+    after,
+    cumulative=False,
+    mean_by_date=False,
+    demean_by=None,
+):
+    &#34;&#34;&#34;
+    A date and equity pair is extracted from each index row in the factor
+    dataframe and for each of these pairs a return series is built starting
+    from &#39;before&#39; the date and ending &#39;after&#39; the date specified in the pair.
+    All those returns series are then aligned to a common index (-before to
+    after) and returned as a single DataFrame
+
+    Parameters
+    ----------
+    factor : pd.DataFrame
+        DataFrame with at least date and equity as index, the columns are
+        irrelevant
+    returns : pd.DataFrame
+        A wide form Pandas DataFrame indexed by date with assets in the
+        columns. Returns data should span the factor analysis time period
+        plus/minus an additional buffer window corresponding to after/before
+        period parameters.
+    before:
+        How many returns to load before factor date
+    after:
+        How many returns to load after factor date
+    cumulative: bool, optional
+        Whether the given returns are cumulative. If False the given
+        returns are assumed to be daily.
+    mean_by_date: bool, optional
+        If True, compute mean returns for each date and return that
+        instead of a return series for each asset
+    demean_by: pd.DataFrame, optional
+        DataFrame with at least date and equity as index, the columns are
+        irrelevant. For each date a list of equities is extracted from
+        &#39;demean_by&#39; index and used as universe to compute demeaned mean
+        returns (long short portfolio)
+
+    Returns
+    -------
+    aligned_returns : pd.DataFrame
+        Dataframe containing returns series for each factor aligned to the same
+        index: -before to after
+    &#34;&#34;&#34;
+    if not cumulative:
+        returns = returns.apply(cumulative_returns, axis=0)
+
+    all_returns = []
+
+    for timestamp, df in factor.groupby(level=&#34;date&#34;):
+
+        equities = df.index.get_level_values(&#34;asset&#34;)
+
+        try:
+            day_zero_index = returns.index.get_loc(timestamp)
+        except KeyError:
+            continue
+
+        starting_index = max(day_zero_index - before, 0)
+        ending_index = min(day_zero_index + after + 1, len(returns.index))
+
+        equities_slice = set(equities)
+        if demean_by is not None:
+            demean_equities = demean_by.loc[timestamp].index.get_level_values(&#34;asset&#34;)
+            equities_slice |= set(demean_equities)
+
+        series = returns.loc[
+            returns.index[starting_index:ending_index], list(equities_slice)
+        ]
+        series.index = range(
+            starting_index - day_zero_index, ending_index - day_zero_index
+        )
+
+        if demean_by is not None:
+            mean = series.loc[:, demean_equities].mean(axis=1)
+            series = series.loc[:, equities]
+            series = series.sub(mean, axis=0)
+
+        if mean_by_date:
+            series = series.mean(axis=1)
+
+        all_returns.append(series)
+
+    return pd.concat(all_returns, axis=1)</code></pre>
+</details>
+<div class="desc"><p>A date and equity pair is extracted from each index row in the factor
+dataframe and for each of these pairs a return series is built starting
+from 'before' the date and ending 'after' the date specified in the pair.
+All those returns series are then aligned to a common index (-before to
+after) and returned as a single DataFrame</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame with at least date and equity as index, the columns are
+irrelevant</dd>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>A wide form Pandas DataFrame indexed by date with assets in the
+columns. Returns data should span the factor analysis time period
+plus/minus an additional buffer window corresponding to after/before
+period parameters.</dd>
+<dt>before:</dt>
+<dt>How many returns to load before factor date</dt>
+<dt>after:</dt>
+<dt>How many returns to load after factor date</dt>
+<dt><strong><code>cumulative</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether the given returns are cumulative. If False the given
+returns are assumed to be daily.</dd>
+<dt><strong><code>mean_by_date</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, compute mean returns for each date and return that
+instead of a return series for each asset</dd>
+<dt><strong><code>demean_by</code></strong> :&ensp;<code>pd.DataFrame</code>, optional</dt>
+<dd>DataFrame with at least date and equity as index, the columns are
+irrelevant. For each date a list of equities is extracted from
+'demean_by' index and used as universe to compute demeaned mean
+returns (long short portfolio)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>aligned_returns</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Dataframe containing returns series for each factor aligned to the same
+index: -before to after</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.compute_mean_returns_spread"><code class="name flex">
+<span>def <span class="ident">compute_mean_returns_spread</span></span>(<span>mean_returns, upper_quant, lower_quant, std_err=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_mean_returns_spread(mean_returns, upper_quant, lower_quant, std_err=None):
+    &#34;&#34;&#34;
+    Computes the difference between the mean returns of
+    two quantiles. Optionally, computes the standard error
+    of this difference.
+
+    Parameters
+    ----------
+    mean_returns : pd.DataFrame
+        DataFrame of mean period wise returns by quantile.
+        MultiIndex containing date and quantile.
+        See mean_return_by_quantile.
+    upper_quant : int
+        Quantile of mean return from which we
+        wish to subtract lower quantile mean return.
+    lower_quant : int
+        Quantile of mean return we wish to subtract
+        from upper quantile mean return.
+    std_err : pd.DataFrame, optional
+        Period wise standard error in mean return by quantile.
+        Takes the same form as mean_returns.
+
+    Returns
+    -------
+    mean_return_difference : pd.Series
+        Period wise difference in quantile returns.
+    joint_std_err : pd.Series
+        Period wise standard error of the difference in quantile returns.
+        if std_err is None, this will be None
+    &#34;&#34;&#34;
+
+    mean_return_difference = mean_returns.xs(
+        upper_quant, level=&#34;factor_quantile&#34;
+    ) - mean_returns.xs(lower_quant, level=&#34;factor_quantile&#34;)
+
+    if std_err is None:
+        joint_std_err = None
+    else:
+        std1 = std_err.xs(upper_quant, level=&#34;factor_quantile&#34;)
+        std2 = std_err.xs(lower_quant, level=&#34;factor_quantile&#34;)
+        joint_std_err = np.sqrt(std1**2 + std2**2)
+
+    return mean_return_difference, joint_std_err</code></pre>
+</details>
+<div class="desc"><p>Computes the difference between the mean returns of
+two quantiles. Optionally, computes the standard error
+of this difference.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mean_returns</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame of mean period wise returns by quantile.
+MultiIndex containing date and quantile.
+See mean_return_by_quantile.</dd>
+<dt><strong><code>upper_quant</code></strong> :&ensp;<code>int</code></dt>
+<dd>Quantile of mean return from which we
+wish to subtract lower quantile mean return.</dd>
+<dt><strong><code>lower_quant</code></strong> :&ensp;<code>int</code></dt>
+<dd>Quantile of mean return we wish to subtract
+from upper quantile mean return.</dd>
+<dt><strong><code>std_err</code></strong> :&ensp;<code>pd.DataFrame</code>, optional</dt>
+<dd>Period wise standard error in mean return by quantile.
+Takes the same form as mean_returns.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mean_return_difference</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Period wise difference in quantile returns.</dd>
+<dt><strong><code>joint_std_err</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Period wise standard error of the difference in quantile returns.
+if std_err is None, this will be None</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.create_pyfolio_input"><code class="name flex">
+<span>def <span class="ident">create_pyfolio_input</span></span>(<span>factor_data,<br>period,<br>capital=None,<br>long_short=True,<br>group_neutral=False,<br>equal_weight=False,<br>quantiles=None,<br>groups=None,<br>benchmark_period='1D')</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_pyfolio_input(
+    factor_data,
+    period,
+    capital=None,
+    long_short=True,
+    group_neutral=False,
+    equal_weight=False,
+    quantiles=None,
+    groups=None,
+    benchmark_period=&#34;1D&#34;,
+):
+    &#34;&#34;&#34;
+    Simulate a portfolio using the input factor and returns the portfolio
+    performance data properly formatted for Pyfolio analysis.
+
+    For more details on how this portfolio is built see:
+    - performance.cumulative_returns (how the portfolio returns are computed)
+    - performance.factor_weights (how assets weights are computed)
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to,
+        and (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    period : string
+        &#39;factor_data&#39; column name corresponding to the &#39;period&#39; returns to be
+        used in the computation of porfolio returns
+    capital : float, optional
+        If set, then compute &#39;positions&#39; in dollar amount instead of percentage
+    long_short : bool, optional
+        if True enforce a dollar neutral long-short portfolio: asset weights
+        will be computed by demeaning factor values and dividing by the sum of
+        their absolute value (achieving gross leverage of 1) which will cause
+        the portfolio to hold both long and short positions and the total
+        weights of both long and short positions will be equal.
+        If False the portfolio weights will be computed dividing the factor
+        values and  by the sum of their absolute value (achieving gross
+        leverage of 1). Positive factor values will generate long positions and
+        negative factor values will produce short positions so that a factor
+        with only posive values will result in a long only portfolio.
+    group_neutral : bool, optional
+        If True simulates a group neutral portfolio: the portfolio weights
+        will be computed so that each group will weigh the same.
+        if &#39;long_short&#39; is enabled the factor values demeaning will occur on
+        the group level resulting in a dollar neutral, group neutral,
+        long-short portfolio.
+        If False group information will not be used in weights computation.
+    equal_weight : bool, optional
+        if True the assets will be equal-weighted. If long_short is True then
+        the factor universe will be split in two equal sized groups with the
+        top assets in long positions and bottom assets in short positions.
+        if False the assets will be factor-weighed, see &#39;long_short&#39; argument
+    quantiles: sequence[int], optional
+        Use only specific quantiles in the computation. By default all
+        quantiles are used
+    groups: sequence[string], optional
+        Use only specific groups in the computation. By default all groups
+        are used
+    benchmark_period : string, optional
+        By default benchmark returns are computed as the factor universe mean
+        daily returns but &#39;benchmark_period&#39; allows to choose a &#39;factor_data&#39;
+        column corresponding to the returns to be used in the computation of
+        benchmark returns. More generally benchmark returns are computed as the
+        factor universe returns traded at &#39;benchmark_period&#39; frequency, equal
+        weighting and long only
+
+
+    Returns
+    -------
+     returns : pd.Series
+        Daily returns of the strategy, noncumulative.
+         - Time series with decimal returns.
+         - Example:
+            2015-07-16    -0.012143
+            2015-07-17    0.045350
+            2015-07-20    0.030957
+            2015-07-21    0.004902
+
+     positions : pd.DataFrame
+        Time series of dollar amount (or percentage when &#39;capital&#39; is not
+        provided) invested in each position and cash.
+         - Days where stocks are not held can be represented by 0.
+         - Non-working capital is labelled &#39;cash&#39;
+         - Example:
+            index         &#39;AAPL&#39;         &#39;MSFT&#39;          cash
+            2004-01-09    13939.3800     -14012.9930     711.5585
+            2004-01-12    14492.6300     -14624.8700     27.1821
+            2004-01-13    -13853.2800    13653.6400      -43.6375
+
+
+     benchmark : pd.Series
+        Benchmark returns computed as the factor universe mean daily returns.
+
+    &#34;&#34;&#34;
+
+    #
+    # Build returns:
+    # we don&#39;t know the frequency at which the factor returns are computed but
+    # pyfolio wants daily returns. So we compute the cumulative returns of the
+    # factor, then resample it at 1 day frequency and finally compute daily
+    # returns
+    #
+    cumrets = factor_cumulative_returns(
+        factor_data,
+        period,
+        long_short,
+        group_neutral,
+        equal_weight,
+        quantiles,
+        groups,
+    )
+    cumrets = cumrets.resample(&#34;1D&#34;).last().fillna(method=&#34;ffill&#34;)
+    returns = cumrets.pct_change().fillna(0)
+
+    #
+    # Build positions. As pyfolio asks for daily position we have to resample
+    # the positions returned by &#39;factor_positions&#39; at 1 day frequency and
+    # recompute the weights so that the sum of daily weights is 1.0
+    #
+    positions = factor_positions(
+        factor_data,
+        period,
+        long_short,
+        group_neutral,
+        equal_weight,
+        quantiles,
+        groups,
+    )
+    positions = positions.resample(&#34;1D&#34;).sum().fillna(method=&#34;ffill&#34;)
+    positions = positions.div(positions.abs().sum(axis=1), axis=0).fillna(0)
+    positions[&#34;cash&#34;] = 1.0 - positions.sum(axis=1)
+
+    # transform percentage positions to dollar positions
+    if capital is not None:
+        positions = positions.mul(cumrets.reindex(positions.index) * capital, axis=0)
+
+    #
+    #
+    #
+    # Build benchmark returns as the factor universe mean returns traded at
+    # &#39;benchmark_period&#39; frequency
+    #
+    fwd_ret_cols = utils.get_forward_returns_columns(factor_data.columns)
+    if benchmark_period in fwd_ret_cols:
+        benchmark_data = factor_data.copy()
+        # make sure no negative positions
+        benchmark_data[&#34;factor&#34;] = benchmark_data[&#34;factor&#34;].abs()
+        benchmark_rets = factor_cumulative_returns(
+            benchmark_data,
+            benchmark_period,
+            long_short=False,
+            group_neutral=False,
+            equal_weight=True,
+        )
+        benchmark_rets = benchmark_rets.resample(&#34;1D&#34;).last().fillna(method=&#34;ffill&#34;)
+        benchmark_rets = benchmark_rets.pct_change().fillna(0)
+        benchmark_rets.name = &#34;benchmark&#34;
+    else:
+        benchmark_rets = None
+
+    return returns, positions, benchmark_rets</code></pre>
+</details>
+<div class="desc"><p>Simulate a portfolio using the input factor and returns the portfolio
+performance data properly formatted for Pyfolio analysis.</p>
+<p>For more details on how this portfolio is built see:
+- performance.cumulative_returns (how the portfolio returns are computed)
+- performance.factor_weights (how assets weights are computed)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to,
+and (optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>period</code></strong> :&ensp;<code>string</code></dt>
+<dd>'factor_data' column name corresponding to the 'period' returns to be
+used in the computation of porfolio returns</dd>
+<dt><strong><code>capital</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>If set, then compute 'positions' in dollar amount instead of percentage</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>if True enforce a dollar neutral long-short portfolio: asset weights
+will be computed by demeaning factor values and dividing by the sum of
+their absolute value (achieving gross leverage of 1) which will cause
+the portfolio to hold both long and short positions and the total
+weights of both long and short positions will be equal.
+If False the portfolio weights will be computed dividing the factor
+values and
+by the sum of their absolute value (achieving gross
+leverage of 1). Positive factor values will generate long positions and
+negative factor values will produce short positions so that a factor
+with only posive values will result in a long only portfolio.</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True simulates a group neutral portfolio: the portfolio weights
+will be computed so that each group will weigh the same.
+if 'long_short' is enabled the factor values demeaning will occur on
+the group level resulting in a dollar neutral, group neutral,
+long-short portfolio.
+If False group information will not be used in weights computation.</dd>
+<dt><strong><code>equal_weight</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>if True the assets will be equal-weighted. If long_short is True then
+the factor universe will be split in two equal sized groups with the
+top assets in long positions and bottom assets in short positions.
+if False the assets will be factor-weighed, see 'long_short' argument</dd>
+<dt><strong><code>quantiles</code></strong> :&ensp;<code>sequence[int]</code>, optional</dt>
+<dd>Use only specific quantiles in the computation. By default all
+quantiles are used</dd>
+<dt><strong><code>groups</code></strong> :&ensp;<code>sequence[string]</code>, optional</dt>
+<dd>Use only specific groups in the computation. By default all groups
+are used</dd>
+<dt><strong><code>benchmark_period</code></strong> :&ensp;<code>string</code>, optional</dt>
+<dd>By default benchmark returns are computed as the factor universe mean
+daily returns but 'benchmark_period' allows to choose a 'factor_data'
+column corresponding to the returns to be used in the computation of
+benchmark returns. More generally benchmark returns are computed as the
+factor universe returns traded at 'benchmark_period' frequency, equal
+weighting and long only</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>returns : pd.Series
+Daily returns of the strategy, noncumulative.
+- Time series with decimal returns.
+- Example:
+2015-07-16
+-0.012143
+2015-07-17
+0.045350
+2015-07-20
+0.030957
+2015-07-21
+0.004902</p>
+<p>positions : pd.DataFrame
+Time series of dollar amount (or percentage when 'capital' is not
+provided) invested in each position and cash.
+- Days where stocks are not held can be represented by 0.
+- Non-working capital is labelled 'cash'
+- Example:
+index
+'AAPL'
+'MSFT'
+cash
+2004-01-09
+13939.3800
+-14012.9930
+711.5585
+2004-01-12
+14492.6300
+-14624.8700
+27.1821
+2004-01-13
+-13853.2800
+13653.6400
+-43.6375</p>
+<p>benchmark : pd.Series
+Benchmark returns computed as the factor universe mean daily returns.</p></div>
+</dd>
+<dt id="alphalens.performance.cumulative_returns"><code class="name flex">
+<span>def <span class="ident">cumulative_returns</span></span>(<span>returns)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cumulative_returns(returns):
+    &#34;&#34;&#34;
+    Computes cumulative returns from simple daily returns.
+
+    Parameters
+    ----------
+    returns: pd.Series
+        pd.Series containing daily factor returns (i.e. &#39;1D&#39; returns).
+
+    Returns
+    -------
+    Cumulative returns series : pd.Series
+        Example:
+            2015-01-05   1.001310
+            2015-01-06   1.000805
+            2015-01-07   1.001092
+            2015-01-08   0.999200
+    &#34;&#34;&#34;
+
+    return ep.cum_returns(returns, starting_value=1)</code></pre>
+</details>
+<div class="desc"><p>Computes cumulative returns from simple daily returns.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>pd.Series containing daily factor returns (i.e. '1D' returns).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Cumulative returns series : pd.Series</code></dt>
+<dd>Example:
+2015-01-05
+1.001310
+2015-01-06
+1.000805
+2015-01-07
+1.001092
+2015-01-08
+0.999200</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_alpha_beta"><code class="name flex">
+<span>def <span class="ident">factor_alpha_beta</span></span>(<span>factor_data, returns=None, demeaned=True, group_adjust=False, equal_weight=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_alpha_beta(
+    factor_data,
+    returns=None,
+    demeaned=True,
+    group_adjust=False,
+    equal_weight=False,
+):
+    &#34;&#34;&#34;
+    Compute the alpha (excess returns), alpha t-stat (alpha significance),
+    and beta (market exposure) of a factor. A regression is run with
+    the period wise factor universe mean return as the independent variable
+    and mean period wise return from a portfolio weighted by factor values
+    as the dependent variable.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    returns : pd.DataFrame, optional
+        Period wise factor returns. If this is None then it will be computed
+        with &#39;factor_returns&#39; function and the passed flags: &#39;demeaned&#39;,
+        &#39;group_adjust&#39;, &#39;equal_weight&#39;
+    demeaned : bool
+        Control how to build factor returns used for alpha/beta computation
+        -- see performance.factor_return for a full explanation
+    group_adjust : bool
+        Control how to build factor returns used for alpha/beta computation
+        -- see performance.factor_return for a full explanation
+    equal_weight : bool, optional
+        Control how to build factor returns used for alpha/beta computation
+        -- see performance.factor_return for a full explanation
+
+    Returns
+    -------
+    alpha_beta : pd.Series
+        A list containing the alpha, beta, a t-stat(alpha)
+        for the given factor and forward returns.
+    &#34;&#34;&#34;
+
+    if returns is None:
+        returns = factor_returns(factor_data, demeaned, group_adjust, equal_weight)
+
+    universe_ret = (
+        factor_data.groupby(level=&#34;date&#34;)[
+            utils.get_forward_returns_columns(factor_data.columns)
+        ]
+        .mean()
+        .reindex(returns.index, axis=0)
+    )
+
+    if isinstance(returns, pd.Series):
+        returns.name = universe_ret.columns.values[0]
+        returns = pd.DataFrame(returns)
+
+    alpha_beta = pd.DataFrame()
+    for period in returns.columns.values:
+        x = universe_ret[period].values
+        y = returns[period].values
+        x = add_constant(x)
+
+        reg_fit = OLS(y, x, missing=&#34;drop&#34;).fit()
+        try:
+            alpha, beta = reg_fit.params
+        except ValueError:
+            alpha_beta.loc[&#34;Ann. alpha&#34;, period] = np.nan
+            alpha_beta.loc[&#34;beta&#34;, period] = np.nan
+        else:
+            freq_adjust = pd.Timedelta(&#34;252Days&#34;) / pd.Timedelta(period)
+
+            alpha_beta.loc[&#34;Ann. alpha&#34;, period] = (1 + alpha) ** freq_adjust - 1
+            alpha_beta.loc[&#34;beta&#34;, period] = beta
+
+    return alpha_beta</code></pre>
+</details>
+<div class="desc"><p>Compute the alpha (excess returns), alpha t-stat (alpha significance),
+and beta (market exposure) of a factor. A regression is run with
+the period wise factor universe mean return as the independent variable
+and mean period wise return from a portfolio weighted by factor values
+as the dependent variable.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.DataFrame</code>, optional</dt>
+<dd>Period wise factor returns. If this is None then it will be computed
+with 'factor_returns' function and the passed flags: 'demeaned',
+'group_adjust', 'equal_weight'</dd>
+<dt><strong><code>demeaned</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Control how to build factor returns used for alpha/beta computation
+&ndash; see performance.factor_return for a full explanation</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Control how to build factor returns used for alpha/beta computation
+&ndash; see performance.factor_return for a full explanation</dd>
+<dt><strong><code>equal_weight</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Control how to build factor returns used for alpha/beta computation
+&ndash; see performance.factor_return for a full explanation</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>alpha_beta</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>A list containing the alpha, beta, a t-stat(alpha)
+for the given factor and forward returns.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_cumulative_returns"><code class="name flex">
+<span>def <span class="ident">factor_cumulative_returns</span></span>(<span>factor_data,<br>period,<br>long_short=True,<br>group_neutral=False,<br>equal_weight=False,<br>quantiles=None,<br>groups=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_cumulative_returns(
+    factor_data,
+    period,
+    long_short=True,
+    group_neutral=False,
+    equal_weight=False,
+    quantiles=None,
+    groups=None,
+):
+    &#34;&#34;&#34;
+    Simulate a portfolio using the factor in input and returns the cumulative
+    returns of the simulated portfolio
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to,
+        and (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    period : string
+        &#39;factor_data&#39; column name corresponding to the &#39;period&#39; returns to be
+        used in the computation of porfolio returns
+    long_short : bool, optional
+        if True then simulates a dollar neutral long-short portfolio
+        - see performance.create_pyfolio_input for more details
+    group_neutral : bool, optional
+        If True then simulates a group neutral portfolio
+        - see performance.create_pyfolio_input for more details
+    equal_weight : bool, optional
+        Control the assets weights:
+        - see performance.create_pyfolio_input for more details
+    quantiles: sequence[int], optional
+        Use only specific quantiles in the computation. By default all
+        quantiles are used
+    groups: sequence[string], optional
+        Use only specific groups in the computation. By default all groups
+        are used
+
+    Returns
+    -------
+    Cumulative returns series : pd.Series
+        Example:
+            2015-07-16 09:30:00  -0.012143
+            2015-07-16 12:30:00   0.012546
+            2015-07-17 09:30:00   0.045350
+            2015-07-17 12:30:00   0.065897
+            2015-07-20 09:30:00   0.030957
+    &#34;&#34;&#34;
+    fwd_ret_cols = utils.get_forward_returns_columns(factor_data.columns)
+
+    if period not in fwd_ret_cols:
+        raise ValueError(&#34;Period &#39;%s&#39; not found&#34; % period)
+
+    todrop = list(fwd_ret_cols)
+    todrop.remove(period)
+    portfolio_data = factor_data.drop(todrop, axis=1)
+
+    if quantiles is not None:
+        portfolio_data = portfolio_data[
+            portfolio_data[&#34;factor_quantile&#34;].isin(quantiles)
+        ]
+
+    if groups is not None:
+        portfolio_data = portfolio_data[portfolio_data[&#34;group&#34;].isin(groups)]
+
+    returns = factor_returns(portfolio_data, long_short, group_neutral, equal_weight)
+
+    return cumulative_returns(returns[period])</code></pre>
+</details>
+<div class="desc"><p>Simulate a portfolio using the factor in input and returns the cumulative
+returns of the simulated portfolio</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to,
+and (optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>period</code></strong> :&ensp;<code>string</code></dt>
+<dd>'factor_data' column name corresponding to the 'period' returns to be
+used in the computation of porfolio returns</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>if True then simulates a dollar neutral long-short portfolio
+- see performance.create_pyfolio_input for more details</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True then simulates a group neutral portfolio
+- see performance.create_pyfolio_input for more details</dd>
+<dt><strong><code>equal_weight</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Control the assets weights:
+- see performance.create_pyfolio_input for more details</dd>
+<dt><strong><code>quantiles</code></strong> :&ensp;<code>sequence[int]</code>, optional</dt>
+<dd>Use only specific quantiles in the computation. By default all
+quantiles are used</dd>
+<dt><strong><code>groups</code></strong> :&ensp;<code>sequence[string]</code>, optional</dt>
+<dd>Use only specific groups in the computation. By default all groups
+are used</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Cumulative returns series : pd.Series</code></dt>
+<dd>Example:
+2015-07-16 09:30:00
+-0.012143
+2015-07-16 12:30:00
+0.012546
+2015-07-17 09:30:00
+0.045350
+2015-07-17 12:30:00
+0.065897
+2015-07-20 09:30:00
+0.030957</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_information_coefficient"><code class="name flex">
+<span>def <span class="ident">factor_information_coefficient</span></span>(<span>factor_data, group_adjust=False, by_group=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_information_coefficient(factor_data, group_adjust=False, by_group=False):
+    &#34;&#34;&#34;
+    Computes the Spearman Rank Correlation based Information Coefficient (IC)
+    between factor values and N period forward returns for each period in
+    the factor index.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    group_adjust : bool
+        Demean forward returns by group before computing IC.
+    by_group : bool
+        If True, compute period wise IC separately for each group.
+
+    Returns
+    -------
+    ic : pd.DataFrame
+        Spearman Rank correlation between factor and
+        provided forward returns.
+    &#34;&#34;&#34;
+
+    def src_ic(group):
+        f = group[&#34;factor&#34;]
+        _ic = group[utils.get_forward_returns_columns(factor_data.columns)].apply(
+            lambda x: stats.spearmanr(x, f)[0]
+        )
+        return _ic
+
+    date_idx = factor_data.index.names.index(&#34;date&#34;)
+    freq = factor_data.index.levels[date_idx].freq
+
+    factor_data = factor_data.copy()
+
+    grouper = [factor_data.index.get_level_values(&#34;date&#34;)]
+
+    if group_adjust:
+        factor_data = utils.demean_forward_returns(factor_data, grouper + [&#34;group&#34;])
+    if by_group:
+        grouper.append(&#34;group&#34;)
+
+    ic = factor_data.groupby(grouper, observed=True).apply(src_ic)
+    if by_group:
+        return ic
+    else:
+        return ic.asfreq(freq)</code></pre>
+</details>
+<div class="desc"><p>Computes the Spearman Rank Correlation based Information Coefficient (IC)
+between factor values and N period forward returns for each period in
+the factor index.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Demean forward returns by group before computing IC.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, compute period wise IC separately for each group.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Spearman Rank correlation between factor and
+provided forward returns.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_positions"><code class="name flex">
+<span>def <span class="ident">factor_positions</span></span>(<span>factor_data,<br>period,<br>long_short=True,<br>group_neutral=False,<br>equal_weight=False,<br>quantiles=None,<br>groups=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_positions(
+    factor_data,
+    period,
+    long_short=True,
+    group_neutral=False,
+    equal_weight=False,
+    quantiles=None,
+    groups=None,
+):
+    &#34;&#34;&#34;
+    Simulate a portfolio using the factor in input and returns the assets
+    positions as percentage of the total portfolio.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to,
+        and (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    period : string
+        &#39;factor_data&#39; column name corresponding to the &#39;period&#39; returns to be
+        used in the computation of porfolio returns
+    long_short : bool, optional
+        if True then simulates a dollar neutral long-short portfolio
+        - see performance.create_pyfolio_input for more details
+    group_neutral : bool, optional
+        If True then simulates a group neutral portfolio
+        - see performance.create_pyfolio_input for more details
+    equal_weight : bool, optional
+        Control the assets weights:
+        - see performance.create_pyfolio_input for more details.
+    quantiles: sequence[int], optional
+        Use only specific quantiles in the computation. By default all
+        quantiles are used
+    groups: sequence[string], optional
+        Use only specific groups in the computation. By default all groups
+        are used
+
+    Returns
+    -------
+    assets positions : pd.DataFrame
+        Assets positions series, datetime on index, assets on columns.
+        Example:
+            index                 &#39;AAPL&#39;         &#39;MSFT&#39;          cash
+            2004-01-09 10:30:00   13939.3800     -14012.9930     711.5585
+            2004-01-09 15:30:00       0.00       -16012.9930     411.5585
+            2004-01-12 10:30:00   14492.6300     -14624.8700       0.0
+            2004-01-12 15:30:00   14874.5400     -15841.2500       0.0
+            2004-01-13 10:30:00   -13853.2800    13653.6400      -43.6375
+    &#34;&#34;&#34;
+    fwd_ret_cols = utils.get_forward_returns_columns(factor_data.columns)
+
+    if period not in fwd_ret_cols:
+        raise ValueError(&#34;Period &#39;%s&#39; not found&#34; % period)
+
+    todrop = list(fwd_ret_cols)
+    todrop.remove(period)
+    portfolio_data = factor_data.drop(todrop, axis=1)
+
+    if quantiles is not None:
+        portfolio_data = portfolio_data[
+            portfolio_data[&#34;factor_quantile&#34;].isin(quantiles)
+        ]
+
+    if groups is not None:
+        portfolio_data = portfolio_data[portfolio_data[&#34;group&#34;].isin(groups)]
+
+    weights = factor_weights(portfolio_data, long_short, group_neutral, equal_weight)
+
+    return positions(weights, period)</code></pre>
+</details>
+<div class="desc"><p>Simulate a portfolio using the factor in input and returns the assets
+positions as percentage of the total portfolio.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to,
+and (optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>period</code></strong> :&ensp;<code>string</code></dt>
+<dd>'factor_data' column name corresponding to the 'period' returns to be
+used in the computation of porfolio returns</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>if True then simulates a dollar neutral long-short portfolio
+- see performance.create_pyfolio_input for more details</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True then simulates a group neutral portfolio
+- see performance.create_pyfolio_input for more details</dd>
+<dt><strong><code>equal_weight</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Control the assets weights:
+- see performance.create_pyfolio_input for more details.</dd>
+<dt><strong><code>quantiles</code></strong> :&ensp;<code>sequence[int]</code>, optional</dt>
+<dd>Use only specific quantiles in the computation. By default all
+quantiles are used</dd>
+<dt><strong><code>groups</code></strong> :&ensp;<code>sequence[string]</code>, optional</dt>
+<dd>Use only specific groups in the computation. By default all groups
+are used</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>assets positions : pd.DataFrame</code></dt>
+<dd>Assets positions series, datetime on index, assets on columns.
+Example:
+index
+'AAPL'
+'MSFT'
+cash
+2004-01-09 10:30:00
+13939.3800
+-14012.9930
+711.5585
+2004-01-09 15:30:00
+0.00
+-16012.9930
+411.5585
+2004-01-12 10:30:00
+14492.6300
+-14624.8700
+0.0
+2004-01-12 15:30:00
+14874.5400
+-15841.2500
+0.0
+2004-01-13 10:30:00
+-13853.2800
+13653.6400
+-43.6375</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_rank_autocorrelation"><code class="name flex">
+<span>def <span class="ident">factor_rank_autocorrelation</span></span>(<span>factor_data, period=1)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_rank_autocorrelation(factor_data, period=1):
+    &#34;&#34;&#34;
+    Computes autocorrelation of mean factor ranks in specified time spans.
+    We must compare period to period factor ranks rather than factor values
+    to account for systematic shifts in the factor values of all names or names
+    within a group. This metric is useful for measuring the turnover of a
+    factor. If the value of a factor for each name changes randomly from period
+    to period, we&#39;d expect an autocorrelation of 0.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    period: int, optional
+        Number of days over which to calculate the turnover.
+
+    Returns
+    -------
+    autocorr : pd.Series
+        Rolling 1 period (defined by time_rule) autocorrelation of
+        factor values.
+    &#34;&#34;&#34;
+    # grouper = [factor_data.index.get_level_values(&#39;date&#39;)]
+
+    date_idx = factor_data.index.names.index(&#34;date&#34;)
+    freq = factor_data.index.levels[date_idx].freq
+
+    asset_ranks_by_day = (
+        factor_data.groupby(level=&#34;date&#34;)[&#34;factor&#34;]
+        .rank()
+        .reset_index()
+        .pivot(index=&#34;date&#34;, columns=&#34;asset&#34;, values=&#34;factor&#34;)
+        .asfreq(freq)
+    )
+
+    # asset_factor_rank = ranks
+
+    asset_shifted = asset_ranks_by_day.shift(period)
+
+    return (
+        asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period).asfreq(freq)
+    )</code></pre>
+</details>
+<div class="desc"><p>Computes autocorrelation of mean factor ranks in specified time spans.
+We must compare period to period factor ranks rather than factor values
+to account for systematic shifts in the factor values of all names or names
+within a group. This metric is useful for measuring the turnover of a
+factor. If the value of a factor for each name changes randomly from period
+to period, we'd expect an autocorrelation of 0.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>period</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of days over which to calculate the turnover.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>autocorr</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Rolling 1 period (defined by time_rule) autocorrelation of
+factor values.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_returns"><code class="name flex">
+<span>def <span class="ident">factor_returns</span></span>(<span>factor_data, demeaned=True, group_adjust=False, equal_weight=False, by_asset=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_returns(
+    factor_data,
+    demeaned=True,
+    group_adjust=False,
+    equal_weight=False,
+    by_asset=False,
+):
+    &#34;&#34;&#34;
+    Computes period wise returns for portfolio weighted by factor
+    values.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    demeaned : bool
+        Control how to build factor weights
+        -- see performance.factor_weights for a full explanation
+    group_adjust : bool
+        Control how to build factor weights
+        -- see performance.factor_weights for a full explanation
+    equal_weight : bool, optional
+        Control how to build factor weights
+        -- see performance.factor_weights for a full explanation
+    by_asset: bool, optional
+        If True, returns are reported separately for each esset.
+
+    Returns
+    -------
+    returns : pd.DataFrame
+        Period wise factor returns
+    &#34;&#34;&#34;
+
+    date_idx = factor_data.index.names.index(&#34;date&#34;)
+    freq = factor_data.index.levels[date_idx].freq
+
+    weights = factor_weights(factor_data, demeaned, group_adjust, equal_weight)
+
+    s = utils.get_forward_returns_columns(factor_data.columns)
+    weighted_returns = factor_data[s].multiply(weights, axis=0)
+
+    if by_asset:
+        returns = weighted_returns
+    else:
+        # requires at least one weighted return
+        # otherwise returns np.nan
+        returns = weighted_returns.groupby(level=&#34;date&#34;).sum(min_count=1).asfreq(freq)
+
+    return returns</code></pre>
+</details>
+<div class="desc"><p>Computes period wise returns for portfolio weighted by factor
+values.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>demeaned</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Control how to build factor weights
+&ndash; see performance.factor_weights for a full explanation</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Control how to build factor weights
+&ndash; see performance.factor_weights for a full explanation</dd>
+<dt><strong><code>equal_weight</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Control how to build factor weights
+&ndash; see performance.factor_weights for a full explanation</dd>
+<dt><strong><code>by_asset</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, returns are reported separately for each esset.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Period wise factor returns</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.factor_weights"><code class="name flex">
+<span>def <span class="ident">factor_weights</span></span>(<span>factor_data, demeaned=True, group_adjust=False, equal_weight=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=False):
+    &#34;&#34;&#34;
+    Computes asset weights by factor values and dividing by the sum of their
+    absolute value (achieving gross leverage of 1). Positive factor values will
+    results in positive weights and negative values in negative weights.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    demeaned : bool
+        Should this computation happen on a long short portfolio? if True,
+        weights are computed by demeaning factor values and dividing by the sum
+        of their absolute value (achieving gross leverage of 1). The sum of
+        positive weights will be the same as the negative weights (absolute
+        value), suitable for a dollar neutral long-short portfolio
+    group_adjust : bool
+        Should this computation happen on a group neutral portfolio? If True,
+        compute group neutral weights: each group will weight the same and
+        if &#39;demeaned&#39; is enabled the factor values demeaning will occur on the
+        group level.
+    equal_weight : bool, optional
+        if True the assets will be equal-weighted instead of factor-weighted
+        If demeaned is True then the factor universe will be split in two
+        equal sized groups, top assets with positive weights and bottom assets
+        with negative weights
+
+    Returns
+    -------
+    returns : pd.Series
+        Assets weighted by factor value.
+    &#34;&#34;&#34;
+
+    def to_weights(group, _demeaned, _equal_weight):
+
+        if _equal_weight:
+            group = group.copy()
+
+            if _demeaned:
+                # top assets positive weights, bottom ones negative
+                group = group - group.median()
+
+            negative_mask = group &lt; 0
+            group[negative_mask] = -1.0
+            positive_mask = group &gt; 0
+            group[positive_mask] = 1.0
+
+            if _demeaned:
+                # positive weights must equal negative weights
+                if negative_mask.any():
+                    group[negative_mask] /= negative_mask.sum()
+                if positive_mask.any():
+                    group[positive_mask] /= positive_mask.sum()
+
+        elif _demeaned:
+            group = group - group.mean()
+
+        return group / group.abs().sum()
+
+    grouper = [factor_data.index.get_level_values(&#34;date&#34;)]
+    if group_adjust:
+        grouper.append(&#34;group&#34;)
+
+    weights = factor_data.groupby(grouper, group_keys=False, observed=True)[
+        &#34;factor&#34;
+    ].apply(to_weights, demeaned, equal_weight)
+
+    if group_adjust:
+        weights = weights.groupby(level=&#34;date&#34;, group_keys=False).apply(
+            to_weights, False, False
+        )
+
+    return weights</code></pre>
+</details>
+<div class="desc"><p>Computes asset weights by factor values and dividing by the sum of their
+absolute value (achieving gross leverage of 1). Positive factor values will
+results in positive weights and negative values in negative weights.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>demeaned</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a long short portfolio? if True,
+weights are computed by demeaning factor values and dividing by the sum
+of their absolute value (achieving gross leverage of 1). The sum of
+positive weights will be the same as the negative weights (absolute
+value), suitable for a dollar neutral long-short portfolio</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a group neutral portfolio? If True,
+compute group neutral weights: each group will weight the same and
+if 'demeaned' is enabled the factor values demeaning will occur on the
+group level.</dd>
+<dt><strong><code>equal_weight</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>if True the assets will be equal-weighted instead of factor-weighted
+If demeaned is True then the factor universe will be split in two
+equal sized groups, top assets with positive weights and bottom assets
+with negative weights</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Assets weighted by factor value.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.mean_information_coefficient"><code class="name flex">
+<span>def <span class="ident">mean_information_coefficient</span></span>(<span>factor_data, group_adjust=False, by_group=False, by_time=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mean_information_coefficient(
+    factor_data, group_adjust=False, by_group=False, by_time=None
+):
+    &#34;&#34;&#34;
+    Get the mean information coefficient of specified groups.
+    Answers questions like:
+    What is the mean IC for each month?
+    What is the mean IC for each group for our whole timerange?
+    What is the mean IC for for each group, each week?
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    group_adjust : bool
+        Demean forward returns by group before computing IC.
+    by_group : bool
+        If True, take the mean IC for each group.
+    by_time : str (pd time_rule), optional
+        Time window to use when taking mean IC.
+        See http://pandas.pydata.org/pandas-docs/stable/timeseries.html
+        for available options.
+
+    Returns
+    -------
+    ic : pd.DataFrame
+        Mean Spearman Rank correlation between factor and provided
+        forward price movement windows.
+    &#34;&#34;&#34;
+
+    ic = factor_information_coefficient(factor_data, group_adjust, by_group)
+
+    grouper = []
+    if by_time is not None:
+        grouper.append(pd.Grouper(freq=by_time))
+    if by_group:
+        grouper.append(&#34;group&#34;)
+
+    if len(grouper) == 0:
+        ic = ic.mean()
+
+    else:
+        ic = ic.reset_index().set_index(&#34;date&#34;).groupby(grouper).mean()
+
+    return ic</code></pre>
+</details>
+<div class="desc"><p>Get the mean information coefficient of specified groups.
+Answers questions like:
+What is the mean IC for each month?
+What is the mean IC for each group for our whole timerange?
+What is the mean IC for for each group, each week?</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Demean forward returns by group before computing IC.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, take the mean IC for each group.</dd>
+<dt><strong><code>by_time</code></strong> :&ensp;<code>str (pd time_rule)</code>, optional</dt>
+<dd>Time window to use when taking mean IC.
+See <a href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html">http://pandas.pydata.org/pandas-docs/stable/timeseries.html</a>
+for available options.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Mean Spearman Rank correlation between factor and provided
+forward price movement windows.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.mean_return_by_quantile"><code class="name flex">
+<span>def <span class="ident">mean_return_by_quantile</span></span>(<span>factor_data, by_date=False, by_group=False, demeaned=True, group_adjust=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mean_return_by_quantile(
+    factor_data,
+    by_date=False,
+    by_group=False,
+    demeaned=True,
+    group_adjust=False,
+):
+    &#34;&#34;&#34;
+    Computes mean returns for factor quantiles across
+    provided forward returns columns.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    by_date : bool
+        If True, compute quantile bucket returns separately for each date.
+    by_group : bool
+        If True, compute quantile bucket returns separately for each group.
+    demeaned : bool
+        Compute demeaned mean returns (long short portfolio)
+    group_adjust : bool
+        Returns demeaning will occur on the group level.
+
+    Returns
+    -------
+    mean_ret : pd.DataFrame
+        Mean period wise returns by specified factor quantile.
+    std_error_ret : pd.DataFrame
+        Standard error of returns by specified quantile.
+    &#34;&#34;&#34;
+
+    if group_adjust:
+        grouper = [factor_data.index.get_level_values(&#34;date&#34;)] + [&#34;group&#34;]
+        factor_data = utils.demean_forward_returns(factor_data, grouper)
+    elif demeaned:
+        factor_data = utils.demean_forward_returns(factor_data)
+    else:
+        factor_data = factor_data.copy()
+
+    grouper = [&#34;factor_quantile&#34;, factor_data.index.get_level_values(&#34;date&#34;)]
+
+    if by_group:
+        grouper.append(&#34;group&#34;)
+
+    group_stats = factor_data.groupby(grouper, observed=True)[
+        utils.get_forward_returns_columns(factor_data.columns)
+    ].agg([&#34;mean&#34;, &#34;std&#34;, &#34;count&#34;])
+
+    mean_ret = group_stats.T.xs(&#34;mean&#34;, level=1).T
+
+    if not by_date:
+        grouper = [mean_ret.index.get_level_values(&#34;factor_quantile&#34;)]
+        if by_group:
+            grouper.append(mean_ret.index.get_level_values(&#34;group&#34;))
+        group_stats = mean_ret.groupby(grouper).agg([&#34;mean&#34;, &#34;std&#34;, &#34;count&#34;])
+        mean_ret = group_stats.T.xs(&#34;mean&#34;, level=1).T
+
+    std_error_ret = group_stats.T.xs(&#34;std&#34;, level=1).T / np.sqrt(
+        group_stats.T.xs(&#34;count&#34;, level=1).T
+    )
+
+    return mean_ret, std_error_ret</code></pre>
+</details>
+<div class="desc"><p>Computes mean returns for factor quantiles across
+provided forward returns columns.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>by_date</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, compute quantile bucket returns separately for each date.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, compute quantile bucket returns separately for each group.</dd>
+<dt><strong><code>demeaned</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Compute demeaned mean returns (long short portfolio)</dd>
+<dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Returns demeaning will occur on the group level.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mean_ret</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Mean period wise returns by specified factor quantile.</dd>
+<dt><strong><code>std_error_ret</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Standard error of returns by specified quantile.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.positions"><code class="name flex">
+<span>def <span class="ident">positions</span></span>(<span>weights, period, freq=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def positions(weights, period, freq=None):
+    &#34;&#34;&#34;
+    Builds net position values time series, the portfolio percentage invested
+    in each position.
+
+    Parameters
+    ----------
+    weights: pd.Series
+        pd.Series containing factor weights, the index contains timestamps at
+        which the trades are computed and the values correspond to assets
+        weights
+        - see factor_weights for more details
+    period: pandas.Timedelta or string
+        Assets holding period (1 day, 2 mins, 3 hours etc). It can be a
+        Timedelta or a string in the format accepted by Timedelta constructor
+        (&#39;1 days&#39;, &#39;1D&#39;, &#39;30m&#39;, &#39;3h&#39;, &#39;1D1h&#39;, etc)
+    freq : pandas DateOffset, optional
+        Used to specify a particular trading calendar. If not present
+        weights.index.freq will be used
+
+    Returns
+    -------
+    pd.DataFrame
+        Assets positions series, datetime on index, assets on columns.
+        Example:
+            index                 &#39;AAPL&#39;         &#39;MSFT&#39;          cash
+            2004-01-09 10:30:00   13939.3800     -14012.9930     711.5585
+            2004-01-09 15:30:00       0.00       -16012.9930     411.5585
+            2004-01-12 10:30:00   14492.6300     -14624.8700       0.0
+            2004-01-12 15:30:00   14874.5400     -15841.2500       0.0
+            2004-01-13 10:30:00   -13853.2800    13653.6400      -43.6375
+    &#34;&#34;&#34;
+
+    weights = weights.unstack()
+
+    if not isinstance(period, pd.Timedelta):
+        period = pd.Timedelta(period)
+
+    if freq is None:
+        freq = weights.index.freq
+
+    if freq is None:
+        freq = BDay()
+        warnings.warn(&#34;&#39;freq&#39; not set, using business day calendar&#34;, UserWarning)
+
+    #
+    # weights index contains factor computation timestamps, then add returns
+    # timestamps too (factor timestamps + period) and save them to &#39;full_idx&#39;
+    # &#39;full_idx&#39; index will contain an entry for each point in time the weights
+    # change and hence they have to be re-computed
+    #
+    trades_idx = weights.index.copy()
+    returns_idx = utils.add_custom_calendar_timedelta(trades_idx, period, freq)
+    weights_idx = trades_idx.union(returns_idx)
+
+    #
+    # Compute portfolio weights for each point in time contained in the index
+    #
+    portfolio_weights = pd.DataFrame(index=weights_idx, columns=weights.columns)
+    active_weights = []
+
+    for curr_time in weights_idx:
+
+        #
+        # fetch new weights that become available at curr_time and store them
+        # in active weights
+        #
+        if curr_time in weights.index:
+            assets_weights = weights.loc[curr_time]
+            expire_ts = utils.add_custom_calendar_timedelta(curr_time, period, freq)
+            active_weights.append((expire_ts, assets_weights))
+
+        #
+        # remove expired entry in active_weights (older than &#39;period&#39;)
+        #
+        if active_weights:
+            expire_ts, assets_weights = active_weights[0]
+            if expire_ts &lt;= curr_time:
+                active_weights.pop(0)
+
+        if not active_weights:
+            continue
+        #
+        # Compute total weights for curr_time and store them
+        #
+        tot_weights = [w for (ts, w) in active_weights]
+        tot_weights = pd.concat(tot_weights, axis=1)
+        tot_weights = tot_weights.sum(axis=1)
+        tot_weights /= tot_weights.abs().sum()
+
+        portfolio_weights.loc[curr_time] = tot_weights
+
+    return portfolio_weights.fillna(0)</code></pre>
+</details>
+<div class="desc"><p>Builds net position values time series, the portfolio percentage invested
+in each position.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>weights</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>pd.Series containing factor weights, the index contains timestamps at
+which the trades are computed and the values correspond to assets
+weights
+- see factor_weights for more details</dd>
+<dt><strong><code>period</code></strong> :&ensp;<code>pandas.Timedelta</code> or <code>string</code></dt>
+<dd>Assets holding period (1 day, 2 mins, 3 hours etc). It can be a
+Timedelta or a string in the format accepted by Timedelta constructor
+('1 days', '1D', '30m', '3h', '1D1h', etc)</dd>
+<dt><strong><code>freq</code></strong> :&ensp;<code>pandas DateOffset</code>, optional</dt>
+<dd>Used to specify a particular trading calendar. If not present
+weights.index.freq will be used</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>Assets positions series, datetime on index, assets on columns.
+Example:
+index
+'AAPL'
+'MSFT'
+cash
+2004-01-09 10:30:00
+13939.3800
+-14012.9930
+711.5585
+2004-01-09 15:30:00
+0.00
+-16012.9930
+411.5585
+2004-01-12 10:30:00
+14492.6300
+-14624.8700
+0.0
+2004-01-12 15:30:00
+14874.5400
+-15841.2500
+0.0
+2004-01-13 10:30:00
+-13853.2800
+13653.6400
+-43.6375</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.performance.quantile_turnover"><code class="name flex">
+<span>def <span class="ident">quantile_turnover</span></span>(<span>quantile_factor, quantile, period=1)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def quantile_turnover(quantile_factor, quantile, period=1):
+    &#34;&#34;&#34;
+    Computes the proportion of names in a factor quantile that were
+    not in that quantile in the previous period.
+
+    Parameters
+    ----------
+    quantile_factor : pd.Series
+        DataFrame with date, asset and factor quantile.
+    quantile : int
+        Quantile on which to perform turnover analysis.
+    period: int, optional
+        Number of days over which to calculate the turnover.
+
+    Returns
+    -------
+    quant_turnover : pd.Series
+        Period by period turnover for that quantile.
+    &#34;&#34;&#34;
+
+    # keep DateTimeIndex frequency information
+    date_idx = quantile_factor.index.names.index(&#34;date&#34;)
+    freq = quantile_factor.index.levels[date_idx].freq
+
+    quant_names = quantile_factor[quantile_factor == quantile]
+    quant_name_sets = (
+        quant_names.groupby(level=[&#34;date&#34;])
+        .apply(lambda x: set(x.index.get_level_values(&#34;asset&#34;)))
+        .asfreq(freq)
+    )
+
+    name_shifted = quant_name_sets.shift(periods=period)
+
+    new_names = (quant_name_sets - name_shifted).dropna()
+
+    def f(xs):
+        return 0 if pd.isna(xs) else len(xs)
+
+    def g(xs):
+        return 1 if pd.isna(xs) else len(xs)
+
+    quant_turnover = (new_names.apply(f) / quant_name_sets.apply(g)).rename(quantile)
+    return quant_turnover</code></pre>
+</details>
+<div class="desc"><p>Computes the proportion of names in a factor quantile that were
+not in that quantile in the previous period.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>quantile_factor</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>DataFrame with date, asset and factor quantile.</dd>
+<dt><strong><code>quantile</code></strong> :&ensp;<code>int</code></dt>
+<dd>Quantile on which to perform turnover analysis.</dd>
+<dt><strong><code>period</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of days over which to calculate the turnover.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>quant_turnover</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Period by period turnover for that quantile.</dd>
+</dl></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="alphalens" href="index.html">alphalens</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="alphalens.performance.average_cumulative_return_by_quantile" href="#alphalens.performance.average_cumulative_return_by_quantile">average_cumulative_return_by_quantile</a></code></li>
+<li><code><a title="alphalens.performance.common_start_returns" href="#alphalens.performance.common_start_returns">common_start_returns</a></code></li>
+<li><code><a title="alphalens.performance.compute_mean_returns_spread" href="#alphalens.performance.compute_mean_returns_spread">compute_mean_returns_spread</a></code></li>
+<li><code><a title="alphalens.performance.create_pyfolio_input" href="#alphalens.performance.create_pyfolio_input">create_pyfolio_input</a></code></li>
+<li><code><a title="alphalens.performance.cumulative_returns" href="#alphalens.performance.cumulative_returns">cumulative_returns</a></code></li>
+<li><code><a title="alphalens.performance.factor_alpha_beta" href="#alphalens.performance.factor_alpha_beta">factor_alpha_beta</a></code></li>
+<li><code><a title="alphalens.performance.factor_cumulative_returns" href="#alphalens.performance.factor_cumulative_returns">factor_cumulative_returns</a></code></li>
+<li><code><a title="alphalens.performance.factor_information_coefficient" href="#alphalens.performance.factor_information_coefficient">factor_information_coefficient</a></code></li>
+<li><code><a title="alphalens.performance.factor_positions" href="#alphalens.performance.factor_positions">factor_positions</a></code></li>
+<li><code><a title="alphalens.performance.factor_rank_autocorrelation" href="#alphalens.performance.factor_rank_autocorrelation">factor_rank_autocorrelation</a></code></li>
+<li><code><a title="alphalens.performance.factor_returns" href="#alphalens.performance.factor_returns">factor_returns</a></code></li>
+<li><code><a title="alphalens.performance.factor_weights" href="#alphalens.performance.factor_weights">factor_weights</a></code></li>
+<li><code><a title="alphalens.performance.mean_information_coefficient" href="#alphalens.performance.mean_information_coefficient">mean_information_coefficient</a></code></li>
+<li><code><a title="alphalens.performance.mean_return_by_quantile" href="#alphalens.performance.mean_return_by_quantile">mean_return_by_quantile</a></code></li>
+<li><code><a title="alphalens.performance.positions" href="#alphalens.performance.positions">positions</a></code></li>
+<li><code><a title="alphalens.performance.quantile_turnover" href="#alphalens.performance.quantile_turnover">quantile_turnover</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

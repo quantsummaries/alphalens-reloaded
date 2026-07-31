@@ -1,0 +1,1806 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>alphalens.utils API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>alphalens.utils</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="alphalens.utils.add_custom_calendar_timedelta"><code class="name flex">
+<span>def <span class="ident">add_custom_calendar_timedelta</span></span>(<span>input, timedelta, freq)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_custom_calendar_timedelta(input, timedelta, freq):
+    &#34;&#34;&#34;
+    Add timedelta to &#39;input&#39; taking into consideration custom frequency, which
+    is used to deal with custom calendars, such as a trading calendar
+
+    Parameters
+    ----------
+    input : pd.DatetimeIndex or pd.Timestamp
+    timedelta : pd.Timedelta
+    freq : pd.DataOffset (CustomBusinessDay, Day or BusinessDay)
+
+    Returns
+    -------
+    pd.DatetimeIndex or pd.Timestamp
+        input + timedelta
+    &#34;&#34;&#34;
+    if not isinstance(freq, (Day, BusinessDay, CustomBusinessDay)):
+        raise ValueError(&#34;freq must be Day, BDay or CustomBusinessDay&#34;)
+    days = timedelta.components.days
+    offset = timedelta - pd.Timedelta(days=days)
+    return input + freq * days + offset</code></pre>
+</details>
+<div class="desc"><p>Add timedelta to 'input' taking into consideration custom frequency, which
+is used to deal with custom calendars, such as a trading calendar</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>input</code></strong> :&ensp;<code>pd.DatetimeIndex</code> or <code>pd.Timestamp</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>timedelta</code></strong> :&ensp;<code>pd.Timedelta</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>freq</code></strong> :&ensp;<code>pd.DataOffset (CustomBusinessDay, Day</code> or <code>BusinessDay)</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DatetimeIndex</code> or <code>pd.Timestamp</code></dt>
+<dd>input + timedelta</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.backshift_returns_series"><code class="name flex">
+<span>def <span class="ident">backshift_returns_series</span></span>(<span>series, N)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def backshift_returns_series(series, N):
+    &#34;&#34;&#34;Shift a multi-indexed series backwards by N observations in
+    the first level.
+
+    This can be used to convert backward-looking returns into a
+    forward-returns series.
+    &#34;&#34;&#34;
+    ix = series.index
+    dates, sids = ix.levels
+    date_labels, sid_labels = map(np.array, ix.labels)
+
+    # Output date labels will contain the all but the last N dates.
+    new_dates = dates[:-N]
+
+    # Output data will remove the first M rows, where M is the index of the
+    # last record with one of the first N dates.
+    cutoff = date_labels.searchsorted(N)
+    new_date_labels = date_labels[cutoff:] - N
+    new_sid_labels = sid_labels[cutoff:]
+    new_values = series.values[cutoff:]
+
+    assert new_date_labels[0] == 0
+
+    new_index = pd.MultiIndex(
+        levels=[new_dates, sids],
+        codes=[new_date_labels, new_sid_labels],
+        sortorder=1,
+        names=ix.names,
+    )
+
+    return pd.Series(data=new_values, index=new_index)</code></pre>
+</details>
+<div class="desc"><p>Shift a multi-indexed series backwards by N observations in
+the first level.</p>
+<p>This can be used to convert backward-looking returns into a
+forward-returns series.</p></div>
+</dd>
+<dt id="alphalens.utils.compute_forward_returns"><code class="name flex">
+<span>def <span class="ident">compute_forward_returns</span></span>(<span>factor, prices, periods=(1, 5, 10), filter_zscore=None, cumulative_returns=True)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_forward_returns(
+    factor,
+    prices,
+    periods=(1, 5, 10),
+    filter_zscore=None,
+    cumulative_returns=True,
+):
+    &#34;&#34;&#34;
+    Finds the N period forward returns (as percent change) for each asset
+    provided.
+
+    Parameters
+    ----------
+    factor : pd.Series - MultiIndex
+        A MultiIndex Series indexed by timestamp (level 0) and asset
+        (level 1), containing the values for a single alpha factor.
+
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+
+    prices : pd.DataFrame
+        Pricing data to use in forward price calculation.
+        Assets as columns, dates as index. Pricing data must
+        span the factor analysis time period plus an additional buffer window
+        that is greater than the maximum number of expected periods
+        in the forward returns calculations.
+    periods : sequence[int]
+        periods to compute forward returns on.
+    filter_zscore : int or float, optional
+        Sets forward returns greater than X standard deviations
+        from the the mean to nan. Set it to &#39;None&#39; to avoid filtering.
+        Caution: this outlier filtering incorporates lookahead bias.
+    cumulative_returns : bool, optional
+        If True, forward returns columns will contain cumulative returns.
+        Setting this to False is useful if you want to analyze how predictive
+        a factor is for a single forward day.
+
+    Returns
+    -------
+    forward_returns : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by timestamp (level 0) and asset
+        (level 1), containing the forward returns for assets.
+        Forward returns column names follow the format accepted by
+        pd.Timedelta (e.g. &#39;1D&#39;, &#39;30m&#39;, &#39;3h15m&#39;, &#39;1D1h&#39;, etc).
+        &#39;date&#39; index freq property (forward_returns.index.levels[0].freq)
+        will be set to a trading calendar (pandas DateOffset) inferred
+        from the input data (see infer_trading_calendar for more details).
+    &#34;&#34;&#34;
+
+    factor_dateindex = factor.index.levels[0]
+    if factor_dateindex.tz != prices.index.tz:
+        raise NonMatchingTimezoneError(
+            &#34;The timezone of &#39;factor&#39; is not the &#34;
+            &#34;same as the timezone of &#39;prices&#39;. See &#34;
+            &#34;the pandas methods tz_localize and &#34;
+            &#34;tz_convert.&#34;
+        )
+
+    if factor_dateindex.freq:
+        freq = factor_dateindex.freq
+    else:
+        freq = infer_trading_calendar(factor_dateindex, prices.index)
+
+    factor_dateindex = factor_dateindex.intersection(prices.index)
+
+    if len(factor_dateindex) == 0:
+        raise ValueError(
+            &#34;Factor and prices indices don&#39;t match: make sure &#34;
+            &#34;they have the same convention in terms of datetimes &#34;
+            &#34;and symbol-names&#34;
+        )
+
+    # chop prices down to only the assets we care about (= unique assets in
+    # `factor`).  we could modify `prices` in place, but that might confuse
+    # the caller.
+    prices = prices.filter(items=factor.index.levels[1])
+
+    raw_values_dict = {}
+    column_list = []
+
+    for period in sorted(periods):
+        if cumulative_returns:
+            returns = prices.pct_change(period)
+        else:
+            returns = prices.pct_change()
+
+        forward_returns = returns.shift(-period).reindex(factor_dateindex)
+
+        if filter_zscore is not None:
+            mask = abs(forward_returns - forward_returns.mean()) &gt; (
+                filter_zscore * forward_returns.std()
+            )
+            forward_returns[mask] = np.nan
+
+        #
+        # Find the period length, which will be the column name. We&#39;ll test
+        # several entries in order to find out the most likely period length
+        # (in case the user passed inconsinstent data)
+        #
+        days_diffs = []
+        for i in range(30):
+            if i &gt;= len(forward_returns.index):
+                break
+            p_idx = prices.index.get_loc(forward_returns.index[i])
+            if p_idx is None or p_idx &lt; 0 or (p_idx + period) &gt;= len(prices.index):
+                continue
+            start = prices.index[p_idx]
+            end = prices.index[p_idx + period]
+            period_len = diff_custom_calendar_timedeltas(start, end, freq)
+            days_diffs.append(period_len.components.days)
+
+        delta_days = (
+            period_len.components.days - mode(days_diffs, keepdims=True).mode[0]
+        )
+        period_len -= pd.Timedelta(days=delta_days)
+        label = timedelta_to_string(period_len)
+
+        column_list.append(label)
+
+        raw_values_dict[label] = np.concatenate(forward_returns.values)
+
+    df = pd.DataFrame.from_dict(raw_values_dict)
+    df.set_index(
+        pd.MultiIndex.from_product(
+            [factor_dateindex, prices.columns], names=[&#34;date&#34;, &#34;asset&#34;]
+        ),
+        inplace=True,
+    )
+    df = df.reindex(factor.index)
+
+    # now set the columns correctly
+    df = df[column_list]
+    df.index.levels[0].freq = freq
+    df.index.set_names([&#34;date&#34;, &#34;asset&#34;], inplace=True)
+
+    return df</code></pre>
+</details>
+<div class="desc"><p>Finds the N period forward returns (as percent change) for each asset
+provided.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor</code></strong> :&ensp;<code>pd.Series - MultiIndex</code></dt>
+<dd>
+<p>A MultiIndex Series indexed by timestamp (level 0) and asset
+(level 1), containing the values for a single alpha factor.</p>
+<ul>
+<li>See full explanation in utils.get_clean_factor_and_forward_returns</li>
+</ul>
+</dd>
+<dt><strong><code>prices</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Pricing data to use in forward price calculation.
+Assets as columns, dates as index. Pricing data must
+span the factor analysis time period plus an additional buffer window
+that is greater than the maximum number of expected periods
+in the forward returns calculations.</dd>
+<dt><strong><code>periods</code></strong> :&ensp;<code>sequence[int]</code></dt>
+<dd>periods to compute forward returns on.</dd>
+<dt><strong><code>filter_zscore</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Sets forward returns greater than X standard deviations
+from the the mean to nan. Set it to 'None' to avoid filtering.
+Caution: this outlier filtering incorporates lookahead bias.</dd>
+<dt><strong><code>cumulative_returns</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, forward returns columns will contain cumulative returns.
+Setting this to False is useful if you want to analyze how predictive
+a factor is for a single forward day.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>forward_returns</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by timestamp (level 0) and asset
+(level 1), containing the forward returns for assets.
+Forward returns column names follow the format accepted by
+pd.Timedelta (e.g. '1D', '30m', '3h15m', '1D1h', etc).
+'date' index freq property (forward_returns.index.levels[0].freq)
+will be set to a trading calendar (pandas DateOffset) inferred
+from the input data (see infer_trading_calendar for more details).</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.demean_forward_returns"><code class="name flex">
+<span>def <span class="ident">demean_forward_returns</span></span>(<span>factor_data, grouper=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def demean_forward_returns(factor_data, grouper=None):
+    &#34;&#34;&#34;
+    Convert forward returns to returns relative to mean
+    period wise all-universe or group returns.
+    group-wise normalization incorporates the assumption of a
+    group neutral portfolio constraint and thus allows allows the
+    factor to be evaluated across groups.
+
+    For example, if AAPL 5 period return is 0.1% and mean 5 period
+    return for the Technology stocks in our universe was 0.5% in the
+    same period, the group adjusted 5 period return for AAPL in this
+    period is -0.4%.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        Forward returns indexed by date and asset.
+        Separate column for each forward return window.
+    grouper : list
+        If True, demean according to group.
+
+    Returns
+    -------
+    adjusted_forward_returns : pd.DataFrame - MultiIndex
+        DataFrame of the same format as the input, but with each
+        security&#39;s returns normalized by group.
+    &#34;&#34;&#34;
+
+    factor_data = factor_data.copy()
+
+    if not grouper:
+        grouper = factor_data.index.get_level_values(&#34;date&#34;)
+
+    cols = get_forward_returns_columns(factor_data.columns)
+    factor_data[cols] = factor_data.groupby(grouper)[cols].transform(
+        lambda x: x - x.mean()
+    )
+
+    return factor_data</code></pre>
+</details>
+<div class="desc"><p>Convert forward returns to returns relative to mean
+period wise all-universe or group returns.
+group-wise normalization incorporates the assumption of a
+group neutral portfolio constraint and thus allows allows the
+factor to be evaluated across groups.</p>
+<p>For example, if AAPL 5 period return is 0.1% and mean 5 period
+return for the Technology stocks in our universe was 0.5% in the
+same period, the group adjusted 5 period return for AAPL in this
+period is -0.4%.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>Forward returns indexed by date and asset.
+Separate column for each forward return window.</dd>
+<dt><strong><code>grouper</code></strong> :&ensp;<code>list</code></dt>
+<dd>If True, demean according to group.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>adjusted_forward_returns</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>DataFrame of the same format as the input, but with each
+security's returns normalized by group.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.diff_custom_calendar_timedeltas"><code class="name flex">
+<span>def <span class="ident">diff_custom_calendar_timedeltas</span></span>(<span>start, end, freq)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def diff_custom_calendar_timedeltas(start, end, freq):
+    &#34;&#34;&#34;
+    Compute the difference between two pd.Timedelta taking into consideration
+    custom frequency, which is used to deal with custom calendars, such as a
+    trading calendar
+
+    Parameters
+    ----------
+    start : pd.Timestamp
+    end : pd.Timestamp
+    freq : CustomBusinessDay (see infer_trading_calendar)
+    freq : pd.DataOffset (CustomBusinessDay, Day or BDay)
+
+    Returns
+    -------
+    pd.Timedelta
+        end - start
+    &#34;&#34;&#34;
+    if not isinstance(freq, BaseOffset):
+        raise ValueError(
+            &#34;freq must be an instance of pandas.tseries.offsets.BaseOffset &#34;
+            &#34;(e.g. Day, BusinessDay or CustomBusinessDay)&#34;
+        )
+
+    weekmask = getattr(freq, &#34;weekmask&#34;, None)
+    holidays = getattr(freq, &#34;holidays&#34;, None)
+
+    if weekmask is None and holidays is None:
+        if isinstance(freq, Day):
+            weekmask = &#34;Mon Tue Wed Thu Fri Sat Sun&#34;
+            holidays = []
+        elif isinstance(freq, BusinessDay):
+            weekmask = &#34;Mon Tue Wed Thu Fri&#34;
+            holidays = []
+
+    if weekmask is not None and holidays is not None:
+        # we prefer this method as it is faster
+        actual_days = np.busday_count(
+            np.array(make_naive_ts(start)).astype(&#34;datetime64[D]&#34;),
+            np.array(make_naive_ts(end)).astype(&#34;datetime64[D]&#34;),
+            weekmask,
+            holidays,
+        )
+    else:
+        # default, it is slow
+        actual_days = pd.date_range(start, end, freq=freq).shape[0] - 1
+        if not freq.is_on_offset(start):
+            actual_days -= 1
+
+    timediff = end - start
+    delta_days = timediff.components.days - actual_days
+    return timediff - pd.Timedelta(days=delta_days)</code></pre>
+</details>
+<div class="desc"><p>Compute the difference between two pd.Timedelta taking into consideration
+custom frequency, which is used to deal with custom calendars, such as a
+trading calendar</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>start</code></strong> :&ensp;<code>pd.Timestamp</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>end</code></strong> :&ensp;<code>pd.Timestamp</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>freq</code></strong> :&ensp;<code>CustomBusinessDay (see <a title="alphalens.utils.infer_trading_calendar" href="#alphalens.utils.infer_trading_calendar">infer_trading_calendar()</a>)</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>freq</code></strong> :&ensp;<code>pd.DataOffset (CustomBusinessDay, Day</code> or <code>BDay)</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.Timedelta</code></dt>
+<dd>end - start</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.get_clean_factor"><code class="name flex">
+<span>def <span class="ident">get_clean_factor</span></span>(<span>factor,<br>forward_returns,<br>groupby=None,<br>binning_by_group=False,<br>quantiles=5,<br>bins=None,<br>groupby_labels=None,<br>max_loss=0.35,<br>zero_aware=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_clean_factor(
+    factor,
+    forward_returns,
+    groupby=None,
+    binning_by_group=False,
+    quantiles=5,
+    bins=None,
+    groupby_labels=None,
+    max_loss=0.35,
+    zero_aware=False,
+):
+    &#34;&#34;&#34;
+    Formats the factor data, forward return data, and group mappings into a
+    DataFrame that contains aligned MultiIndex indices of timestamp and asset.
+    The returned data will be formatted to be suitable for Alphalens functions.
+
+    It is safe to skip a call to this function and still make use of Alphalens
+    functionalities as long as the factor data conforms to the format returned
+    from get_clean_factor_and_forward_returns and documented here
+
+    Parameters
+    ----------
+    factor : pd.Series - MultiIndex
+        A MultiIndex Series indexed by timestamp (level 0) and asset
+        (level 1), containing the values for a single alpha factor.
+        ::
+            -----------------------------------
+                date    |    asset   |
+            -----------------------------------
+                        |   AAPL     |   0.5
+                        -----------------------
+                        |   BA       |  -1.1
+                        -----------------------
+            2014-01-01  |   CMG      |   1.7
+                        -----------------------
+                        |   DAL      |  -0.1
+                        -----------------------
+                        |   LULU     |   2.7
+                        -----------------------
+
+    forward_returns : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by timestamp (level 0) and asset
+        (level 1), containing the forward returns for assets.
+        Forward returns column names must follow the format accepted by
+        pd.Timedelta (e.g. &#39;1D&#39;, &#39;30m&#39;, &#39;3h15m&#39;, &#39;1D1h&#39;, etc).
+        &#39;date&#39; index freq property must be set to a trading calendar
+        (pandas DateOffset), see infer_trading_calendar for more details.
+        This information is currently used only in cumulative returns
+        computation
+        ::
+            ---------------------------------------
+                       |       | 1D  | 5D  | 10D
+            ---------------------------------------
+                date   | asset |     |     |
+            ---------------------------------------
+                       | AAPL  | 0.09|-0.01|-0.079
+                       ----------------------------
+                       | BA    | 0.02| 0.06| 0.020
+                       ----------------------------
+            2014-01-01 | CMG   | 0.03| 0.09| 0.036
+                       ----------------------------
+                       | DAL   |-0.02|-0.06|-0.029
+                       ----------------------------
+                       | LULU  |-0.03| 0.05|-0.009
+                       ----------------------------
+
+    groupby : pd.Series - MultiIndex or dict
+        Either A MultiIndex Series indexed by date and asset,
+        containing the period wise group codes for each asset, or
+        a dict of asset to group mappings. If a dict is passed,
+        it is assumed that group mappings are unchanged for the
+        entire time period of the passed factor data.
+    binning_by_group : bool
+        If True, compute quantile buckets separately for each group.
+        This is useful when the factor values range vary considerably
+        across gorups so that it is wise to make the binning group relative.
+        You should probably enable this if the factor is intended
+        to be analyzed for a group neutral portfolio
+    quantiles : int or sequence[float]
+        Number of equal-sized quantile buckets to use in factor bucketing.
+        Alternately sequence of quantiles, allowing non-equal-sized buckets
+        e.g. [0, .10, .5, .90, 1.] or [.05, .5, .95]
+        Only one of &#39;quantiles&#39; or &#39;bins&#39; can be not-None
+    bins : int or sequence[float]
+        Number of equal-width (valuewise) bins to use in factor bucketing.
+        Alternately sequence of bin edges allowing for non-uniform bin width
+        e.g. [-4, -2, -0.5, 0, 10]
+        Chooses the buckets to be evenly spaced according to the values
+        themselves. Useful when the factor contains discrete values.
+        Only one of &#39;quantiles&#39; or &#39;bins&#39; can be not-None
+    groupby_labels : dict
+        A dictionary keyed by group code with values corresponding
+        to the display name for each group.
+    max_loss : float, optional
+        Maximum percentage (0.00 to 1.00) of factor data dropping allowed,
+        computed comparing the number of items in the input factor index and
+        the number of items in the output DataFrame index.
+        Factor data can be partially dropped due to being flawed itself
+        (e.g. NaNs), not having provided enough price data to compute
+        forward returns for all factor values, or because it is not possible
+        to perform binning.
+        Set max_loss=0 to avoid Exceptions suppression.
+    zero_aware : bool, optional
+        If True, compute quantile buckets separately for positive and negative
+        signal values. This is useful if your signal is centered and zero is
+        the separation between long and short signals, respectively.
+        &#39;quantiles&#39; is None.
+
+    Returns
+    -------
+    merged_data : pd.DataFrame - MultiIndex
+        A MultiIndex Series indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+
+        - forward returns column names follow the format accepted by
+          pd.Timedelta (e.g. &#39;1D&#39;, &#39;30m&#39;, &#39;3h15m&#39;, &#39;1D1h&#39;, etc)
+
+        - &#39;date&#39; index freq property (merged_data.index.levels[0].freq) is the
+          same as that of the input forward returns data. This is currently
+          used only in cumulative returns computation
+        ::
+           -------------------------------------------------------------------
+                      |       | 1D  | 5D  | 10D  |factor|group|factor_quantile
+           -------------------------------------------------------------------
+               date   | asset |     |     |      |      |     |
+           -------------------------------------------------------------------
+                      | AAPL  | 0.09|-0.01|-0.079|  0.5 |  G1 |      3
+                      --------------------------------------------------------
+                      | BA    | 0.02| 0.06| 0.020| -1.1 |  G2 |      5
+                      --------------------------------------------------------
+           2014-01-01 | CMG   | 0.03| 0.09| 0.036|  1.7 |  G2 |      1
+                      --------------------------------------------------------
+                      | DAL   |-0.02|-0.06|-0.029| -0.1 |  G3 |      5
+                      --------------------------------------------------------
+                      | LULU  |-0.03| 0.05|-0.009|  2.7 |  G1 |      2
+                      --------------------------------------------------------
+    &#34;&#34;&#34;
+
+    initial_amount = float(len(factor.index))
+
+    factor_copy = factor.copy()
+    factor_copy.index = factor_copy.index.rename([&#34;date&#34;, &#34;asset&#34;])
+    factor_copy = factor_copy[np.isfinite(factor_copy)]
+
+    merged_data = forward_returns.copy()
+    merged_data[&#34;factor&#34;] = factor_copy
+
+    if groupby is not None:
+        if isinstance(groupby, dict):
+            diff = set(factor_copy.index.get_level_values(&#34;asset&#34;)) - set(
+                groupby.keys()
+            )
+            if len(diff) &gt; 0:
+                raise KeyError(&#34;Assets {} not in group mapping&#34;.format(list(diff)))
+
+            ss = pd.Series(groupby)
+            groupby = pd.Series(
+                index=factor_copy.index,
+                data=ss[factor_copy.index.get_level_values(&#34;asset&#34;)].values,
+            )
+
+        if groupby_labels is not None:
+            diff = set(groupby.values) - set(groupby_labels.keys())
+            if len(diff) &gt; 0:
+                raise KeyError(&#34;groups {} not in passed group names&#34;.format(list(diff)))
+
+            sn = pd.Series(groupby_labels)
+            groupby = pd.Series(index=groupby.index, data=sn[groupby.values].values)
+
+        merged_data[&#34;group&#34;] = groupby.astype(&#34;category&#34;)
+
+    merged_data = merged_data.dropna()
+
+    fwdret_amount = float(len(merged_data.index))
+
+    no_raise = False if max_loss == 0 else True
+    quantile_data = quantize_factor(
+        merged_data, quantiles, bins, binning_by_group, no_raise, zero_aware
+    )
+
+    merged_data[&#34;factor_quantile&#34;] = quantile_data
+
+    merged_data = merged_data.dropna()
+
+    binning_amount = float(len(merged_data.index))
+
+    tot_loss = (initial_amount - binning_amount) / initial_amount
+    fwdret_loss = (initial_amount - fwdret_amount) / initial_amount
+    bin_loss = tot_loss - fwdret_loss
+
+    print(
+        &#34;Dropped %.1f%% entries from factor data: %.1f%% in forward &#34;
+        &#34;returns computation and %.1f%% in binning phase &#34;
+        &#34;(set max_loss=0 to see potentially suppressed Exceptions).&#34;
+        % (tot_loss * 100, fwdret_loss * 100, bin_loss * 100)
+    )
+
+    if tot_loss &gt; max_loss:
+        message = &#34;max_loss (%.1f%%) exceeded %.1f%%, consider increasing it.&#34; % (
+            max_loss * 100,
+            tot_loss * 100,
+        )
+        raise MaxLossExceededError(message)
+    else:
+        print(&#34;max_loss is %.1f%%, not exceeded: OK!&#34; % (max_loss * 100))
+    return merged_data</code></pre>
+</details>
+<div class="desc"><p>Formats the factor data, forward return data, and group mappings into a
+DataFrame that contains aligned MultiIndex indices of timestamp and asset.
+The returned data will be formatted to be suitable for Alphalens functions.</p>
+<p>It is safe to skip a call to this function and still make use of Alphalens
+functionalities as long as the factor data conforms to the format returned
+from get_clean_factor_and_forward_returns and documented here</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor</code></strong> :&ensp;<code>pd.Series - MultiIndex</code></dt>
+<dd>A MultiIndex Series indexed by timestamp (level 0) and asset
+(level 1), containing the values for a single alpha factor.
+::
+-----------------------------------
+date
+|
+asset
+|
+-----------------------------------
+|
+AAPL
+|
+0.5
+-----------------------
+|
+BA
+|
+-1.1
+-----------------------
+2014-01-01
+|
+CMG
+|
+1.7
+-----------------------
+|
+DAL
+|
+-0.1
+-----------------------
+|
+LULU
+|
+2.7
+-----------------------</dd>
+<dt><strong><code>forward_returns</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by timestamp (level 0) and asset
+(level 1), containing the forward returns for assets.
+Forward returns column names must follow the format accepted by
+pd.Timedelta (e.g. '1D', '30m', '3h15m', '1D1h', etc).
+'date' index freq property must be set to a trading calendar
+(pandas DateOffset), see infer_trading_calendar for more details.
+This information is currently used only in cumulative returns
+computation
+::
+---------------------------------------
+|
+| 1D
+| 5D
+| 10D
+---------------------------------------
+date
+| asset |
+|
+|
+---------------------------------------
+| AAPL
+| 0.09|-0.01|-0.079
+----------------------------
+| BA
+| 0.02| 0.06| 0.020
+----------------------------
+2014-01-01 | CMG
+| 0.03| 0.09| 0.036
+----------------------------
+| DAL
+|-0.02|-0.06|-0.029
+----------------------------
+| LULU
+|-0.03| 0.05|-0.009
+----------------------------</dd>
+<dt><strong><code>groupby</code></strong> :&ensp;<code>pd.Series - MultiIndex</code> or <code>dict</code></dt>
+<dd>Either A MultiIndex Series indexed by date and asset,
+containing the period wise group codes for each asset, or
+a dict of asset to group mappings. If a dict is passed,
+it is assumed that group mappings are unchanged for the
+entire time period of the passed factor data.</dd>
+<dt><strong><code>binning_by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, compute quantile buckets separately for each group.
+This is useful when the factor values range vary considerably
+across gorups so that it is wise to make the binning group relative.
+You should probably enable this if the factor is intended
+to be analyzed for a group neutral portfolio</dd>
+<dt><strong><code>quantiles</code></strong> :&ensp;<code>int</code> or <code>sequence[float]</code></dt>
+<dd>Number of equal-sized quantile buckets to use in factor bucketing.
+Alternately sequence of quantiles, allowing non-equal-sized buckets
+e.g. [0, .10, .5, .90, 1.] or [.05, .5, .95]
+Only one of 'quantiles' or 'bins' can be not-None</dd>
+<dt><strong><code>bins</code></strong> :&ensp;<code>int</code> or <code>sequence[float]</code></dt>
+<dd>Number of equal-width (valuewise) bins to use in factor bucketing.
+Alternately sequence of bin edges allowing for non-uniform bin width
+e.g. [-4, -2, -0.5, 0, 10]
+Chooses the buckets to be evenly spaced according to the values
+themselves. Useful when the factor contains discrete values.
+Only one of 'quantiles' or 'bins' can be not-None</dd>
+<dt><strong><code>groupby_labels</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary keyed by group code with values corresponding
+to the display name for each group.</dd>
+<dt><strong><code>max_loss</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Maximum percentage (0.00 to 1.00) of factor data dropping allowed,
+computed comparing the number of items in the input factor index and
+the number of items in the output DataFrame index.
+Factor data can be partially dropped due to being flawed itself
+(e.g. NaNs), not having provided enough price data to compute
+forward returns for all factor values, or because it is not possible
+to perform binning.
+Set max_loss=0 to avoid Exceptions suppression.</dd>
+<dt><strong><code>zero_aware</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, compute quantile buckets separately for positive and negative
+signal values. This is useful if your signal is centered and zero is
+the separation between long and short signals, respectively.
+'quantiles' is None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>merged_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>
+<p>A MultiIndex Series indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.</p>
+<ul>
+<li>
+<p>forward returns column names follow the format accepted by
+pd.Timedelta (e.g. '1D', '30m', '3h15m', '1D1h', etc)</p>
+</li>
+<li>
+<p>'date' index freq property (merged_data.index.levels[0].freq) is the
+same as that of the input forward returns data. This is currently
+used only in cumulative returns computation
+::</p>
+</li>
+</ul>
+<hr>
+<pre><code>          |       | 1D  | 5D  | 10D  |factor|group|factor_quantile
+</code></pre>
+<hr>
+<pre><code>   date   | asset |     |     |      |      |     |
+</code></pre>
+<hr>
+<pre><code>          | AAPL  | 0.09|-0.01|-0.079|  0.5 |  G1 |      3
+          --------------------------------------------------------
+          | BA    | 0.02| 0.06| 0.020| -1.1 |  G2 |      5
+          --------------------------------------------------------
+</code></pre>
+<p>2014-01-01 | CMG
+| 0.03| 0.09| 0.036|
+1.7 |
+G2 |
+1
+--------------------------------------------------------
+| DAL
+|-0.02|-0.06|-0.029| -0.1 |
+G3 |
+5
+--------------------------------------------------------
+| LULU
+|-0.03| 0.05|-0.009|
+2.7 |
+G1 |
+2
+--------------------------------------------------------</p>
+</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.get_clean_factor_and_forward_returns"><code class="name flex">
+<span>def <span class="ident">get_clean_factor_and_forward_returns</span></span>(<span>factor,<br>prices,<br>groupby=None,<br>binning_by_group=False,<br>quantiles=5,<br>bins=None,<br>periods=(1, 5, 10),<br>filter_zscore=20,<br>groupby_labels=None,<br>max_loss=0.35,<br>zero_aware=False,<br>cumulative_returns=True)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_clean_factor_and_forward_returns(
+    factor,
+    prices,
+    groupby=None,
+    binning_by_group=False,
+    quantiles=5,
+    bins=None,
+    periods=(1, 5, 10),
+    filter_zscore=20,
+    groupby_labels=None,
+    max_loss=0.35,
+    zero_aware=False,
+    cumulative_returns=True,
+):
+    &#34;&#34;&#34;
+    Formats the factor data, pricing data, and group mappings into a DataFrame
+    that contains aligned MultiIndex indices of timestamp and asset. The
+    returned data will be formatted to be suitable for Alphalens functions.
+
+    It is safe to skip a call to this function and still make use of Alphalens
+    functionalities as long as the factor data conforms to the format returned
+    from get_clean_factor_and_forward_returns and documented here
+
+    Parameters
+    ----------
+    factor : pd.Series - MultiIndex
+        A MultiIndex Series indexed by timestamp (level 0) and asset
+        (level 1), containing the values for a single alpha factor.
+        ::
+            -----------------------------------
+                date    |    asset   |
+            -----------------------------------
+                        |   AAPL     |   0.5
+                        -----------------------
+                        |   BA       |  -1.1
+                        -----------------------
+            2014-01-01  |   CMG      |   1.7
+                        -----------------------
+                        |   DAL      |  -0.1
+                        -----------------------
+                        |   LULU     |   2.7
+                        -----------------------
+
+    prices : pd.DataFrame
+        A wide form Pandas DataFrame indexed by timestamp with assets
+        in the columns.
+        Pricing data must span the factor analysis time period plus an
+        additional buffer window that is greater than the maximum number
+        of expected periods in the forward returns calculations.
+        It is important to pass the correct pricing data in depending on
+        what time of period your signal was generated so to avoid lookahead
+        bias, or  delayed calculations.
+        &#39;Prices&#39; must contain at least an entry for each timestamp/asset
+        combination in &#39;factor&#39;. This entry should reflect the buy price
+        for the assets and usually it is the next available price after the
+        factor is computed but it can also be a later price if the factor is
+        meant to be traded later (e.g. if the factor is computed at market
+        open but traded 1 hour after market open the price information should
+        be 1 hour after market open).
+        &#39;Prices&#39; must also contain entries for timestamps following each
+        timestamp/asset combination in &#39;factor&#39;, as many more timestamps
+        as the maximum value in &#39;periods&#39;. The asset price after &#39;period&#39;
+        timestamps will be considered the sell price for that asset when
+        computing &#39;period&#39; forward returns.
+        ::
+            ----------------------------------------------------
+                        | AAPL |  BA  |  CMG  |  DAL  |  LULU  |
+            ----------------------------------------------------
+               Date     |      |      |       |       |        |
+            ----------------------------------------------------
+            2014-01-01  |605.12| 24.58|  11.72| 54.43 |  37.14 |
+            ----------------------------------------------------
+            2014-01-02  |604.35| 22.23|  12.21| 52.78 |  33.63 |
+            ----------------------------------------------------
+            2014-01-03  |607.94| 21.68|  14.36| 53.94 |  29.37 |
+            ----------------------------------------------------
+
+    groupby : pd.Series - MultiIndex or dict
+        Either A MultiIndex Series indexed by date and asset,
+        containing the period wise group codes for each asset, or
+        a dict of asset to group mappings. If a dict is passed,
+        it is assumed that group mappings are unchanged for the
+        entire time period of the passed factor data.
+    binning_by_group : bool
+        If True, compute quantile buckets separately for each group.
+        This is useful when the factor values range vary considerably
+        across gorups so that it is wise to make the binning group relative.
+        You should probably enable this if the factor is intended
+        to be analyzed for a group neutral portfolio
+    quantiles : int or sequence[float]
+        Number of equal-sized quantile buckets to use in factor bucketing.
+        Alternately sequence of quantiles, allowing non-equal-sized buckets
+        e.g. [0, .10, .5, .90, 1.] or [.05, .5, .95]
+        Only one of &#39;quantiles&#39; or &#39;bins&#39; can be not-None
+    bins : int or sequence[float]
+        Number of equal-width (valuewise) bins to use in factor bucketing.
+        Alternately sequence of bin edges allowing for non-uniform bin width
+        e.g. [-4, -2, -0.5, 0, 10]
+        Chooses the buckets to be evenly spaced according to the values
+        themselves. Useful when the factor contains discrete values.
+        Only one of &#39;quantiles&#39; or &#39;bins&#39; can be not-None
+    periods : sequence[int]
+        periods to compute forward returns on.
+    filter_zscore : int or float, optional
+        Sets forward returns greater than X standard deviations
+        from the the mean to nan. Set it to &#39;None&#39; to avoid filtering.
+        Caution: this outlier filtering incorporates lookahead bias.
+    groupby_labels : dict
+        A dictionary keyed by group code with values corresponding
+        to the display name for each group.
+    max_loss : float, optional
+        Maximum percentage (0.00 to 1.00) of factor data dropping allowed,
+        computed comparing the number of items in the input factor index and
+        the number of items in the output DataFrame index.
+        Factor data can be partially dropped due to being flawed itself
+        (e.g. NaNs), not having provided enough price data to compute
+        forward returns for all factor values, or because it is not possible
+        to perform binning.
+        Set max_loss=0 to avoid Exceptions suppression.
+    zero_aware : bool, optional
+        If True, compute quantile buckets separately for positive and negative
+        signal values. This is useful if your signal is centered and zero is
+        the separation between long and short signals, respectively.
+    cumulative_returns : bool, optional
+        If True, forward returns columns will contain cumulative returns.
+        Setting this to False is useful if you want to analyze how predictive
+        a factor is for a single forward day.
+
+    Returns
+    -------
+    merged_data : pd.DataFrame - MultiIndex
+        A MultiIndex Series indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - forward returns column names follow  the format accepted by
+          pd.Timedelta (e.g. &#39;1D&#39;, &#39;30m&#39;, &#39;3h15m&#39;, &#39;1D1h&#39;, etc)
+        - &#39;date&#39; index freq property (merged_data.index.levels[0].freq) will be
+          set to a trading calendar (pandas DateOffset) inferred from the input
+          data (see infer_trading_calendar for more details). This is currently
+          used only in cumulative returns computation
+        ::
+           -------------------------------------------------------------------
+                      |       | 1D  | 5D  | 10D  |factor|group|factor_quantile
+           -------------------------------------------------------------------
+               date   | asset |     |     |      |      |     |
+           -------------------------------------------------------------------
+                      | AAPL  | 0.09|-0.01|-0.079|  0.5 |  G1 |      3
+                      --------------------------------------------------------
+                      | BA    | 0.02| 0.06| 0.020| -1.1 |  G2 |      5
+                      --------------------------------------------------------
+           2014-01-01 | CMG   | 0.03| 0.09| 0.036|  1.7 |  G2 |      1
+                      --------------------------------------------------------
+                      | DAL   |-0.02|-0.06|-0.029| -0.1 |  G3 |      5
+                      --------------------------------------------------------
+                      | LULU  |-0.03| 0.05|-0.009|  2.7 |  G1 |      2
+                      --------------------------------------------------------
+
+    See Also
+    --------
+    utils.get_clean_factor
+        For use when forward returns are already available.
+    &#34;&#34;&#34;
+
+    forward_returns = compute_forward_returns(
+        factor, prices, periods, filter_zscore, cumulative_returns
+    )
+
+    factor_data = get_clean_factor(
+        factor,
+        forward_returns,
+        groupby=groupby,
+        groupby_labels=groupby_labels,
+        quantiles=quantiles,
+        bins=bins,
+        binning_by_group=binning_by_group,
+        max_loss=max_loss,
+        zero_aware=zero_aware,
+    )
+    return factor_data</code></pre>
+</details>
+<div class="desc"><p>Formats the factor data, pricing data, and group mappings into a DataFrame
+that contains aligned MultiIndex indices of timestamp and asset. The
+returned data will be formatted to be suitable for Alphalens functions.</p>
+<p>It is safe to skip a call to this function and still make use of Alphalens
+functionalities as long as the factor data conforms to the format returned
+from get_clean_factor_and_forward_returns and documented here</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor</code></strong> :&ensp;<code>pd.Series - MultiIndex</code></dt>
+<dd>A MultiIndex Series indexed by timestamp (level 0) and asset
+(level 1), containing the values for a single alpha factor.
+::
+-----------------------------------
+date
+|
+asset
+|
+-----------------------------------
+|
+AAPL
+|
+0.5
+-----------------------
+|
+BA
+|
+-1.1
+-----------------------
+2014-01-01
+|
+CMG
+|
+1.7
+-----------------------
+|
+DAL
+|
+-0.1
+-----------------------
+|
+LULU
+|
+2.7
+-----------------------</dd>
+<dt><strong><code>prices</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>A wide form Pandas DataFrame indexed by timestamp with assets
+in the columns.
+Pricing data must span the factor analysis time period plus an
+additional buffer window that is greater than the maximum number
+of expected periods in the forward returns calculations.
+It is important to pass the correct pricing data in depending on
+what time of period your signal was generated so to avoid lookahead
+bias, or
+delayed calculations.
+'Prices' must contain at least an entry for each timestamp/asset
+combination in 'factor'. This entry should reflect the buy price
+for the assets and usually it is the next available price after the
+factor is computed but it can also be a later price if the factor is
+meant to be traded later (e.g. if the factor is computed at market
+open but traded 1 hour after market open the price information should
+be 1 hour after market open).
+'Prices' must also contain entries for timestamps following each
+timestamp/asset combination in 'factor', as many more timestamps
+as the maximum value in 'periods'. The asset price after 'period'
+timestamps will be considered the sell price for that asset when
+computing 'period' forward returns.
+::
+----------------------------------------------------
+| AAPL |
+BA
+|
+CMG
+|
+DAL
+|
+LULU
+|
+----------------------------------------------------
+Date
+|
+|
+|
+|
+|
+|
+----------------------------------------------------
+2014-01-01
+|605.12| 24.58|
+11.72| 54.43 |
+37.14 |
+----------------------------------------------------
+2014-01-02
+|604.35| 22.23|
+12.21| 52.78 |
+33.63 |
+----------------------------------------------------
+2014-01-03
+|607.94| 21.68|
+14.36| 53.94 |
+29.37 |
+----------------------------------------------------</dd>
+<dt><strong><code>groupby</code></strong> :&ensp;<code>pd.Series - MultiIndex</code> or <code>dict</code></dt>
+<dd>Either A MultiIndex Series indexed by date and asset,
+containing the period wise group codes for each asset, or
+a dict of asset to group mappings. If a dict is passed,
+it is assumed that group mappings are unchanged for the
+entire time period of the passed factor data.</dd>
+<dt><strong><code>binning_by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, compute quantile buckets separately for each group.
+This is useful when the factor values range vary considerably
+across gorups so that it is wise to make the binning group relative.
+You should probably enable this if the factor is intended
+to be analyzed for a group neutral portfolio</dd>
+<dt><strong><code>quantiles</code></strong> :&ensp;<code>int</code> or <code>sequence[float]</code></dt>
+<dd>Number of equal-sized quantile buckets to use in factor bucketing.
+Alternately sequence of quantiles, allowing non-equal-sized buckets
+e.g. [0, .10, .5, .90, 1.] or [.05, .5, .95]
+Only one of 'quantiles' or 'bins' can be not-None</dd>
+<dt><strong><code>bins</code></strong> :&ensp;<code>int</code> or <code>sequence[float]</code></dt>
+<dd>Number of equal-width (valuewise) bins to use in factor bucketing.
+Alternately sequence of bin edges allowing for non-uniform bin width
+e.g. [-4, -2, -0.5, 0, 10]
+Chooses the buckets to be evenly spaced according to the values
+themselves. Useful when the factor contains discrete values.
+Only one of 'quantiles' or 'bins' can be not-None</dd>
+<dt><strong><code>periods</code></strong> :&ensp;<code>sequence[int]</code></dt>
+<dd>periods to compute forward returns on.</dd>
+<dt><strong><code>filter_zscore</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
+<dd>Sets forward returns greater than X standard deviations
+from the the mean to nan. Set it to 'None' to avoid filtering.
+Caution: this outlier filtering incorporates lookahead bias.</dd>
+<dt><strong><code>groupby_labels</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary keyed by group code with values corresponding
+to the display name for each group.</dd>
+<dt><strong><code>max_loss</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Maximum percentage (0.00 to 1.00) of factor data dropping allowed,
+computed comparing the number of items in the input factor index and
+the number of items in the output DataFrame index.
+Factor data can be partially dropped due to being flawed itself
+(e.g. NaNs), not having provided enough price data to compute
+forward returns for all factor values, or because it is not possible
+to perform binning.
+Set max_loss=0 to avoid Exceptions suppression.</dd>
+<dt><strong><code>zero_aware</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, compute quantile buckets separately for positive and negative
+signal values. This is useful if your signal is centered and zero is
+the separation between long and short signals, respectively.</dd>
+<dt><strong><code>cumulative_returns</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, forward returns columns will contain cumulative returns.
+Setting this to False is useful if you want to analyze how predictive
+a factor is for a single forward day.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>merged_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex Series indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- forward returns column names follow
+the format accepted by
+pd.Timedelta (e.g. '1D', '30m', '3h15m', '1D1h', etc)
+- 'date' index freq property (merged_data.index.levels[0].freq) will be
+set to a trading calendar (pandas DateOffset) inferred from the input
+data (see infer_trading_calendar for more details). This is currently
+used only in cumulative returns computation
+::<hr>
+<pre><code>      |       | 1D  | 5D  | 10D  |factor|group|factor_quantile
+</code></pre>
+<hr>
+<p>date
+| asset |
+|
+|
+|
+|
+|</p>
+<hr>
+<pre><code>      | AAPL  | 0.09|-0.01|-0.079|  0.5 |  G1 |      3
+      --------------------------------------------------------
+      | BA    | 0.02| 0.06| 0.020| -1.1 |  G2 |      5
+      --------------------------------------------------------
+</code></pre>
+<p>2014-01-01 | CMG
+| 0.03| 0.09| 0.036|
+1.7 |
+G2 |
+1
+--------------------------------------------------------
+| DAL
+|-0.02|-0.06|-0.029| -0.1 |
+G3 |
+5
+--------------------------------------------------------
+| LULU
+|-0.03| 0.05|-0.009|
+2.7 |
+G1 |
+2
+--------------------------------------------------------</p>
+</dd>
+</dl>
+<h2 id="see-also">See Also</h2>
+<p><code>utils.get_clean_factor For use when forward returns are already available.</code></p></div>
+</dd>
+<dt id="alphalens.utils.get_forward_returns_columns"><code class="name flex">
+<span>def <span class="ident">get_forward_returns_columns</span></span>(<span>columns, require_exact_day_multiple=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_forward_returns_columns(columns, require_exact_day_multiple=False):
+    &#34;&#34;&#34;
+    Utility that detects and returns the columns that are forward returns
+    &#34;&#34;&#34;
+
+    # If exact day multiples are required in the forward return periods,
+    # drop all other columns (e.g. drop 3D12h).
+    if require_exact_day_multiple:
+        pattern = re.compile(r&#34;^(\d+([D]))+$&#34;, re.IGNORECASE)
+        valid_columns = [(pattern.match(col) is not None) for col in columns]
+
+        if sum(valid_columns) &lt; len(valid_columns):
+            warnings.warn(
+                &#34;Skipping return periods that aren&#39;t exact multiples&#34; + &#34; of days.&#34;
+            )
+    else:
+        pattern = re.compile(r&#34;^(\d+([Dhms]|ms|us|ns]))+$&#34;, re.IGNORECASE)
+        valid_columns = [(pattern.match(col) is not None) for col in columns]
+
+    return columns[valid_columns]</code></pre>
+</details>
+<div class="desc"><p>Utility that detects and returns the columns that are forward returns</p></div>
+</dd>
+<dt id="alphalens.utils.infer_trading_calendar"><code class="name flex">
+<span>def <span class="ident">infer_trading_calendar</span></span>(<span>factor_idx, prices_idx)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def infer_trading_calendar(factor_idx, prices_idx):
+    &#34;&#34;&#34;
+    Infer the trading calendar from factor and price information.
+
+    Parameters
+    ----------
+    factor_idx : pd.DatetimeIndex
+        The factor datetimes for which we are computing the forward returns
+    prices_idx : pd.DatetimeIndex
+        The prices datetimes associated withthe factor data
+
+    Returns
+    -------
+    calendar : pd.DateOffset
+    &#34;&#34;&#34;
+    full_idx = factor_idx.union(prices_idx)
+
+    traded_weekdays = []
+    holidays = []
+
+    days_of_the_week = [&#34;Mon&#34;, &#34;Tue&#34;, &#34;Wed&#34;, &#34;Thu&#34;, &#34;Fri&#34;, &#34;Sat&#34;, &#34;Sun&#34;]
+    for day, day_str in enumerate(days_of_the_week):
+
+        weekday_mask = full_idx.dayofweek == day
+
+        # drop days of the week that are not traded at all
+        if not weekday_mask.any():
+            continue
+        traded_weekdays.append(day_str)
+
+        # look for holidays
+        used_weekdays = full_idx[weekday_mask].normalize()
+        all_weekdays = pd.date_range(
+            full_idx.min(),
+            full_idx.max(),
+            freq=CustomBusinessDay(weekmask=day_str),
+        ).normalize()
+        _holidays = all_weekdays.difference(used_weekdays)
+        _holidays = [timestamp.date() for timestamp in _holidays]
+        holidays.extend(_holidays)
+
+    traded_weekdays = &#34; &#34;.join(traded_weekdays)
+    return CustomBusinessDay(weekmask=traded_weekdays, holidays=holidays)</code></pre>
+</details>
+<div class="desc"><p>Infer the trading calendar from factor and price information.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_idx</code></strong> :&ensp;<code>pd.DatetimeIndex</code></dt>
+<dd>The factor datetimes for which we are computing the forward returns</dd>
+<dt><strong><code>prices_idx</code></strong> :&ensp;<code>pd.DatetimeIndex</code></dt>
+<dd>The prices datetimes associated withthe factor data</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>calendar</code></strong> :&ensp;<code>pd.DateOffset</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.make_naive_ts"><code class="name flex">
+<span>def <span class="ident">make_naive_ts</span></span>(<span>t)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_naive_ts(t):
+    return t.tz_convert(None) if t.tzinfo is not None else t.tz_localize(None)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="alphalens.utils.non_unique_bin_edges_error"><code class="name flex">
+<span>def <span class="ident">non_unique_bin_edges_error</span></span>(<span>func)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def non_unique_bin_edges_error(func):
+    &#34;&#34;&#34;
+    Give user a more informative error in case it is not possible
+    to properly calculate quantiles on the input dataframe (factor)
+    &#34;&#34;&#34;
+    message = &#34;&#34;&#34;
+
+    An error occurred while computing bins/quantiles on the input provided.
+    This usually happens when the input contains too many identical
+    values and they span more than one quantile. The quantiles are choosen
+    to have the same number of records each, but the same value cannot span
+    multiple quantiles. Possible workarounds are:
+    1 - Decrease the number of quantiles
+    2 - Specify a custom quantiles range, e.g. [0, .50, .75, 1.] to get unequal
+        number of records per quantile
+    3 - Use &#39;bins&#39; option instead of &#39;quantiles&#39;, &#39;bins&#39; chooses the
+        buckets to be evenly spaced according to the values themselves, while
+        &#39;quantiles&#39; forces the buckets to have the same number of records.
+    4 - for factors with discrete values use the &#39;bins&#39; option with custom
+        ranges and create a range for each discrete value
+    Please see utils.get_clean_factor_and_forward_returns documentation for
+    full documentation of &#39;bins&#39; and &#39;quantiles&#39; options.
+
+&#34;&#34;&#34;
+
+    def dec(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError as e:
+            if &#34;Bin edges must be unique&#34; in str(e):
+                rethrow(e, message)
+            raise
+
+    return dec</code></pre>
+</details>
+<div class="desc"><p>Give user a more informative error in case it is not possible
+to properly calculate quantiles on the input dataframe (factor)</p></div>
+</dd>
+<dt id="alphalens.utils.print_table"><code class="name flex">
+<span>def <span class="ident">print_table</span></span>(<span>table, name=None, fmt=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print_table(table, name=None, fmt=None):
+    &#34;&#34;&#34;
+    Pretty print a pandas DataFrame.
+
+    Uses HTML output if running inside Jupyter Notebook, otherwise
+    formatted text output.
+
+    Parameters
+    ----------
+    table : pd.Series or pd.DataFrame
+        Table to pretty-print.
+    name : str, optional
+        Table name to display in upper left corner.
+    fmt : str, optional
+        Formatter to use for displaying table elements.
+        E.g. &#39;{0:.2f}%&#39; for displaying 100 as &#39;100.00%&#39;.
+        Restores original setting after displaying.
+    &#34;&#34;&#34;
+    if isinstance(table, pd.Series):
+        table = pd.DataFrame(table)
+
+    if isinstance(table, pd.DataFrame):
+        table.columns.name = name
+
+    prev_option = pd.get_option(&#34;display.float_format&#34;)
+    if fmt is not None:
+        pd.set_option(&#34;display.float_format&#34;, lambda x: fmt.format(x))
+
+    display(table)
+
+    if fmt is not None:
+        pd.set_option(&#34;display.float_format&#34;, prev_option)</code></pre>
+</details>
+<div class="desc"><p>Pretty print a pandas DataFrame.</p>
+<p>Uses HTML output if running inside Jupyter Notebook, otherwise
+formatted text output.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>table</code></strong> :&ensp;<code>pd.Series</code> or <code>pd.DataFrame</code></dt>
+<dd>Table to pretty-print.</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Table name to display in upper left corner.</dd>
+<dt><strong><code>fmt</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Formatter to use for displaying table elements.
+E.g. '{0:.2f}%' for displaying 100 as '100.00%'.
+Restores original setting after displaying.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.quantize_factor"><code class="name flex">
+<span>def <span class="ident">quantize_factor</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dec(*args, **kwargs):
+    try:
+        return func(*args, **kwargs)
+    except ValueError as e:
+        if &#34;Bin edges must be unique&#34; in str(e):
+            rethrow(e, message)
+        raise</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="alphalens.utils.rate_of_return"><code class="name flex">
+<span>def <span class="ident">rate_of_return</span></span>(<span>period_ret, base_period)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rate_of_return(period_ret, base_period):
+    &#34;&#34;&#34;
+    Convert returns to &#39;one_period_len&#39; rate of returns: that is the value the
+    returns would have every &#39;one_period_len&#39; if they had grown at a steady
+    rate
+
+    Parameters
+    ----------
+    period_ret: pd.DataFrame
+        DataFrame containing returns values with column headings representing
+        the return period.
+    base_period: string
+        The base period length used in the conversion
+        It must follow pandas.Timedelta constructor format (e.g. &#39;1 days&#39;,
+        &#39;1D&#39;, &#39;30m&#39;, &#39;3h&#39;, &#39;1D1h&#39;, etc)
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame in same format as input but with &#39;one_period_len&#39; rate of
+        returns values.
+    &#34;&#34;&#34;
+    period_len = period_ret.name
+    conversion_factor = pd.Timedelta(base_period) / pd.Timedelta(period_len)
+    return period_ret.add(1).pow(conversion_factor).sub(1)</code></pre>
+</details>
+<div class="desc"><p>Convert returns to 'one_period_len' rate of returns: that is the value the
+returns would have every 'one_period_len' if they had grown at a steady
+rate</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>period_ret</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame containing returns values with column headings representing
+the return period.</dd>
+<dt><strong><code>base_period</code></strong> :&ensp;<code>string</code></dt>
+<dd>The base period length used in the conversion
+It must follow pandas.Timedelta constructor format (e.g. '1 days',
+'1D', '30m', '3h', '1D1h', etc)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>DataFrame in same format as input but with 'one_period_len' rate of
+returns values.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.rethrow"><code class="name flex">
+<span>def <span class="ident">rethrow</span></span>(<span>exception, additional_message)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rethrow(exception, additional_message):
+    &#34;&#34;&#34;
+    Re-raise the last exception that was active in the current scope
+    without losing the stacktrace but adding an additional message.
+    This is hacky because it has to be compatible with both python 2/3
+    &#34;&#34;&#34;
+    e = exception
+    m = additional_message
+    if not e.args:
+        e.args = (m,)
+    else:
+        e.args = (e.args[0] + m,) + e.args[1:]
+    raise e</code></pre>
+</details>
+<div class="desc"><p>Re-raise the last exception that was active in the current scope
+without losing the stacktrace but adding an additional message.
+This is hacky because it has to be compatible with both python 2/3</p></div>
+</dd>
+<dt id="alphalens.utils.std_conversion"><code class="name flex">
+<span>def <span class="ident">std_conversion</span></span>(<span>period_std, base_period)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def std_conversion(period_std, base_period):
+    &#34;&#34;&#34;
+    one_period_len standard deviation (or standard error) approximation
+
+    Parameters
+    ----------
+    period_std: pd.DataFrame
+        DataFrame containing standard deviation or standard error values
+        with column headings representing the return period.
+    base_period: string
+        The base period length used in the conversion
+        It must follow pandas.Timedelta constructor format (e.g. &#39;1 days&#39;,
+        &#39;1D&#39;, &#39;30m&#39;, &#39;3h&#39;, &#39;1D1h&#39;, etc)
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame in same format as input but with one-period
+        standard deviation/error values.
+    &#34;&#34;&#34;
+    period_len = period_std.name
+    conversion_factor = pd.Timedelta(period_len) / pd.Timedelta(base_period)
+    return period_std / np.sqrt(conversion_factor)</code></pre>
+</details>
+<div class="desc"><p>one_period_len standard deviation (or standard error) approximation</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>period_std</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame containing standard deviation or standard error values
+with column headings representing the return period.</dd>
+<dt><strong><code>base_period</code></strong> :&ensp;<code>string</code></dt>
+<dd>The base period length used in the conversion
+It must follow pandas.Timedelta constructor format (e.g. '1 days',
+'1D', '30m', '3h', '1D1h', etc)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>DataFrame in same format as input but with one-period
+standard deviation/error values.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.timedelta_strings_to_integers"><code class="name flex">
+<span>def <span class="ident">timedelta_strings_to_integers</span></span>(<span>sequence)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def timedelta_strings_to_integers(sequence):
+    &#34;&#34;&#34;
+    Converts pandas string representations of timedeltas into integers of days.
+
+    Parameters
+    ----------
+    sequence : iterable
+        List or array of timedelta string representations, e.g. [&#39;1D&#39;, &#39;5D&#39;].
+
+    Returns
+    -------
+    sequence : list
+        Integer days corresponding to the input sequence, e.g. [1, 5].
+    &#34;&#34;&#34;
+    return list(map(lambda x: pd.Timedelta(x).days, sequence))</code></pre>
+</details>
+<div class="desc"><p>Converts pandas string representations of timedeltas into integers of days.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sequence</code></strong> :&ensp;<code>iterable</code></dt>
+<dd>List or array of timedelta string representations, e.g. ['1D', '5D'].</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>sequence</code></strong> :&ensp;<code>list</code></dt>
+<dd>Integer days corresponding to the input sequence, e.g. [1, 5].</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.timedelta_to_string"><code class="name flex">
+<span>def <span class="ident">timedelta_to_string</span></span>(<span>timedelta)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def timedelta_to_string(timedelta):
+    &#34;&#34;&#34;
+    Utility that converts a pandas.Timedelta to a string representation
+    compatible with pandas.Timedelta constructor format
+
+    Parameters
+    ----------
+    timedelta: pd.Timedelta
+
+    Returns
+    -------
+    string
+        string representation of &#39;timedelta&#39;
+    &#34;&#34;&#34;
+    c = timedelta.components
+    format = &#34;&#34;
+    if c.days != 0:
+        format += &#34;%dD&#34; % c.days
+    if c.hours &gt; 0:
+        format += &#34;%dh&#34; % c.hours
+    if c.minutes &gt; 0:
+        format += &#34;%dm&#34; % c.minutes
+    if c.seconds &gt; 0:
+        format += &#34;%ds&#34; % c.seconds
+    if c.milliseconds &gt; 0:
+        format += &#34;%dms&#34; % c.milliseconds
+    if c.microseconds &gt; 0:
+        format += &#34;%dus&#34; % c.microseconds
+    if c.nanoseconds &gt; 0:
+        format += &#34;%dns&#34; % c.nanoseconds
+    return format</code></pre>
+</details>
+<div class="desc"><p>Utility that converts a pandas.Timedelta to a string representation
+compatible with pandas.Timedelta constructor format</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>timedelta</code></strong> :&ensp;<code>pd.Timedelta</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>string</code></dt>
+<dd>string representation of 'timedelta'</dd>
+</dl></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="alphalens.utils.MaxLossExceededError"><code class="flex name class">
+<span>class <span class="ident">MaxLossExceededError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MaxLossExceededError(Exception):
+    pass</code></pre>
+</details>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="alphalens.utils.NonMatchingTimezoneError"><code class="flex name class">
+<span>class <span class="ident">NonMatchingTimezoneError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NonMatchingTimezoneError(Exception):
+    pass</code></pre>
+</details>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="alphalens" href="index.html">alphalens</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="alphalens.utils.add_custom_calendar_timedelta" href="#alphalens.utils.add_custom_calendar_timedelta">add_custom_calendar_timedelta</a></code></li>
+<li><code><a title="alphalens.utils.backshift_returns_series" href="#alphalens.utils.backshift_returns_series">backshift_returns_series</a></code></li>
+<li><code><a title="alphalens.utils.compute_forward_returns" href="#alphalens.utils.compute_forward_returns">compute_forward_returns</a></code></li>
+<li><code><a title="alphalens.utils.demean_forward_returns" href="#alphalens.utils.demean_forward_returns">demean_forward_returns</a></code></li>
+<li><code><a title="alphalens.utils.diff_custom_calendar_timedeltas" href="#alphalens.utils.diff_custom_calendar_timedeltas">diff_custom_calendar_timedeltas</a></code></li>
+<li><code><a title="alphalens.utils.get_clean_factor" href="#alphalens.utils.get_clean_factor">get_clean_factor</a></code></li>
+<li><code><a title="alphalens.utils.get_clean_factor_and_forward_returns" href="#alphalens.utils.get_clean_factor_and_forward_returns">get_clean_factor_and_forward_returns</a></code></li>
+<li><code><a title="alphalens.utils.get_forward_returns_columns" href="#alphalens.utils.get_forward_returns_columns">get_forward_returns_columns</a></code></li>
+<li><code><a title="alphalens.utils.infer_trading_calendar" href="#alphalens.utils.infer_trading_calendar">infer_trading_calendar</a></code></li>
+<li><code><a title="alphalens.utils.make_naive_ts" href="#alphalens.utils.make_naive_ts">make_naive_ts</a></code></li>
+<li><code><a title="alphalens.utils.non_unique_bin_edges_error" href="#alphalens.utils.non_unique_bin_edges_error">non_unique_bin_edges_error</a></code></li>
+<li><code><a title="alphalens.utils.print_table" href="#alphalens.utils.print_table">print_table</a></code></li>
+<li><code><a title="alphalens.utils.quantize_factor" href="#alphalens.utils.quantize_factor">quantize_factor</a></code></li>
+<li><code><a title="alphalens.utils.rate_of_return" href="#alphalens.utils.rate_of_return">rate_of_return</a></code></li>
+<li><code><a title="alphalens.utils.rethrow" href="#alphalens.utils.rethrow">rethrow</a></code></li>
+<li><code><a title="alphalens.utils.std_conversion" href="#alphalens.utils.std_conversion">std_conversion</a></code></li>
+<li><code><a title="alphalens.utils.timedelta_strings_to_integers" href="#alphalens.utils.timedelta_strings_to_integers">timedelta_strings_to_integers</a></code></li>
+<li><code><a title="alphalens.utils.timedelta_to_string" href="#alphalens.utils.timedelta_to_string">timedelta_to_string</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="alphalens.utils.MaxLossExceededError" href="#alphalens.utils.MaxLossExceededError">MaxLossExceededError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="alphalens.utils.NonMatchingTimezoneError" href="#alphalens.utils.NonMatchingTimezoneError">NonMatchingTimezoneError</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

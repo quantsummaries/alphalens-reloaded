@@ -39,7 +39,8 @@ dependencies = [
     "seaborn >=0.6.0",
     "statsmodels >=0.6.1",
     "IPython >=3.2.3",
-    "empyrical-reloaded>=0.5.7"
+    "empyrical-reloaded>=0.5.7",
+    "pdoc3>=0.11.6",
 ]
 
 [project.urls]

@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>alphalens.tears API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>alphalens.tears</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="alphalens.tears.create_event_returns_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_event_returns_tear_sheet</span></span>(<span>factor_data,<br>returns,<br>avgretplot=(5, 15),<br>long_short=True,<br>group_neutral=False,<br>std_bar=True,<br>by_group=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_event_returns_tear_sheet(
+    factor_data,
+    returns,
+    avgretplot=(5, 15),
+    long_short=True,
+    group_neutral=False,
+    std_bar=True,
+    by_group=False,
+):
+    &#34;&#34;&#34;
+    Creates a tear sheet to view the average cumulative returns for a
+    factor within a window (pre and post event).
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex Series indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, the factor
+        quantile/bin that factor value belongs to and (optionally) the group
+        the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    returns : pd.DataFrame
+        A DataFrame indexed by date with assets in the columns containing daily
+        returns.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    avgretplot: tuple (int, int) - (before, after)
+        If not None, plot quantile average cumulative returns
+    long_short : bool
+        Should this computation happen on a long short portfolio? if so then
+        factor returns will be demeaned across the factor universe
+    group_neutral : bool
+        Should this computation happen on a group neutral portfolio? if so,
+        returns demeaning will occur on the group level.
+    std_bar : boolean, optional
+        Show plots with standard deviation bars, one for each quantile
+    by_group : bool
+        If True, display graphs separately for each group.
+    &#34;&#34;&#34;
+
+    before, after = avgretplot
+
+    avg_cumulative_returns = perf.average_cumulative_return_by_quantile(
+        factor_data,
+        returns,
+        periods_before=before,
+        periods_after=after,
+        demeaned=long_short,
+        group_adjust=group_neutral,
+    )
+
+    num_quantiles = int(factor_data[&#34;factor_quantile&#34;].max())
+
+    vertical_sections = 1
+    if std_bar:
+        vertical_sections += ((num_quantiles - 1) // 2) + 1
+    cols = 2 if num_quantiles != 1 else 1
+    gf = GridFigure(rows=vertical_sections, cols=cols)
+    plotting.plot_quantile_average_cumulative_return(
+        avg_cumulative_returns,
+        by_quantile=False,
+        std_bar=False,
+        ax=gf.next_row(),
+    )
+    if std_bar:
+        ax_avg_cumulative_returns_by_q = [gf.next_cell() for _ in range(num_quantiles)]
+        plotting.plot_quantile_average_cumulative_return(
+            avg_cumulative_returns,
+            by_quantile=True,
+            std_bar=True,
+            ax=ax_avg_cumulative_returns_by_q,
+        )
+
+    plt.show()
+    gf.close()
+
+    if by_group:
+        groups = factor_data[&#34;group&#34;].unique()
+        num_groups = len(groups)
+        vertical_sections = ((num_groups - 1) // 2) + 1
+        gf = GridFigure(rows=vertical_sections, cols=2)
+
+        avg_cumret_by_group = perf.average_cumulative_return_by_quantile(
+            factor_data,
+            returns,
+            periods_before=before,
+            periods_after=after,
+            demeaned=long_short,
+            group_adjust=group_neutral,
+            by_group=True,
+        )
+
+        for group, avg_cumret in avg_cumret_by_group.groupby(level=&#34;group&#34;):
+            avg_cumret.index = avg_cumret.index.droplevel(&#34;group&#34;)
+            plotting.plot_quantile_average_cumulative_return(
+                avg_cumret,
+                by_quantile=False,
+                std_bar=False,
+                title=group,
+                ax=gf.next_cell(),
+            )
+
+        plt.show()
+        gf.close()</code></pre>
+</details>
+<div class="desc"><p>Creates a tear sheet to view the average cumulative returns for a
+factor within a window (pre and post event).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex Series indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, the factor
+quantile/bin that factor value belongs to and (optionally) the group
+the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>A DataFrame indexed by date with assets in the columns containing daily
+returns.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>avgretplot</code></strong> :&ensp;<code>tuple (int, int) - (before, after)</code></dt>
+<dd>If not None, plot quantile average cumulative returns</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a long short portfolio? if so then
+factor returns will be demeaned across the factor universe</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a group neutral portfolio? if so,
+returns demeaning will occur on the group level.</dd>
+<dt><strong><code>std_bar</code></strong> :&ensp;<code>boolean</code>, optional</dt>
+<dd>Show plots with standard deviation bars, one for each quantile</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, display graphs separately for each group.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.tears.create_event_study_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_event_study_tear_sheet</span></span>(<span>factor_data, returns, avgretplot=(5, 15), rate_of_ret=True, n_bars=50)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_event_study_tear_sheet(
+    factor_data, returns, avgretplot=(5, 15), rate_of_ret=True, n_bars=50
+):
+    &#34;&#34;&#34;
+    Creates an event study tear sheet for analysis of a specific event.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single event, forward returns for each
+        period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+    returns : pd.DataFrame, required only if &#39;avgretplot&#39; is provided
+        A DataFrame indexed by date with assets in the columns containing daily
+        returns.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    avgretplot: tuple (int, int) - (before, after), optional
+        If not None, plot event style average cumulative returns within a
+        window (pre and post event).
+    rate_of_ret : bool, optional
+        Display rate of return instead of simple return in &#39;Mean Period Wise
+        Return By Factor Quantile&#39; and &#39;Period Wise Return By Factor Quantile&#39;
+        plots
+    n_bars : int, optional
+        Number of bars in event distribution plot
+    &#34;&#34;&#34;
+
+    long_short = False
+
+    plotting.plot_quantile_statistics_table(factor_data)
+
+    gf = GridFigure(rows=1, cols=1)
+    plotting.plot_events_distribution(
+        events=factor_data[&#34;factor&#34;], num_bars=n_bars, ax=gf.next_row()
+    )
+    plt.show()
+    gf.close()
+
+    if returns is not None and avgretplot is not None:
+
+        create_event_returns_tear_sheet(
+            factor_data=factor_data,
+            returns=returns,
+            avgretplot=avgretplot,
+            long_short=long_short,
+            group_neutral=False,
+            std_bar=True,
+            by_group=False,
+        )
+
+    factor_returns = perf.factor_returns(factor_data, demeaned=False, equal_weight=True)
+
+    mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
+        factor_data, by_group=False, demeaned=long_short
+    )
+    if rate_of_ret:
+        mean_quant_ret = mean_quant_ret.apply(
+            utils.rate_of_return, axis=0, base_period=mean_quant_ret.columns[0]
+        )
+
+    mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
+        factor_data, by_date=True, by_group=False, demeaned=long_short
+    )
+    if rate_of_ret:
+        mean_quant_ret_bydate = mean_quant_ret_bydate.apply(
+            utils.rate_of_return,
+            axis=0,
+            base_period=mean_quant_ret_bydate.columns[0],
+        )
+
+    fr_cols = len(factor_returns.columns)
+    vertical_sections = 2 + fr_cols * 1
+    gf = GridFigure(rows=vertical_sections + 1, cols=1)
+
+    plotting.plot_quantile_returns_bar(
+        mean_quant_ret, by_group=False, ylim_percentiles=None, ax=gf.next_row()
+    )
+
+    plotting.plot_quantile_returns_violin(
+        mean_quant_ret_bydate, ylim_percentiles=(1, 99), ax=gf.next_row()
+    )
+
+    trading_calendar = factor_data.index.levels[0].freq
+    if trading_calendar is None:
+        trading_calendar = pd.tseries.offsets.BDay()
+        warnings.warn(
+            &#34;&#39;freq&#39; not set in factor_data index: assuming business day&#34;,
+            UserWarning,
+        )
+
+    plt.show()
+    gf.close()</code></pre>
+</details>
+<div class="desc"><p>Creates an event study tear sheet for analysis of a specific event.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single event, forward returns for each
+period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.</dd>
+<dt><strong><code>returns</code></strong> :&ensp;<code>pd.DataFrame, required only if 'avgretplot' is provided</code></dt>
+<dd>A DataFrame indexed by date with assets in the columns containing daily
+returns.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>avgretplot</code></strong> :&ensp;<code>tuple (int, int) - (before, after)</code>, optional</dt>
+<dd>If not None, plot event style average cumulative returns within a
+window (pre and post event).</dd>
+<dt><strong><code>rate_of_ret</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Display rate of return instead of simple return in 'Mean Period Wise
+Return By Factor Quantile' and 'Period Wise Return By Factor Quantile'
+plots</dd>
+<dt><strong><code>n_bars</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of bars in event distribution plot</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.tears.create_full_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_full_tear_sheet</span></span>(<span>factor_data, long_short=True, group_neutral=False, by_group=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_full_tear_sheet(
+    factor_data, long_short=True, group_neutral=False, by_group=False
+):
+    &#34;&#34;&#34;
+    Creates a full tear sheet for analysis and evaluating single
+    return predicting (alpha) factor.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    long_short : bool
+        Should this computation happen on a long short portfolio?
+        - See tears.create_returns_tear_sheet for details on how this flag
+        affects returns analysis
+    group_neutral : bool
+        Should this computation happen on a group neutral portfolio?
+        - See tears.create_returns_tear_sheet for details on how this flag
+        affects returns analysis
+        - See tears.create_information_tear_sheet for details on how this
+        flag affects information analysis
+    by_group : bool
+        If True, display graphs separately for each group.
+    &#34;&#34;&#34;
+
+    plotting.plot_quantile_statistics_table(factor_data)
+    create_returns_tear_sheet(
+        factor_data, long_short, group_neutral, by_group, set_context=False
+    )
+    create_information_tear_sheet(
+        factor_data, group_neutral, by_group, set_context=False
+    )
+    create_turnover_tear_sheet(factor_data, set_context=False)</code></pre>
+</details>
+<div class="desc"><p>Creates a full tear sheet for analysis and evaluating single
+return predicting (alpha) factor.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a long short portfolio?
+- See tears.create_returns_tear_sheet for details on how this flag
+affects returns analysis</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a group neutral portfolio?
+- See tears.create_returns_tear_sheet for details on how this flag
+affects returns analysis
+- See tears.create_information_tear_sheet for details on how this
+flag affects information analysis</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, display graphs separately for each group.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.tears.create_information_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_information_tear_sheet</span></span>(<span>factor_data, group_neutral=False, by_group=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False):
+    &#34;&#34;&#34;
+    Creates a tear sheet for information analysis of a factor.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    group_neutral : bool
+        Demean forward returns by group before computing IC.
+    by_group : bool
+        If True, display graphs separately for each group.
+    &#34;&#34;&#34;
+
+    ic = perf.factor_information_coefficient(factor_data, group_neutral)
+
+    plotting.plot_information_table(ic)
+
+    columns_wide = 2
+    fr_cols = len(ic.columns)
+    rows_when_wide = ((fr_cols - 1) // columns_wide) + 1
+    vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
+    gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+
+    ax_ic_ts = [gf.next_row() for _ in range(fr_cols)]
+    plotting.plot_ic_ts(ic, ax=ax_ic_ts)
+
+    ax_ic_hqq = [gf.next_cell() for _ in range(fr_cols * 2)]
+    plotting.plot_ic_hist(ic, ax=ax_ic_hqq[::2])
+    plotting.plot_ic_qq(ic, ax=ax_ic_hqq[1::2])
+
+    if not by_group:
+
+        mean_monthly_ic = perf.mean_information_coefficient(
+            factor_data,
+            group_adjust=group_neutral,
+            by_group=False,
+            by_time=&#34;M&#34;,
+        )
+        ax_monthly_ic_heatmap = [gf.next_cell() for x in range(fr_cols)]
+        plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ax=ax_monthly_ic_heatmap)
+
+    if by_group:
+        mean_group_ic = perf.mean_information_coefficient(
+            factor_data, group_adjust=group_neutral, by_group=True
+        )
+
+        plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row())
+
+    plt.show()
+    gf.close()</code></pre>
+</details>
+<div class="desc"><p>Creates a tear sheet for information analysis of a factor.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Demean forward returns by group before computing IC.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, display graphs separately for each group.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.tears.create_returns_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_returns_tear_sheet</span></span>(<span>factor_data, long_short=True, group_neutral=False, by_group=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_returns_tear_sheet(
+    factor_data, long_short=True, group_neutral=False, by_group=False
+):
+    &#34;&#34;&#34;
+    Creates a tear sheet for returns analysis of a factor.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to,
+        and (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    long_short : bool
+        Should this computation happen on a long short portfolio? if so, then
+        mean quantile returns will be demeaned across the factor universe.
+        Additionally factor values will be demeaned across the factor universe
+        when factor weighting the portfolio for cumulative returns plots
+    group_neutral : bool
+        Should this computation happen on a group neutral portfolio? if so,
+        returns demeaning will occur on the group level.
+        Additionally each group will weight the same in cumulative returns
+        plots
+    by_group : bool
+        If True, display graphs separately for each group.
+    &#34;&#34;&#34;
+
+    factor_returns = perf.factor_returns(factor_data, long_short, group_neutral)
+
+    mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
+        factor_data,
+        by_group=False,
+        demeaned=long_short,
+        group_adjust=group_neutral,
+    )
+
+    mean_quant_rateret = mean_quant_ret.apply(
+        utils.rate_of_return, axis=0, base_period=mean_quant_ret.columns[0]
+    )
+
+    mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
+        factor_data,
+        by_date=True,
+        by_group=False,
+        demeaned=long_short,
+        group_adjust=group_neutral,
+    )
+
+    mean_quant_rateret_bydate = mean_quant_ret_bydate.apply(
+        utils.rate_of_return,
+        axis=0,
+        base_period=mean_quant_ret_bydate.columns[0],
+    )
+
+    compstd_quant_daily = std_quant_daily.apply(
+        utils.std_conversion, axis=0, base_period=std_quant_daily.columns[0]
+    )
+
+    alpha_beta = perf.factor_alpha_beta(
+        factor_data, factor_returns, long_short, group_neutral
+    )
+
+    mean_ret_spread_quant, std_spread_quant = perf.compute_mean_returns_spread(
+        mean_quant_rateret_bydate,
+        factor_data[&#34;factor_quantile&#34;].max(),
+        factor_data[&#34;factor_quantile&#34;].min(),
+        std_err=compstd_quant_daily,
+    )
+
+    fr_cols = len(factor_returns.columns)
+    vertical_sections = 2 + fr_cols * 3
+    gf = GridFigure(rows=vertical_sections, cols=1)
+
+    plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant)
+
+    plotting.plot_quantile_returns_bar(
+        mean_quant_rateret,
+        by_group=False,
+        ylim_percentiles=None,
+        ax=gf.next_row(),
+    )
+
+    plotting.plot_quantile_returns_violin(
+        mean_quant_rateret_bydate, ylim_percentiles=(1, 99), ax=gf.next_row()
+    )
+
+    trading_calendar = factor_data.index.levels[0].freq
+    if trading_calendar is None:
+        trading_calendar = pd.tseries.offsets.BDay()
+        warnings.warn(
+            &#34;&#39;freq&#39; not set in factor_data index: assuming business day&#34;,
+            UserWarning,
+        )
+
+    # Compute cumulative returns from daily simple returns, if &#39;1D&#39;
+    # returns are provided.
+    if &#34;1D&#34; in factor_returns:
+        title = (
+            &#34;Factor Weighted &#34;
+            + (&#34;Group Neutral &#34; if group_neutral else &#34;&#34;)
+            + (&#34;Long/Short &#34; if long_short else &#34;&#34;)
+            + &#34;Portfolio Cumulative Return (1D Period)&#34;
+        )
+
+        plotting.plot_cumulative_returns(
+            factor_returns[&#34;1D&#34;], period=&#34;1D&#34;, title=title, ax=gf.next_row()
+        )
+
+        plotting.plot_cumulative_returns_by_quantile(
+            mean_quant_ret_bydate[&#34;1D&#34;], period=&#34;1D&#34;, ax=gf.next_row()
+        )
+
+    ax_mean_quantile_returns_spread_ts = [gf.next_row() for x in range(fr_cols)]
+    plotting.plot_mean_quantile_returns_spread_time_series(
+        mean_ret_spread_quant,
+        std_err=std_spread_quant,
+        bandwidth=0.5,
+        ax=ax_mean_quantile_returns_spread_ts,
+    )
+
+    plt.show()
+    gf.close()
+
+    if by_group:
+        (
+            mean_return_quantile_group,
+            mean_return_quantile_group_std_err,
+        ) = perf.mean_return_by_quantile(
+            factor_data,
+            by_date=False,
+            by_group=True,
+            demeaned=long_short,
+            group_adjust=group_neutral,
+        )
+
+        mean_quant_rateret_group = mean_return_quantile_group.apply(
+            utils.rate_of_return,
+            axis=0,
+            base_period=mean_return_quantile_group.columns[0],
+        )
+
+        num_groups = len(
+            mean_quant_rateret_group.index.get_level_values(&#34;group&#34;).unique()
+        )
+
+        vertical_sections = 1 + (((num_groups - 1) // 2) + 1)
+        gf = GridFigure(rows=vertical_sections, cols=2)
+
+        ax_quantile_returns_bar_by_group = [gf.next_cell() for _ in range(num_groups)]
+        plotting.plot_quantile_returns_bar(
+            mean_quant_rateret_group,
+            by_group=True,
+            ylim_percentiles=(5, 95),
+            ax=ax_quantile_returns_bar_by_group,
+        )
+        plt.show()
+        gf.close()</code></pre>
+</details>
+<div class="desc"><p>Creates a tear sheet for returns analysis of a factor.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to,
+and (optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a long short portfolio? if so, then
+mean quantile returns will be demeaned across the factor universe.
+Additionally factor values will be demeaned across the factor universe
+when factor weighting the portfolio for cumulative returns plots</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a group neutral portfolio? if so,
+returns demeaning will occur on the group level.
+Additionally each group will weight the same in cumulative returns
+plots</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, display graphs separately for each group.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.tears.create_summary_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_summary_tear_sheet</span></span>(<span>factor_data, long_short=True, group_neutral=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False):
+    &#34;&#34;&#34;
+    Creates a small summary tear sheet with returns, information, and turnover
+    analysis.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    long_short : bool
+        Should this computation happen on a long short portfolio? if so, then
+        mean quantile returns will be demeaned across the factor universe.
+    group_neutral : bool
+        Should this computation happen on a group neutral portfolio? if so,
+        returns demeaning will occur on the group level.
+    &#34;&#34;&#34;
+
+    # Returns Analysis
+    mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
+        factor_data,
+        by_group=False,
+        demeaned=long_short,
+        group_adjust=group_neutral,
+    )
+
+    mean_quant_rateret = mean_quant_ret.apply(
+        utils.rate_of_return, axis=0, base_period=mean_quant_ret.columns[0]
+    )
+
+    mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
+        factor_data,
+        by_date=True,
+        by_group=False,
+        demeaned=long_short,
+        group_adjust=group_neutral,
+    )
+
+    mean_quant_rateret_bydate = mean_quant_ret_bydate.apply(
+        utils.rate_of_return,
+        axis=0,
+        base_period=mean_quant_ret_bydate.columns[0],
+    )
+
+    compstd_quant_daily = std_quant_daily.apply(
+        utils.std_conversion, axis=0, base_period=std_quant_daily.columns[0]
+    )
+
+    alpha_beta = perf.factor_alpha_beta(
+        factor_data, demeaned=long_short, group_adjust=group_neutral
+    )
+
+    mean_ret_spread_quant, std_spread_quant = perf.compute_mean_returns_spread(
+        mean_quant_rateret_bydate,
+        factor_data[&#34;factor_quantile&#34;].max(),
+        factor_data[&#34;factor_quantile&#34;].min(),
+        std_err=compstd_quant_daily,
+    )
+
+    periods = utils.get_forward_returns_columns(factor_data.columns)
+    periods = list(map(lambda p: pd.Timedelta(p).days, periods))
+
+    fr_cols = len(periods)
+    vertical_sections = 2 + fr_cols * 3
+    gf = GridFigure(rows=vertical_sections, cols=1)
+
+    plotting.plot_quantile_statistics_table(factor_data)
+
+    plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant)
+
+    plotting.plot_quantile_returns_bar(
+        mean_quant_rateret,
+        by_group=False,
+        ylim_percentiles=None,
+        ax=gf.next_row(),
+    )
+
+    # Information Analysis
+    ic = perf.factor_information_coefficient(factor_data)
+    plotting.plot_information_table(ic)
+
+    # Turnover Analysis
+    quantile_factor = factor_data[&#34;factor_quantile&#34;]
+
+    quantile_turnover = {
+        p: pd.concat(
+            [
+                perf.quantile_turnover(quantile_factor, q, p)
+                for q in range(1, int(quantile_factor.max()) + 1)
+            ],
+            axis=1,
+        )
+        for p in periods
+    }
+
+    autocorrelation = pd.concat(
+        [perf.factor_rank_autocorrelation(factor_data, period) for period in periods],
+        axis=1,
+    )
+
+    plotting.plot_turnover_table(autocorrelation, quantile_turnover)
+
+    plt.show()
+    gf.close()</code></pre>
+</details>
+<div class="desc"><p>Creates a small summary tear sheet with returns, information, and turnover
+analysis.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a long short portfolio? if so, then
+mean quantile returns will be demeaned across the factor universe.</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should this computation happen on a group neutral portfolio? if so,
+returns demeaning will occur on the group level.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.tears.create_turnover_tear_sheet"><code class="name flex">
+<span>def <span class="ident">create_turnover_tear_sheet</span></span>(<span>factor_data, turnover_periods=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@plotting.customize
+def create_turnover_tear_sheet(factor_data, turnover_periods=None):
+    &#34;&#34;&#34;
+    Creates a tear sheet for analyzing the turnover properties of a factor.
+
+    Parameters
+    ----------
+    factor_data : pd.DataFrame - MultiIndex
+        A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+        containing the values for a single alpha factor, forward returns for
+        each period, the factor quantile/bin that factor value belongs to, and
+        (optionally) the group the asset belongs to.
+        - See full explanation in utils.get_clean_factor_and_forward_returns
+    turnover_periods : sequence[string], optional
+        Periods to compute turnover analysis on. By default periods in
+        &#39;factor_data&#39; are used but custom periods can provided instead. This
+        can be useful when periods in &#39;factor_data&#39; are not multiples of the
+        frequency at which factor values are computed i.e. the periods
+        are 2h and 4h and the factor is computed daily and so values like
+        [&#39;1D&#39;, &#39;2D&#39;] could be used instead
+    &#34;&#34;&#34;
+
+    if turnover_periods is None:
+        input_periods = utils.get_forward_returns_columns(
+            factor_data.columns, require_exact_day_multiple=True
+        ).to_numpy()
+        turnover_periods = utils.timedelta_strings_to_integers(input_periods)
+    else:
+        turnover_periods = utils.timedelta_strings_to_integers(turnover_periods)
+
+    quantile_factor = factor_data[&#34;factor_quantile&#34;]
+
+    quantile_turnover = {
+        p: pd.concat(
+            [
+                perf.quantile_turnover(quantile_factor, q, p)
+                for q in quantile_factor.sort_values().unique().tolist()
+            ],
+            axis=1,
+        )
+        for p in turnover_periods
+    }
+
+    autocorrelation = pd.concat(
+        [
+            perf.factor_rank_autocorrelation(factor_data, period)
+            for period in turnover_periods
+        ],
+        axis=1,
+    )
+
+    plotting.plot_turnover_table(autocorrelation, quantile_turnover)
+
+    fr_cols = len(turnover_periods)
+    columns_wide = 1
+    rows_when_wide = ((fr_cols - 1) // 1) + 1
+    vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
+    gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+
+    for period in turnover_periods:
+        if quantile_turnover[period].isnull().all().all():
+            continue
+        plotting.plot_top_bottom_quantile_turnover(
+            quantile_turnover[period], period=period, ax=gf.next_row()
+        )
+
+    for period in autocorrelation:
+        if autocorrelation[period].isnull().all():
+            continue
+        plotting.plot_factor_rank_auto_correlation(
+            autocorrelation[period], period=period, ax=gf.next_row()
+        )
+
+    plt.show()
+    gf.close()</code></pre>
+</details>
+<div class="desc"><p>Creates a tear sheet for analyzing the turnover properties of a factor.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
+<dd>A MultiIndex DataFrame indexed by date (level 0) and asset (level 1),
+containing the values for a single alpha factor, forward returns for
+each period, the factor quantile/bin that factor value belongs to, and
+(optionally) the group the asset belongs to.
+- See full explanation in utils.get_clean_factor_and_forward_returns</dd>
+<dt><strong><code>turnover_periods</code></strong> :&ensp;<code>sequence[string]</code>, optional</dt>
+<dd>Periods to compute turnover analysis on. By default periods in
+'factor_data' are used but custom periods can provided instead. This
+can be useful when periods in 'factor_data' are not multiples of the
+frequency at which factor values are computed i.e. the periods
+are 2h and 4h and the factor is computed daily and so values like
+['1D', '2D'] could be used instead</dd>
+</dl></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="alphalens.tears.GridFigure"><code class="flex name class">
+<span>class <span class="ident">GridFigure</span></span>
+<span>(</span><span>rows, cols)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GridFigure(object):
+    &#34;&#34;&#34;
+    It makes life easier with grid plots
+    &#34;&#34;&#34;
+
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.fig = plt.figure(figsize=(14, rows * 7))
+        self.gs = gridspec.GridSpec(rows, cols, wspace=0.4, hspace=0.3)
+        self.curr_row = 0
+        self.curr_col = 0
+
+    def next_row(self):
+        if self.curr_col != 0:
+            self.curr_row += 1
+            self.curr_col = 0
+        subplt = plt.subplot(self.gs[self.curr_row, :])
+        self.curr_row += 1
+        return subplt
+
+    def next_cell(self):
+        if self.curr_col &gt;= self.cols:
+            self.curr_row += 1
+            self.curr_col = 0
+        subplt = plt.subplot(self.gs[self.curr_row, self.curr_col])
+        self.curr_col += 1
+        return subplt
+
+    def close(self):
+        plt.close(self.fig)
+        self.fig = None
+        self.gs = None</code></pre>
+</details>
+<div class="desc"><p>It makes life easier with grid plots</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="alphalens.tears.GridFigure.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def close(self):
+    plt.close(self.fig)
+    self.fig = None
+    self.gs = None</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="alphalens.tears.GridFigure.next_cell"><code class="name flex">
+<span>def <span class="ident">next_cell</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def next_cell(self):
+    if self.curr_col &gt;= self.cols:
+        self.curr_row += 1
+        self.curr_col = 0
+    subplt = plt.subplot(self.gs[self.curr_row, self.curr_col])
+    self.curr_col += 1
+    return subplt</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="alphalens.tears.GridFigure.next_row"><code class="name flex">
+<span>def <span class="ident">next_row</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def next_row(self):
+    if self.curr_col != 0:
+        self.curr_row += 1
+        self.curr_col = 0
+    subplt = plt.subplot(self.gs[self.curr_row, :])
+    self.curr_row += 1
+    return subplt</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="alphalens" href="index.html">alphalens</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="alphalens.tears.create_event_returns_tear_sheet" href="#alphalens.tears.create_event_returns_tear_sheet">create_event_returns_tear_sheet</a></code></li>
+<li><code><a title="alphalens.tears.create_event_study_tear_sheet" href="#alphalens.tears.create_event_study_tear_sheet">create_event_study_tear_sheet</a></code></li>
+<li><code><a title="alphalens.tears.create_full_tear_sheet" href="#alphalens.tears.create_full_tear_sheet">create_full_tear_sheet</a></code></li>
+<li><code><a title="alphalens.tears.create_information_tear_sheet" href="#alphalens.tears.create_information_tear_sheet">create_information_tear_sheet</a></code></li>
+<li><code><a title="alphalens.tears.create_returns_tear_sheet" href="#alphalens.tears.create_returns_tear_sheet">create_returns_tear_sheet</a></code></li>
+<li><code><a title="alphalens.tears.create_summary_tear_sheet" href="#alphalens.tears.create_summary_tear_sheet">create_summary_tear_sheet</a></code></li>
+<li><code><a title="alphalens.tears.create_turnover_tear_sheet" href="#alphalens.tears.create_turnover_tear_sheet">create_turnover_tear_sheet</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="alphalens.tears.GridFigure" href="#alphalens.tears.GridFigure">GridFigure</a></code></h4>
+<ul class="">
+<li><code><a title="alphalens.tears.GridFigure.close" href="#alphalens.tears.GridFigure.close">close</a></code></li>
+<li><code><a title="alphalens.tears.GridFigure.next_cell" href="#alphalens.tears.GridFigure.next_cell">next_cell</a></code></li>
+<li><code><a title="alphalens.tears.GridFigure.next_row" href="#alphalens.tears.GridFigure.next_row">next_row</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
