@@ -1,0 +1,1197 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+
+\geometry{margin=1in}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+\setlist[itemize]{topsep=3pt,itemsep=2pt,parsep=0pt}
+\setlist[enumerate]{topsep=3pt,itemsep=2pt,parsep=0pt}
+
+% LaTeX assigns a numerical depth to each sectioning level:0 = Chapters, 1 = Sections, 2 = Subsections, 3 = Subsubsections
+\setcounter{tocdepth}{2}
+
+\begin{document}
+
+\title{\Huge{Alphalens Documentation}}
+\date{}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Overview}
+
+Alphalens is organized as a pipeline of four core modules:
+
+\begin{itemize}
+  \item \texttt{alphalens.utils} prepares factor data and computes forward returns.
+  \item \texttt{alphalens.performance} analyzes factor behavior and simulated portfolio performance.
+  \item \texttt{alphalens.plotting} visualizes metrics and diagnostics.
+  \item \texttt{alphalens.tears} assembles the results into tear sheets.
+\end{itemize}
+
+The usual workflow is:
+
+\begin{enumerate}
+  \item Build cleaned factor data with \texttt{alphalens.utils.get\_clean\_factor\_and\_forward\_returns()}.
+  \item Compute diagnostics and portfolio statistics with \texttt{alphalens.performance}.
+  \item Visualize outputs with \texttt{alphalens.plotting}.
+  \item Generate presentation-ready reports with \texttt{alphalens.tears}.
+\end{enumerate}
+
+All modules typically operate on a MultiIndex \texttt{pandas} object indexed by \texttt{(date, asset)}.
+
+\section{alphalens.utils}
+
+Utilities for preparing factor data, computing forward returns, binning factors into quantiles/bins, and working with custom trading calendars.
+
+This module is the main data-preparation layer used throughout Alphalens. Most workflows start with \texttt{get\_clean\_factor\_and\_forward\_returns()} and then feed the resulting MultiIndex \texttt{DataFrame} into the tear sheets and plotting functions.
+
+\subsection{Data model used by this module}
+
+Most functions operate on a \texttt{pandas} object indexed by:
+
+\begin{itemize}
+  \item level 0: \texttt{date} / timestamp
+  \item level 1: \texttt{asset}
+\end{itemize}
+
+Forward returns are usually stored in columns named with \texttt{pd.Timedelta}-compatible strings such as \texttt{1D}, \texttt{5D}, \texttt{30m}, or \texttt{1D1h}.
+
+\subsection{Exceptions}
+
+\paragraph{\texttt{NonMatchingTimezoneError}}
+Raised when factor and pricing indices have different timezones.
+
+\paragraph{\texttt{MaxLossExceededError}}
+Raised by \texttt{get\_clean\_factor()} when the share of dropped factor data exceeds \texttt{max\_loss}.
+
+\subsection{Core workflow}
+
+\subsubsection{\texttt{compute\_forward\_returns(factor, prices, periods=(1, 5, 10), filter\_zscore=None, cumulative\_returns=True)}}
+Compute N-period forward returns for each asset in \texttt{factor}.
+
+\paragraph{Input expectations}
+\begin{itemize}
+  \item \texttt{factor}: MultiIndex \texttt{Series} indexed by \texttt{(date, asset)}.
+  \item \texttt{prices}: wide \texttt{DataFrame} with dates on the index and assets on the columns.
+  \item The price history must extend far enough beyond the factor timestamps to cover the largest requested period.
+\end{itemize}
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Validates that factor and price timezones match.
+  \item Infers a trading calendar when the factor index has no frequency.
+  \item Computes forward returns for each requested period.
+  \item Optionally filters out extreme values using \texttt{filter\_zscore}.
+  \item Names the output columns using a \texttt{Timedelta}-style string.
+\end{itemize}
+
+\paragraph{Returns}
+A MultiIndex \texttt{DataFrame} with the same \texttt{(date, asset)} index as the input factor.
+
+\subsubsection{\texttt{get\_clean\_factor(factor, forward\_returns, groupby=None, binning\_by\_group=False, quantiles=5, bins=None, groupby\_labels=None, max\_loss=0.35, zero\_aware=False)}}
+Align a factor series with already-computed forward returns and assign factor quantiles or bins.
+
+Use this when you already have forward returns and do not need to recompute them.
+
+\paragraph{Key behavior}
+\begin{itemize}
+  \item Joins factor values to forward returns.
+  \item Optionally maps assets to groups.
+  \item Computes factor quantiles or bins using \texttt{quantize\_factor()}.
+  \item Drops rows with missing data.
+  \item Tracks how much data was lost and raises \texttt{MaxLossExceededError} if the loss exceeds \texttt{max\_loss}.
+\end{itemize}
+
+\paragraph{Returns}
+A cleaned MultiIndex \texttt{DataFrame} containing forward return columns, \texttt{factor}, optionally \texttt{group}, and \texttt{factor\_quantile}.
+
+\subsubsection{\texttt{get\_clean\_factor\_and\_forward\_returns(factor, prices, groupby=None, binning\_by\_group=False, quantiles=5, bins=None, periods=(1, 5, 10), filter\_zscore=20, groupby\_labels=None, max\_loss=0.35, zero\_aware=False, cumulative\_returns=True)}}
+One-stop helper that computes forward returns and then cleans and bins the factor data.
+
+This is the primary entry point for most Alphalens analyses.
+
+\paragraph{Equivalent steps}
+\begin{enumerate}
+  \item Call \texttt{compute\_forward\_returns()}
+  \item Call \texttt{get\_clean\_factor()}
+\end{enumerate}
+
+\paragraph{Returns}
+A cleaned MultiIndex \texttt{DataFrame} suitable for Alphalens tear sheets and plots.
+
+\subsection{Quantization and bucketing}
+
+\subsubsection{\texttt{quantize\_factor(factor\_data, quantiles=5, bins=None, by\_group=False, no\_raise=False, zero\_aware=False)}}
+Assign factor values to quantile or value bins.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Exactly one of \texttt{quantiles} or \texttt{bins} must be provided.
+  \item Supports group-wise binning with \texttt{by\_group=True}.
+  \item Supports zero-aware binning, which splits positive and negative values separately.
+  \item Can suppress binning failures with \texttt{no\_raise=True}, returning \texttt{NaN} for problematic rows.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{Series} named \texttt{factor\_quantile} indexed by \texttt{(date, asset)}.
+
+\subsubsection{\texttt{non\_unique\_bin\_edges\_error(func)}}
+Decorator that adds a more helpful error message when \texttt{pandas} cannot create unique bin edges.
+
+This is used internally around \texttt{quantize\_factor()} to explain common binning failures, especially when many identical factor values span multiple quantiles.
+
+\subsection{Return and performance helpers}
+
+\subsubsection{\texttt{backshift\_returns\_series(series, N)}}
+Shift a MultiIndex returns series backward by \texttt{N} observations in the first level.
+
+This helper is useful for converting backward-looking returns into forward-looking returns.
+
+\subsubsection{\texttt{demean\_forward\_returns(factor\_data, grouper=None)}}
+Demean forward returns by date or by a custom grouper.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item If \texttt{grouper} is not provided, demeaning happens per date.
+  \item Only forward-return columns are adjusted.
+  \item The result preserves the original shape and index.
+\end{itemize}
+
+\subsubsection{\texttt{rate\_of\_return(period\_ret, base\_period)}}
+Convert returns observed over one period length into an equivalent rate for \texttt{base\_period}.
+
+This is useful for normalizing returns across different horizons.
+
+\subsubsection{\texttt{std\_conversion(period\_std, base\_period)}}
+Convert standard deviation or standard error from one period length to another.
+
+\subsection{Calendar and time utilities}
+
+\subsubsection{\texttt{infer\_trading\_calendar(factor\_idx, prices\_idx)}}
+Infer a trading calendar from factor and price datetimes.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Detects which weekdays are traded.
+  \item Infers holidays by comparing the observed timestamps to a weekday-specific business-day calendar.
+  \item Returns a \texttt{CustomBusinessDay} offset.
+\end{itemize}
+
+\subsubsection{\texttt{timedelta\_to\_string(timedelta)}}
+Convert a \texttt{pd.Timedelta} into a compact string compatible with \texttt{pd.Timedelta(...)}.
+
+Example output formats include \texttt{1D}, \texttt{3h15m}, and \texttt{1D1h}.
+
+\subsubsection{\texttt{timedelta\_strings\_to\_integers(sequence)}}
+Convert a sequence of timedelta strings into integer day counts.
+
+Example: \texttt{['1D', '5D'] -> [1, 5]}.
+
+\subsubsection{\texttt{add\_custom\_calendar\_timedelta(input, timedelta, freq)}}
+Add a \texttt{Timedelta} to a timestamp or \texttt{DatetimeIndex} while respecting a custom trading calendar.
+
+\paragraph{Accepted \texttt{freq} values}
+\begin{itemize}
+  \item \texttt{Day}
+  \item \texttt{BusinessDay}
+  \item \texttt{CustomBusinessDay}
+\end{itemize}
+
+\subsubsection{\texttt{make\_naive\_ts(t)}}
+Return a timezone-naive timestamp.
+
+\begin{itemize}
+  \item If \texttt{t} is timezone-aware, it is converted to naive UTC-localized time.
+  \item Otherwise it is localized to \texttt{None}.
+\end{itemize}
+
+\subsubsection{\texttt{diff\_custom\_calendar\_timedeltas(start, end, freq)}}
+Compute the effective elapsed time between two timestamps under a custom calendar.
+
+This is used when forward-return horizons must respect trading days, weekends, and holidays.
+
+\paragraph{Accepted \texttt{freq} values}
+\begin{itemize}
+  \item any \texttt{pandas.tseries.offsets.BaseOffset}
+  \item commonly \texttt{Day}, \texttt{BusinessDay}, or \texttt{CustomBusinessDay}
+\end{itemize}
+
+\subsection{Column detection and display helpers}
+
+\subsubsection{\texttt{get\_forward\_returns\_columns(columns, require\_exact\_day\_multiple=False)}}
+Identify which columns look like forward-return horizons.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Recognizes \texttt{Timedelta}-style labels such as \texttt{1D}, \texttt{5D}, \texttt{30m}, \texttt{1D1h}.
+  \item When \texttt{require\_exact\_day\_multiple=True}, only exact day multiples are kept.
+  \item Emits a warning if non-day-multiple columns are skipped in that mode.
+\end{itemize}
+
+\subsubsection{\texttt{print\_table(table, name=None, fmt=None)}}
+Pretty-print a \texttt{Series} or \texttt{DataFrame}.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Uses rich display output when available.
+  \item Falls back to standard formatted output.
+  \item Temporarily changes \texttt{pandas} floating-point formatting when \texttt{fmt} is provided.
+\end{itemize}
+
+\subsection{Error handling helper}
+
+\subsubsection{\texttt{rethrow(exception, additional\_message)}}
+Re-raise an exception while preserving the original stack trace and appending extra context to the message.
+
+This is used internally to make binning errors easier to diagnose.
+
+\subsection{Practical usage}
+
+Typical Alphalens usage looks like this:
+
+\begin{enumerate}
+  \item Prepare a factor series indexed by \texttt{(date, asset)}.
+  \item Prepare a price \texttt{DataFrame} with assets in columns.
+  \item Call \texttt{get\_clean\_factor\_and\_forward\_returns()}.
+  \item Pass the result into tear sheets or plotting helpers.
+\end{enumerate}
+
+Example call: \texttt{get\_clean\_factor\_and\_forward\_returns(factor=..., prices=..., periods=(1, 5, 10))}.
+
+\subsection{Notes}
+
+\begin{itemize}
+  \item Several functions assume data is already aligned on \texttt{(date, asset)}.
+  \item Zero-aware binning is intended for factors centered around zero.
+  \item \texttt{filter\_zscore} can introduce lookahead bias, so use it carefully.
+  \item Forward-return horizon labels are derived from the price calendar and may reflect custom business-day offsets.
+\end{itemize}
+
+\section{alphalens.performance}
+
+Performance-analysis utilities for factor research, including information coefficient calculations, factor-weighted portfolio simulation, quantile analysis, event-study helpers, and Pyfolio-ready outputs.
+
+This module is the main analytics layer used after factor data has been cleaned and aligned with \texttt{alphalens.utils.get\_clean\_factor\_and\_forward\_returns()}.
+
+\subsection{Data model used by this module}
+
+Most functions expect a MultiIndex \texttt{pandas} object indexed by:
+
+\begin{itemize}
+  \item level 0: \texttt{date}
+  \item level 1: \texttt{asset}
+\end{itemize}
+
+The input usually includes:
+
+\begin{itemize}
+  \item a \texttt{factor} column
+  \item one or more forward-return columns such as \texttt{1D}, \texttt{5D}, or \texttt{10D}
+  \item \texttt{factor\_quantile}
+  \item optionally \texttt{group}
+\end{itemize}
+
+Forward-return column names are detected using \texttt{alphalens.utils.get\_forward\_returns\_columns()}.
+
+\subsection{Core analysis functions}
+
+\subsubsection{\texttt{factor\_information\_coefficient(factor\_data, group\_adjust=False, by\_group=False)}}
+Compute the Spearman rank correlation between factor values and each forward-return horizon.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Calculates the Information Coefficient (IC) period by period.
+  \item Optionally demeans forward returns by group before computing IC.
+  \item Optionally computes IC separately for each group.
+  \item Preserves the factor data frequency on the date index when not grouped by asset group.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{DataFrame} of IC values indexed by date, or by date and group when \texttt{by\_group=True}.
+
+\subsubsection{\texttt{mean\_information\_coefficient(factor\_data, group\_adjust=False, by\_group=False, by\_time=None)}}
+Compute the mean IC across the full sample or over a time window.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Delegates to \texttt{factor\_information\_coefficient()}.
+  \item Can aggregate by time period using a pandas time rule such as monthly or weekly windows.
+  \item Can aggregate by group when \texttt{by\_group=True}.
+\end{itemize}
+
+\paragraph{Returns}
+A scalar-like \texttt{Series}/\texttt{DataFrame} of mean IC values depending on the requested grouping.
+
+\subsection{Portfolio weighting and return simulation}
+
+\subsubsection{\texttt{factor\_weights(factor\_data, demeaned=True, group\_adjust=False, equal\_weight=False)}}
+Compute asset weights from factor values.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Factor values are normalized to gross leverage of 1.
+  \item When \texttt{demeaned=True}, weights are constructed as a long-short portfolio.
+  \item When \texttt{group\_adjust=True}, weights are computed in a group-neutral way.
+  \item When \texttt{equal\_weight=True}, assets are equal-weighted instead of factor-weighted.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{Series} of weights indexed by \texttt{(date, asset)}.
+
+\subsubsection{\texttt{factor\_returns(factor\_data, demeaned=True, group\_adjust=False, equal\_weight=False, by\_asset=False)}}
+Compute period-wise returns for a factor-weighted portfolio.
+
+In this module, a \textbf{factor return} is the return of a simulated portfolio whose asset weights are derived from the factor signal. For each date and each forward-return horizon, the return is computed as the sum of:
+
+\[
+\text{asset weight} \times \text{asset forward return}
+\]
+
+Equivalently:
+
+\[
+\text{factor return}[t, \text{period}] = \sum_i w_{t,i} \cdot r_{t,i,\text{period}}
+\]
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Uses \texttt{factor\_weights()} to build the portfolio.
+  \item Multiplies weights by forward-return columns.
+  \item If \texttt{by\_asset=True}, returns the weighted return contribution of each asset.
+  \item Otherwise, aggregates to date-level portfolio returns.
+\end{itemize}
+
+\paragraph{Worked example}
+Suppose one date contains three assets with these factor values and \texttt{1D} forward returns:
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+asset & factor & \texttt{1D} forward return \\
+\midrule
+A & 2.0 & 0.010 \\
+B & 1.0 & 0.020 \\
+C & -1.0 & -0.010 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+With the default \texttt{demeaned=True}, \texttt{group\_adjust=False}, and \texttt{equal\_weight=False}:
+
+\begin{enumerate}
+  \item Demean factor values by date.
+  \begin{itemize}
+    \item Mean factor = \((2.0 + 1.0 - 1.0) / 3 = 0.6667\)
+    \item Demeaned values = \texttt{A: 1.3333}, \texttt{B: 0.3333}, \texttt{C: -1.6667}
+  \end{itemize}
+  \item Normalize by the sum of absolute values.
+  \begin{itemize}
+    \item Gross exposure = \(|1.3333| + |0.3333| + |-1.6667| = 3.3333\)
+    \item Weights = \texttt{A: 0.40}, \texttt{B: 0.10}, \texttt{C: -0.50}
+  \end{itemize}
+  \item Multiply each weight by the forward return.
+  \begin{itemize}
+    \item \texttt{A: 0.40 \(\times\) 0.010 = 0.0040}
+    \item \texttt{B: 0.10 \(\times\) 0.020 = 0.0020}
+    \item \texttt{C: -0.50 \(\times\) -0.010 = 0.0050}
+  \end{itemize}
+  \item Sum across assets.
+  \begin{itemize}
+    \item factor return = 0.0040 + 0.0020 + 0.0050 = 0.0110
+  \end{itemize}
+\end{enumerate}
+
+So the factor portfolio return for that date and period is \(0.011\), or 1.1\%.
+
+If \texttt{demeaned=False}, the same formula is used, but the weights come directly from the raw factor values rather than demeaned values. If \texttt{group\_adjust=True}, weights are computed in a group-neutral way. If \texttt{equal\_weight=True}, the code uses equal-weighted long/short buckets instead of factor-magnitude weights.
+
+\paragraph{Returns}
+A \texttt{DataFrame} of period returns, or asset-level weighted returns when \texttt{by\_asset=True}.
+
+\subsubsection{\texttt{factor\_alpha\_beta(factor\_data, returns=None, demeaned=True, group\_adjust=False, equal\_weight=False)}}
+Estimate alpha and beta for a factor portfolio using OLS regression.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Uses factor portfolio returns as the dependent variable.
+  \item Uses the universe mean return as the explanatory variable.
+  \item If \texttt{returns} is not provided, it is computed using \texttt{factor\_returns()}.
+  \item Annualizes alpha using a 252-trading-day convention.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{DataFrame} containing at least annualized alpha and beta by forward-return horizon.
+
+\subsubsection{\texttt{cumulative\_returns(returns)}}
+Convert simple returns into cumulative returns.
+
+This is a thin wrapper around \texttt{empyrical.cum\_returns()} with a starting value of 1.
+
+\subsubsection{\texttt{positions(weights, period, freq=None)}}
+Build a time series of portfolio positions from factor weights.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Treats weights as active for a holding period defined by \texttt{period}.
+  \item Uses the provided trading calendar frequency, or infers one from the weight index.
+  \item Falls back to \texttt{BDay} and emits a warning if no frequency is available.
+  \item Recomputes portfolio weights as positions roll forward through time.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{DataFrame} with timestamps on the index and assets on the columns.
+
+\subsection{Quantile and bucket analysis}
+
+\subsubsection{\texttt{mean\_return\_by\_quantile(factor\_data, by\_date=False, by\_group=False, demeaned=True, group\_adjust=False)}}
+Compute mean forward returns and standard errors by factor quantile.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Can compute results by date or across the full sample.
+  \item Can compute results by group.
+  \item Can demean by the whole universe or within each group.
+\end{itemize}
+
+\paragraph{Returns}
+A pair: \((\text{mean\_ret}, \text{std\_error\_ret})\).
+
+\subsubsection{\texttt{compute\_mean\_returns\_spread(mean\_returns, upper\_quant, lower\_quant, std\_err=None)}}
+Compute the difference in mean returns between two quantiles.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Subtracts lower-quantile mean returns from upper-quantile mean returns.
+  \item Optionally propagates standard error for the spread.
+\end{itemize}
+
+\paragraph{Returns}
+A pair: \((\text{mean\_return\_difference}, \text{joint\_std\_err})\).
+
+\subsubsection{\texttt{quantile\_turnover(quantile\_factor, quantile, period=1)}}
+Measure the proportion of names that leave a given quantile over time.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Compares membership in the selected quantile against the prior period.
+  \item Preserves the date frequency of the input.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{Series} indexed by date.
+
+\subsubsection{\texttt{factor\_rank\_autocorrelation(factor\_data, period=1)}}
+Measure the autocorrelation of factor ranks across periods.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Ranks assets by their factor values within each date, then computes the correlation between each date's rank vector and the rank vector period dates earlier.
+  \item Useful as a turnover/stability diagnostic.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{Series} of autocorrelation values indexed by date.
+
+\subsection{Event-study helpers}
+
+\subsubsection{\texttt{common\_start\_returns(factor, returns, before, after, cumulative=False, mean\_by\_date=False, demean\_by=None)}}
+Align return windows around common event dates.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Builds a return window around each factor date and asset pair.
+  \item Aligns all windows to a common event-time index.
+  \item Can work with cumulative or period returns.
+  \item Can de-mean against a reference universe.
+  \item Can average across assets by date.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{DataFrame} of aligned return windows.
+
+\subsubsection{\texttt{average\_cumulative\_return\_by\_quantile(factor\_data, returns, periods\_before=10, periods\_after=15, demeaned=True, group\_adjust=False, by\_group=False)}}
+Compute average cumulative returns around factor events by quantile.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Uses \texttt{common\_start\_returns()} internally.
+  \item Computes mean and standard deviation of event-time cumulative returns.
+  \item Can separate results by group.
+  \item Supports group-neutral and universe-demeaned variants.
+\end{itemize}
+
+\paragraph{Returns}
+A MultiIndex \texttt{DataFrame} containing mean and standard deviation across the event window.
+
+\subsection{Portfolio simulation outputs}
+
+\subsubsection{\texttt{factor\_cumulative\_returns(factor\_data, period, long\_short=True, group\_neutral=False, equal\_weight=False, quantiles=None, groups=None)}}
+Simulate a factor portfolio and return cumulative performance.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Filters to a single forward-return horizon specified by \texttt{period}.
+  \item Can limit analysis to selected quantiles or groups.
+  \item Uses \texttt{factor\_returns()} and then converts the result to cumulative returns.
+\end{itemize}
+
+This means cumulative factor returns are built directly from the period-wise factor return series described above.
+
+\paragraph{Returns}
+A cumulative return \texttt{Series}.
+
+\subsubsection{\texttt{factor\_positions(factor\_data, period, long\_short=True, group\_neutral=False, equal\_weight=False, quantiles=None, groups=None)}}
+Simulate a factor portfolio and return the time series of positions.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Filters to the requested forward-return horizon.
+  \item Reuses \texttt{factor\_weights()} to compute holdings.
+  \item Converts weights into rolling positions with \texttt{positions()}.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{DataFrame} of asset positions over time.
+
+\subsubsection{\texttt{create\_pyfolio\_input(factor\_data, period, capital=None, long\_short=True, group\_neutral=False, equal\_weight=False, quantiles=None, groups=None, benchmark\_period="1D")}}
+Create returns, positions, and benchmark data in the format expected by Pyfolio.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Builds cumulative strategy returns.
+  \item Resamples returns and positions to daily frequency.
+  \item Adds a \texttt{cash} column to the positions output.
+  \item Optionally converts percentage positions into dollar positions using \texttt{capital}.
+  \item Computes a benchmark series from the factor universe when the benchmark period is available.
+\end{itemize}
+
+\paragraph{Returns}
+A tuple: \((\text{returns}, \text{positions}, \text{benchmark})\).
+
+\subsection{Dependencies and implementation notes}
+
+\begin{itemize}
+  \item Uses \texttt{pandas}, \texttt{numpy}, \texttt{scipy.stats}, \texttt{statsmodels}, and \texttt{empyrical}.
+  \item Relies heavily on \texttt{alphalens.utils} for forward-return column detection and return demeaning.
+  \item Most functions assume data has already been cleaned and aligned into the Alphalens MultiIndex format.
+  \item Several functions use a trading-calendar frequency attached to the date index, so preserving index frequency is important for correct behavior.
+\end{itemize}
+
+\subsection{Practical usage}
+
+Typical workflow:
+
+\begin{enumerate}
+  \item Build cleaned factor data with \texttt{alphalens.utils.get\_clean\_factor\_and\_forward\_returns()}.
+  \item Compute diagnostics such as IC, mean returns by quantile, and turnover.
+  \item Simulate factor-weighted returns or positions.
+  \item Feed the outputs into plotting or Pyfolio workflows.
+\end{enumerate}
+
+Example call: \texttt{factor\_information\_coefficient(factor\_data)} or \texttt{create\_pyfolio\_input(factor\_data, period="1D")}.
+
+\section{alphalens.plotting}
+
+Visualization utilities for factor research, including plots for Information Coefficient analysis, factor returns, quantile performance, and other diagnostic charts. The module provides publication-quality visualizations with sane defaults for the Alphalens workflow.
+
+This module visualizes the outputs from \texttt{alphalens.performance} and the cleaned factor data from \texttt{alphalens.utils}.
+
+\subsection{Styling and context management}
+
+\subsubsection{\texttt{customize(func)} --- decorator}
+Apply default plotting context and style to a function.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Sets seaborn colorblind-friendly palette.
+  \item Applies default plotting context and axes style.
+  \item Can be disabled with \texttt{set\_context=False} in the decorated function call.
+\end{itemize}
+
+\subsubsection{\texttt{plotting\_context(context="notebook", font\_scale=1.5, rc=None)}}
+Create an alphalens-specific plotting context.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Wraps \texttt{seaborn.plotting\_context()} with alphalens defaults.
+  \item Default line width is 1.5.
+  \item Can be used as a context manager for multiple plots.
+\end{itemize}
+
+\paragraph{Returns}
+A seaborn plotting context object suitable for use in \texttt{with} statements.
+
+\subsubsection{\texttt{axes\_style(style="darkgrid", rc=None)}}
+Create an alphalens-specific axes style context.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Wraps \texttt{seaborn.axes\_style()} with alphalens defaults.
+  \item Commonly used with \texttt{plotting\_context()}.
+\end{itemize}
+
+\paragraph{Returns}
+A seaborn axes style object suitable for use in \texttt{with} statements.
+
+\subsection{Data table displays}
+
+\subsubsection{\texttt{plot\_returns\_table(alpha\_beta, mean\_ret\_quantile, mean\_ret\_spread\_quantile, return\_df=False)}}
+Display a summary table of factor portfolio returns, alpha, beta, and quantile statistics.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Combines alpha/beta results with quantile return statistics.
+  \item Converts decimal returns to basis points.
+  \item Prints a formatted table or returns as a \texttt{DataFrame}.
+\end{itemize}
+
+\paragraph{Returns}
+Pretty-printed table or a \texttt{DataFrame} when \texttt{return\_df=True}.
+
+\subsubsection{\texttt{plot\_turnover\_table(autocorrelation\_data, quantile\_turnover, return\_df=False)}}
+Display quantile turnover and factor rank autocorrelation statistics.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Shows mean turnover for each quantile by period.
+  \item Shows mean factor rank autocorrelation.
+  \item Prints formatted tables or returns as \texttt{DataFrame}s.
+\end{itemize}
+
+\paragraph{Returns}
+Printed tables or a pair of \texttt{DataFrame}s when \texttt{return\_df=True}.
+
+\subsubsection{\texttt{plot\_information\_table(ic\_data, return\_df=False)}}
+Display Information Coefficient summary statistics.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Computes IC mean, standard deviation, risk-adjusted IC, and t-statistics.
+  \item Includes skewness and kurtosis.
+  \item Prints a summary table or returns as a \texttt{DataFrame}.
+\end{itemize}
+
+\paragraph{Returns}
+Pretty-printed table or a \texttt{DataFrame} when \texttt{return\_df=True}.
+
+\subsubsection{\texttt{plot\_quantile\_statistics\_table(factor\_data, return\_df=False)}}
+Display factor value statistics by quantile.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Groups factor data by \texttt{factor\_quantile}.
+  \item Reports min, max, mean, standard deviation, and count per quantile.
+  \item Includes count percentages.
+\end{itemize}
+
+\paragraph{Returns}
+Pretty-printed table or a \texttt{DataFrame} when \texttt{return\_df=True}.
+
+\subsection{Information Coefficient visualization}
+
+\subsubsection{\texttt{plot\_ic\_ts(ic, ax=None)}}
+Plot the Information Coefficient time series with a rolling 22-day average.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Creates one subplot per forward-return period.
+  \item Overlays daily IC and a 22-day moving average.
+  \item Includes mean and standard deviation annotations.
+  \item Aligns y-axis ranges across subplots.
+\end{itemize}
+
+\paragraph{Returns}
+A numpy array of matplotlib axes.
+
+\subsubsection{\texttt{plot\_ic\_hist(ic, ax=None)}}
+Plot IC as a histogram with kernel density estimate.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Creates a 3-column grid of histograms, one per forward-return period.
+  \item Includes KDE overlay and a vertical line at the mean.
+  \item Clamps x-axis to \texttt{[-1, 1]}.
+\end{itemize}
+
+\paragraph{Returns}
+A numpy array of matplotlib axes.
+
+\subsubsection{\texttt{plot\_ic\_qq(ic, theoretical\_dist=scipy.stats.norm, ax=None)}}
+Plot IC values against a theoretical distribution using a Q-Q plot.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Creates a 3-column grid of Q-Q plots.
+  \item Supports normal and Student-t distributions.
+  \item Uses \texttt{statsmodels.qqplot()} for plotting.
+\end{itemize}
+
+\paragraph{Returns}
+A numpy array of matplotlib axes.
+
+\subsubsection{\texttt{plot\_ic\_by\_group(ic\_group, ax=None)}}
+Plot IC by group as a bar chart.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Shows mean IC for each group.
+  \item Rotates x-axis labels for readability.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsubsection{\texttt{plot\_monthly\_ic\_heatmap(mean\_monthly\_ic, ax=None)}}
+Plot IC or returns as a month/year heatmap with color coding.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Creates one heatmap per forward-return period.
+  \item Uses reversed coolwarm colormap (red = negative, blue = positive).
+  \item Annotates cell values.
+  \item Centered at 0.
+\end{itemize}
+
+\paragraph{Returns}
+A numpy array of matplotlib axes.
+
+\subsection{Returns analysis}
+
+\subsubsection{\texttt{plot\_quantile\_returns\_bar(mean\_ret\_by\_q, by\_group=False, ylim\_percentiles=None, ax=None)}}
+Plot mean returns by factor quantile as a bar chart.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Optionally creates separate subplots for each group.
+  \item Can limit y-axis range using percentiles of observed data.
+  \item Converts to basis points.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object or array depending on grouping.
+
+\subsubsection{\texttt{plot\_quantile\_returns\_violin(return\_by\_q, ylim\_percentiles=None, ax=None)}}
+Plot return distributions by factor quantile using violin plots.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Shows distribution of returns within each quantile across periods.
+  \item Uses seaborn violin plot with quartile indicators.
+  \item Optionally limits y-axis range using percentiles.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsubsection{\texttt{plot\_mean\_quantile\_returns\_spread\_time\_series(mean\_returns\_spread, std\_err=None, bandwidth=1, ax=None)}}
+Plot the top-minus-bottom quantile return spread over time.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Shows the difference between top and bottom quantile returns period by period.
+  \item Overlays a 22-day rolling average.
+  \item Optionally adds confidence bands based on standard error.
+  \item Symmetrizes y-axis around zero at the 95th percentile.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object or array if input is a \texttt{DataFrame}.
+
+\subsubsection{\texttt{plot\_cumulative\_returns(factor\_returns, period, freq=None, title=None, ax=None)}}
+Plot cumulative returns of a factor-weighted portfolio.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Converts simple returns to cumulative using \texttt{performance.cumulative\_returns()}.
+  \item Includes a reference line at 1.0 (break-even).
+  \item Displays the forward-return period in the title.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsubsection{\texttt{plot\_cumulative\_returns\_by\_quantile(quantile\_returns, period, freq=None, ax=None)}}
+Plot cumulative returns separately for each factor quantile.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Uses reversed coolwarm colormap for quantile coloring.
+  \item Uses symmetric log scale on the y-axis for readability across wide ranges.
+  \item Shows all quantiles on a single plot with a legend.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsubsection{\texttt{plot\_quantile\_average\_cumulative\_return(avg\_cumulative\_returns, by\_quantile=False, std\_bar=False, title=None, ax=None)}}
+Plot average cumulative returns by factor quantile around event dates.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Shows mean cumulative returns across the event window for each quantile.
+  \item Optionally creates separate subplots per quantile for clarity.
+  \item Can overlay standard deviation error bars.
+  \item Uses reversed coolwarm colormap for consistency.
+  \item Marks event date (x=0) with a vertical dashed line.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object or array.
+
+\subsection{Factor characteristics}
+
+\subsubsection{\texttt{plot\_factor\_rank\_auto\_correlation(factor\_autocorrelation, period=1, ax=None)}}
+Plot factor rank autocorrelation over time.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Shows the stability of relative factor rankings.
+  \item Includes a reference line at 0 (no autocorrelation).
+  \item Annotates the mean autocorrelation in a text box.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsubsection{\texttt{plot\_top\_bottom\_quantile\_turnover(quantile\_turnover, period=1, ax=None)}}
+Plot turnover for the top and bottom quantiles over time.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Extracts the maximum and minimum quantiles.
+  \item Shows the proportion of names new to each quantile each period.
+  \item Useful for detecting data quality or stationarity issues.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsubsection{\texttt{plot\_events\_distribution(events, num\_bars=50, ax=None)}}
+Plot the distribution of factor events across time.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Divides the time span into \texttt{num\_bars} intervals.
+  \item Counts events in each interval.
+  \item Displays as a bar chart.
+\end{itemize}
+
+\paragraph{Returns}
+A matplotlib axes object.
+
+\subsection{Constants}
+
+\subsubsection{\texttt{DECIMAL\_TO\_BPS = 10000}}
+Conversion factor for decimal returns to basis points. Used throughout the module when displaying returns-related plots.
+
+\subsection{Dependencies and conventions}
+
+\begin{itemize}
+  \item \textbf{Visualization}: seaborn, matplotlib, scipy.stats
+  \item \textbf{Analysis}: pandas, numpy, statsmodels
+  \item \textbf{Internal}: \texttt{alphalens.utils}, \texttt{alphalens.performance}
+\end{itemize}
+
+\paragraph{Color conventions}
+\begin{itemize}
+  \item \textbf{Coolwarm reversed}: Red represents low/negative quantiles; blue represents high/positive quantiles.
+  \item \textbf{Colorblind palette}: All plots use seaborn's colorblind palette for accessibility.
+  \item \textbf{Line colors}: Green (forestgreen) for means and averages; blue (steelblue) for confidence bands; red (orangered) for rolling averages.
+\end{itemize}
+
+\paragraph{Plot conventions}
+\begin{itemize}
+  \item \textbf{Multi-subplot layouts}: Plots with multiple periods or groups create grid layouts (usually 1\(\times\)3 or 2\(\times\)2).
+  \item \textbf{Shared axes}: Where applicable, y-axes are shared across subplots to aid comparison.
+  \item \textbf{Reference lines}: Zero lines are included on relevant plots to indicate break-even or neutral positions.
+  \item \textbf{Log scales}: Cumulative returns plots use symmetric log scale (\texttt{symlog}) to handle very large or very small returns.
+  \item \textbf{Annotations}: Statistical summaries (mean, std dev) are included in text boxes on many plots.
+\end{itemize}
+
+\subsection{Practical usage}
+
+Typical workflow:
+
+\begin{enumerate}
+  \item Compute factor diagnostics with \texttt{alphalens.performance} functions.
+  \item Call plotting functions with the results.
+  \item All plotting functions are decorated with \texttt{@customize} to apply consistent styling.
+  \item Optional: use \texttt{set\_context=False} in any plotting call to skip automatic styling.
+\end{enumerate}
+
+Example call: \texttt{plot\_ic\_ts(ic\_data)} or \texttt{plot\_quantile\_returns\_bar(mean\_ret\_by\_q)}.
+
+\subsection{Notes}
+
+\begin{itemize}
+  \item All plotting functions accept an optional \texttt{ax} parameter for custom subplot layouts.
+  \item Return values vary: some functions print tables directly, others return \texttt{DataFrame}s or axes.
+  \item The \texttt{return\_df=False} parameter on table functions controls printing vs. returning.
+  \item Most functions are designed for Jupyter notebooks but work in any matplotlib environment.
+\end{itemize}
+
+\section{alphalens.tears}
+
+Tear sheet generation for comprehensive factor analysis. A tear sheet is a multi-plot report that visualizes factor performance from multiple perspectives, including returns analysis, information coefficient statistics, turnover metrics, and event studies.
+
+This module orchestrates the workflows of \texttt{alphalens.performance} and \texttt{alphalens.plotting} to produce production-quality analysis reports suitable for presentation and decision-making.
+
+\subsection{Helper class}
+
+\subsubsection{\texttt{GridFigure}}
+Utility class for managing matplotlib grid-based subplot layouts with automatic row/column navigation.
+
+\paragraph{Methods}
+\begin{itemize}
+  \item \texttt{\_\_init\_\_(rows, cols)} --- Create a grid figure with specified dimensions.
+  \item \texttt{next\_row()} --- Get the next full-width subplot (advances to the next row).
+  \item \texttt{next\_cell()} --- Get the next cell in the current row (auto-wraps to next row when full).
+  \item \texttt{close()} --- Close the figure and clean up resources.
+\end{itemize}
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Default figure size is 14 inches wide by 7 inches per row.
+  \item Horizontal and vertical spacing are set to 0.4 and 0.3 respectively for readability.
+\end{itemize}
+
+\subsection{Tear sheet generators}
+
+All tear sheet functions are decorated with \texttt{@plotting.customize} to apply consistent styling automatically. The \texttt{set\_context=False} parameter can be passed to any tear sheet to skip the decorator.
+
+\subsubsection{\texttt{create\_summary\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False)}}
+Generate a compact tear sheet with key returns, information, and turnover statistics.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Displays factor quantile statistics table.
+  \item Computes and shows alpha, beta, top/bottom quantile returns, and spreads.
+  \item Plots factor quantile returns bar chart.
+  \item Computes and displays IC summary statistics.
+  \item Analyzes turnover and factor rank autocorrelation.
+  \item All metrics respect the \texttt{long\_short} and \texttt{group\_neutral} flags.
+\end{itemize}
+
+\paragraph{Returns}
+Displays a matplotlib figure with the complete summary.
+
+\subsubsection{\texttt{create\_returns\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, by\_group=False)}}
+Detailed tear sheet focused on returns analysis by factor quantile.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Computes factor portfolio returns.
+  \item Displays alpha and beta metrics.
+  \item Shows mean quantile returns as a bar chart.
+  \item Plots return distributions using violin plots (by date across periods).
+  \item If \texttt{'1D'} returns are available, plots cumulative portfolio returns and quantile-level cumulative returns.
+  \item Displays top-minus-bottom quantile return spread over time with optional error bands.
+  \item When \texttt{by\_group=True}, creates separate bar charts for each asset group.
+\end{itemize}
+
+\paragraph{Parameters}
+\begin{itemize}
+  \item \texttt{long\_short} --- Enable long-short demeaning for dollar-neutral analysis.
+  \item \texttt{group\_neutral} --- Normalize weights and returns across groups.
+  \item \texttt{by\_group} --- Create separate visualizations per group.
+\end{itemize}
+
+\paragraph{Returns}
+Displays one or more matplotlib figures.
+
+\subsubsection{\texttt{create\_information\_tear\_sheet(factor\_data, group\_neutral=False, by\_group=False)}}
+Tear sheet focused on Information Coefficient (IC) analysis.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Displays IC summary statistics (mean, std, risk-adjusted IC, t-stat, p-value, skewness, kurtosis).
+  \item Plots IC time series with 22-day rolling average for each forward-return period.
+  \item Plots IC histograms with KDE.
+  \item Plots IC Q-Q plots against normal distribution.
+  \item When \texttt{by\_group=False} (default), creates a heatmap of monthly mean IC.
+  \item When \texttt{by\_group=True}, shows mean IC separately for each group.
+\end{itemize}
+
+\paragraph{Parameters}
+\begin{itemize}
+  \item \texttt{group\_neutral} --- Demean forward returns by group before computing IC.
+  \item \texttt{by\_group} --- Separate analysis by asset group.
+\end{itemize}
+
+\paragraph{Returns}
+Displays matplotlib figure(s).
+
+\subsubsection{\texttt{create\_turnover\_tear\_sheet(factor\_data, turnover\_periods=None)}}
+Tear sheet analyzing factor turnover and rank stability.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Displays quantile turnover statistics (mean turnover per quantile by period).
+  \item Displays factor rank autocorrelation statistics.
+  \item Plots time series of top and bottom quantile turnover for each period.
+  \item Plots factor rank autocorrelation over time for each period.
+  \item Automatically extracts day-multiple forward-return periods if \texttt{turnover\_periods} is not provided.
+\end{itemize}
+
+\paragraph{Parameters}
+\begin{itemize}
+  \item \texttt{turnover\_periods} --- Custom periods for turnover analysis. If not provided, uses exact day multiples from \texttt{factor\_data}.
+\end{itemize}
+
+\paragraph{Returns}
+Displays matplotlib figure with turnover and autocorrelation plots.
+
+\subsubsection{\texttt{create\_full\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, by\_group=False)}}
+Comprehensive tear sheet combining all analysis perspectives.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Displays factor quantile statistics.
+  \item Calls \texttt{create\_returns\_tear\_sheet()} with all parameters passed through.
+  \item Calls \texttt{create\_information\_tear\_sheet()} with appropriate flags.
+  \item Calls \texttt{create\_turnover\_tear\_sheet()} with defaults.
+  \item All component tear sheets skip automatic styling via \texttt{set\_context=False} to apply consistent styling once.
+\end{itemize}
+
+\paragraph{Parameters}
+\begin{itemize}
+  \item \texttt{long\_short} --- Enable long-short demeaning.
+  \item \texttt{group\_neutral} --- Enable group-neutral normalization.
+  \item \texttt{by\_group} --- Separate analysis per group.
+\end{itemize}
+
+\paragraph{Returns}
+Displays multiple matplotlib figures for all analyses.
+
+\subsubsection{\texttt{create\_event\_returns\_tear\_sheet(factor\_data, returns, avgretplot=(5, 15), long\_short=True, group\_neutral=False, std\_bar=True, by\_group=False)}}
+Tear sheet analyzing average cumulative returns around factor events (event study).
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Computes average cumulative returns within a window before and after each factor event.
+  \item Plots overall average cumulative returns with optional error bands.
+  \item When \texttt{std\_bar=True}, plots separate cumulative return traces for each quantile with standard deviation error bars.
+  \item When \texttt{by\_group=True}, repeats the analysis separately for each asset group.
+  \item Useful for analyzing the predictive power of a factor over different time horizons relative to the event date.
+\end{itemize}
+
+\paragraph{Parameters}
+\begin{itemize}
+  \item \texttt{factor\_data} --- MultiIndex factor data (no forward returns required for this tear sheet).
+  \item \texttt{returns} --- DataFrame of asset returns indexed by date.
+  \item \texttt{avgretplot} --- Tuple of \texttt{(periods\_before, periods\_after)} for the event window.
+  \item \texttt{long\_short} --- Demean cumulative returns.
+  \item \texttt{group\_neutral} --- Normalize returns by group.
+  \item \texttt{std\_bar} --- Include error bar plots by quantile.
+  \item \texttt{by\_group} --- Separate analysis per group.
+\end{itemize}
+
+\paragraph{Returns}
+Displays matplotlib figure(s) showing event-window average returns.
+
+\subsubsection{\texttt{create\_event\_study\_tear\_sheet(factor\_data, returns, avgretplot=(5, 15), rate\_of\_ret=True, n\_bars=50)}}
+Tear sheet for analyzing specific events or signals.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Displays factor quantile statistics.
+  \item Plots histogram of event distribution across time (divided into \texttt{n\_bars} intervals).
+  \item Calls \texttt{create\_event\_returns\_tear\_sheet()} internally for average cumulative returns analysis.
+  \item Computes and displays mean quantile returns.
+  \item Plots return distributions via violin plots by quantile.
+  \item Can optionally annualize returns using \texttt{rate\_of\_ret=True}.
+\end{itemize}
+
+\paragraph{Parameters}
+\begin{itemize}
+  \item \texttt{factor\_data} --- MultiIndex factor data indexed by event dates.
+  \item \texttt{returns} --- Asset returns DataFrame.
+  \item \texttt{avgretplot} --- Window for event-study cumulative returns.
+  \item \texttt{rate\_of\_ret} --- Convert simple returns to annualized rates.
+  \item \texttt{n\_bars} --- Number of time intervals for event distribution histogram.
+\end{itemize}
+
+\paragraph{Returns}
+Displays matplotlib figures for event analysis.
+
+\subsection{Data model}
+
+All tear sheet functions expect \texttt{factor\_data} to be a MultiIndex \texttt{DataFrame} with:
+
+\begin{itemize}
+  \item Index: \texttt{(date, asset)}
+  \item Columns:
+  \begin{itemize}
+    \item Forward-return columns (e.g., \texttt{1D}, \texttt{5D}, \texttt{10D})
+    \item \texttt{factor} --- The factor values
+    \item \texttt{factor\_quantile} --- Quantile assignments
+    \item \texttt{group} (optional) --- Asset group identifiers
+  \end{itemize}
+\end{itemize}
+
+This is the standard output format from \texttt{alphalens.utils.get\_clean\_factor\_and\_forward\_returns()}.
+
+\subsection{Dependencies and concepts}
+
+\begin{itemize}
+  \item \textbf{Visualization}: matplotlib, seaborn
+  \item \textbf{Analysis}: pandas, numpy, scipy.stats, statsmodels
+  \item \textbf{Internal}: \texttt{alphalens.plotting}, \texttt{alphalens.performance}, \texttt{alphalens.utils}
+\end{itemize}
+
+\paragraph{Key tear sheet concepts}
+\begin{itemize}
+  \item \textbf{Long-short analysis}: Factor values are demeaned, creating equal-weight long and short sides.
+  \item \textbf{Group-neutral analysis}: Asset groups are weighted equally, and returns are normalized within groups.
+  \item \textbf{Quantile analysis}: Assets are divided into quantiles/buckets based on factor values; returns and metrics are computed per quantile.
+  \item \textbf{Information Coefficient}: Spearman rank correlation between factor values and forward returns; higher IC indicates stronger predictive power.
+  \item \textbf{Turnover}: Proportion of assets entering/leaving a quantile each period; low turnover suggests stable rankings.
+  \item \textbf{Event study}: Analysis of returns in a window around specific factor events or signals.
+\end{itemize}
+
+\subsection{Practical usage}
+
+Typical workflow:
+
+\begin{enumerate}
+  \item Prepare cleaned factor data with \texttt{alphalens.utils.get\_clean\_factor\_and\_forward\_returns()}.
+  \item Call the desired tear sheet function.
+  \item For a quick overview, use \texttt{create\_summary\_tear\_sheet()}.
+  \item For detailed analysis, use \texttt{create\_full\_tear\_sheet()}.
+  \item For event-based analysis, use \texttt{create\_event\_returns\_tear\_sheet()} or \texttt{create\_event\_study\_tear\_sheet()}.
+\end{enumerate}
+
+Example:
+
+\begin{verbatim}
+from alphalens.tears import create_full_tear_sheet
+
+create_full_tear_sheet(factor_data, long_short=True, group_neutral=False)
+\end{verbatim}
+
+\subsection{Notes}
+
+\begin{itemize}
+  \item All tear sheets automatically apply consistent styling via the \texttt{@plotting.customize} decorator.
+  \item GridFigure handles the layout complexity automatically; most workflows don't require direct use.
+  \item The \texttt{by\_group} parameter enables side-by-side or panel analysis when asset groups are present.
+  \item For large datasets or many forward-return periods, tear sheets can take time to render; \texttt{create\_summary\_tear\_sheet()} is faster for quick feedback.
+  \item All plotting occurs within the tear sheet functions; call \texttt{plt.show()} or allow the Jupyter kernel to display results automatically.
+\end{itemize}
+
+\end{document}
+

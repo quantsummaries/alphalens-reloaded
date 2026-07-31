@@ -1,4 +1,5 @@
+#!/usr/bin/env bash
 pushd docs
-make html
-ghp-import -n -p build/html/
+uv run sphinx-build -b html source build/html
+uv run ghp-import -n -p build/html/
 popd

@@ -31,3 +31,5 @@ update
 conda/recipe
 _static
 _version.py
+
+sandbox/
