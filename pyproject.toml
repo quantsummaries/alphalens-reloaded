@@ -43,6 +43,7 @@ dependencies = [
     "pdoc3>=0.11.6",
     "parameterized>=0.9.0",
     "pyfolio-reloaded>=0.9.9",
+    "yfinance>=1.5.2",
 ]
 
 [project.urls]
@@ -185,6 +186,7 @@ commands =
 [dependency-groups]
 dev = [
     "ipykernel>=7.3.0",
+    "jupyter>=1.1.1",
     "parameterized>=0.9.0",
     "pytest>=9.1.1",
     "pytest-env>=1.7.0",

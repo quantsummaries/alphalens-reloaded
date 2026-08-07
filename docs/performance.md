@@ -87,7 +87,7 @@ Equivalently:
 - Uses `factor_weights()` to build the portfolio.
 - Multiplies weights by forward-return columns.
 - If `by_asset=True`, returns the weighted return contribution of each asset.
-- Otherwise aggregates to date-level portfolio returns.
+- Otherwise, aggregates to date-level portfolio returns.
 
 **Worked example**
 
@@ -216,7 +216,7 @@ Measure the autocorrelation of factor ranks across periods.
 
 **Behavior**
 
-- Ranks factor values by date before computing autocorrelation.
+- Ranks assets by their factor values within each date, then computes the correlation between each date’s rank vector and the rank vector period dates earlier.
 - Useful as a turnover/stability diagnostic.
 
 **Returns**
