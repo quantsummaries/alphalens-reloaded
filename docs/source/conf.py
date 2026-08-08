@@ -28,7 +28,7 @@ copyright = "2016, Quantopian, Inc."
 author = "Quantopian, Inc."
 
 release = version
-language = None
+language = 'en'
 
 exclude_patterns = []
 
@@ -39,7 +39,7 @@ pygments_style = "sphinx"
 todo_include_todos = False
 
 html_theme = "pydata_sphinx_theme"
-html_theme_path = pydata_sphinx_theme.get_html_theme_path()
+#html_theme_path = pydata_sphinx_theme.get_html_theme_path()
 
 html_theme_options = {
     "github_url": "https://github.com/stefan-jansen/alphalens-reloaded",

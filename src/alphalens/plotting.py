@@ -266,7 +266,7 @@ def plot_ic_ts(ic, ax=None):
     return ax
 
 
-def plot_ic_hist(ic, ax=None):
+def plot_ic_hist(ic, ax=None, plot_kws=None):
     """
     Plots Spearman Rank Information Coefficient histogram for a given factor.
 
@@ -276,12 +276,16 @@ def plot_ic_hist(ic, ax=None):
         DataFrame indexed by date, with IC for each forward return.
     ax : matplotlib.Axes, optional
         Axes upon which to plot.
+    plot_kws : dict, optional
+        Additional keyword arguments passed to sns.histplot. E.g., plot_kws={"bins": 20}.
 
     Returns
     -------
     ax : matplotlib.Axes
         The axes that were plotted on.
     """
+    if plot_kws is None:
+        plot_kws = {}
 
     ic = ic.copy()
 
@@ -294,19 +298,31 @@ def plot_ic_hist(ic, ax=None):
         ax = ax.flatten()
 
     for a, (period_num, ic) in zip(ax, ic.items()):
-        sns.histplot(ic.replace(np.nan, 0.0), kde=True, ax=a)
+        clean_ic = ic.replace(np.nan, 0.0)
+
+        has_variance = clean_ic.nunique() > 1
+
+        default_kws = {
+            'bins': 20,
+            'binrange': (-1, 1),
+            'kde': True if has_variance else False
+        }
+
+        merged_kws = {**default_kws, **plot_kws}
+
+        sns.histplot(clean_ic, ax=a, **merged_kws)
         a.set(title="%s Period IC" % period_num, xlabel="IC")
         a.set_xlim([-1, 1])
         a.text(
             0.05,
             0.95,
-            "Mean %.3f \n Std. %.3f" % (ic.mean(), ic.std()),
+            "Mean %.3f \n Std. %.3f" % (clean_ic.mean(), clean_ic.std()),
             fontsize=16,
             bbox={"facecolor": "white", "alpha": 1, "pad": 5},
             transform=a.transAxes,
             verticalalignment="top",
         )
-        a.axvline(ic.mean(), color="w", linestyle="dashed", linewidth=2)
+        a.axvline(clean_ic.mean(), color="w", linestyle="dashed", linewidth=2)
 
     if num_plots < len(ax):
         ax[-1].set_visible(False)
