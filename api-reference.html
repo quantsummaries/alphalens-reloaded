@@ -1561,7 +1561,7 @@ provided forward returns. Separates by group.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="alphalens.plotting.plot_ic_hist">
-<span class="sig-prename descclassname"><span class="pre">alphalens.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_ic_hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#alphalens.plotting.plot_ic_hist" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">alphalens.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_ic_hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#alphalens.plotting.plot_ic_hist" title="Link to this definition">#</a></dt>
 <dd><p>Plots Spearman Rank Information Coefficient histogram for a given factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1569,6 +1569,8 @@ provided forward returns. Separates by group.</p>
 <dt><strong>ic</strong><span class="classifier">pd.DataFrame</span></dt><dd><p>DataFrame indexed by date, with IC for each forward return.</p>
 </dd>
 <dt><strong>ax</strong><span class="classifier">matplotlib.Axes, optional</span></dt><dd><p>Axes upon which to plot.</p>
+</dd>
+<dt><strong>plot_kws</strong><span class="classifier">dict, optional</span></dt><dd><p>Additional keyword arguments passed to sns.histplot. E.g., plot_kws={“bins”: 20}.</p>
 </dd>
 </dl>
 </dd>

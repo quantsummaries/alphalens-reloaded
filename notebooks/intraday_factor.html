@@ -560,7 +560,6 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas_datareader.data</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">web</span>
 
 <span class="n">tickers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ticker_sector</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2017-01-01&#39;</span><span class="p">,</span>  <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2017-06-01&#39;</span><span class="p">)</span>
@@ -573,44 +572,44 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-[***                    6%                       ]  11 of 182 completedHTTP Error 404: {&#34;quoteSummary&#34;:{&#34;result&#34;:null,&#34;error&#34;:{&#34;code&#34;:&#34;Not Found&#34;,&#34;description&#34;:&#34;Quote not found for symbol: BK&#34;}}}
-[****                   8%                       ]  15 of 182 completed$BK: possibly delisted; no timezone found
-$CTL: possibly delisted; no timezone found
-[****                   9%                       ]  16 of 182 completed$ATVI: possibly delisted; no timezone found
-[*****                 10%                       ]  18 of 182 completed$BRK.B: possibly delisted; no timezone found
-[*****                 11%                       ]  20 of 182 completed$BF.B: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
-[******                13%                       ]  23 of 182 completed$MON: possibly delisted; no timezone found
-[******                13%                       ]  24 of 182 completed$HES: possibly delisted; no timezone found
-[*******               14%                       ]  25 of 182 completed$DWDP: possibly delisted; no timezone found
-[********              16%                       ]  30 of 182 completed$BCR: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
-[********              16%                       ]  30 of 182 completed$COG: possibly delisted; no timezone found
-[*********             19%                       ]  35 of 182 completed$CBG: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
-[************          26%                       ]  47 of 182 completed$ALXN: possibly delisted; no timezone found
-[**************        29%                       ]  52 of 182 completed$DRE: possibly delisted; no timezone found
-[**************        29%                       ]  53 of 182 completed$CXO: possibly delisted; no timezone found
-[****************      34%                       ]  61 of 182 completed$BHF: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1483246800, endDate = 1496289600&#34;)
-[****************      34%                       ]  62 of 182 completed$ANTM: possibly delisted; no timezone found
-[*****************     36%                       ]  65 of 182 completed$HCP: possibly delisted; no timezone found
-[*****************     36%                       ]  66 of 182 completed$ARNC: possibly delisted; no timezone found
-[********************  41%                       ]  74 of 182 completed$BLL: possibly delisted; no timezone found
-[********************  41%                       ]  75 of 182 completed$CELG: possibly delisted; no timezone found
-[**********************45%                       ]  81 of 182 completed$CHK: possibly delisted; no timezone found
-[**********************49%                       ]  89 of 182 completed$ANSS: possibly delisted; no timezone found
-[**********************50%                       ]  91 of 182 completed$ADS: possibly delisted; no timezone found
-[**********************61%****                   ]  111 of 182 completed$DPS: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
-[**********************66%*******                ]  120 of 182 completed$CERN: possibly delisted; no timezone found
-[**********************67%*******                ]  122 of 182 completed$GGP: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
-[**********************70%*********              ]  127 of 182 completed$AGN: possibly delisted; no timezone found
-[**********************79%*************          ]  143 of 182 completed$APC: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1483246800, endDate = 1496289600&#34;)
-[**********************83%***************        ]  151 of 182 completed$ABC: possibly delisted; no timezone found
-[**********************91%*******************    ]  165 of 182 completed$XEC: possibly delisted; no timezone found
-[**********************96%*********************  ]  174 of 182 completed$BHGE: possibly delisted; no timezone found
+[*                      3%                       ]  5 of 182 completedHTTP Error 404: {&#34;quoteSummary&#34;:{&#34;result&#34;:null,&#34;error&#34;:{&#34;code&#34;:&#34;Not Found&#34;,&#34;description&#34;:&#34;Quote not found for symbol: XEC&#34;}}}
+$HCP: possibly delisted; no timezone found
+[**                     4%                       ]  7 of 182 completed$XEC: possibly delisted; no timezone found
+[***                    7%                       ]  12 of 182 completed$ANSS: possibly delisted; no timezone found
+[***                    7%                       ]  13 of 182 completed$APC: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1483246800, endDate = 1496289600&#34;)
+[******                12%                       ]  22 of 182 completed$DWDP: possibly delisted; no timezone found
+[******                13%                       ]  24 of 182 completed$BCR: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
+[*******               14%                       ]  26 of 182 completed$GGP: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
+[************          24%                       ]  43 of 182 completed$CBG: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
+[************          26%                       ]  47 of 182 completed$CTL: possibly delisted; no timezone found
+$MON: possibly delisted; no timezone found
+[**************        30%                       ]  55 of 182 completed$BHGE: possibly delisted; no timezone found
+$CELG: possibly delisted; no timezone found
+[*******************   40%                       ]  73 of 182 completed$CERN: possibly delisted; no timezone found
+[********************  41%                       ]  74 of 182 completed$BF.B: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
+[**********************45%                       ]  82 of 182 completed$ATVI: possibly delisted; no timezone found
+[**********************55%*                      ]  100 of 182 completed$ALXN: possibly delisted; no timezone found
+[**********************58%***                    ]  106 of 182 completed$BRK.B: possibly delisted; no timezone found
+[**********************59%***                    ]  107 of 182 completed$AGN: possibly delisted; no timezone found
+[**********************60%****                   ]  110 of 182 completed$BHF: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1483246800, endDate = 1496289600&#34;)
+[**********************63%*****                  ]  114 of 182 completed$ABC: possibly delisted; no timezone found
+[**********************68%********               ]  123 of 182 completed$ARNC: possibly delisted; no timezone found
+[**********************72%**********             ]  131 of 182 completed$HES: possibly delisted; no timezone found
+[**********************76%***********            ]  138 of 182 completed$COG: possibly delisted; no timezone found
+[**********************76%***********            ]  139 of 182 completed$ADS: possibly delisted; no timezone found
+[**********************81%**************         ]  147 of 182 completed$CXO: possibly delisted; no timezone found
+[**********************84%***************        ]  152 of 182 completed$DRE: possibly delisted; no timezone found
+[**********************84%***************        ]  153 of 182 completed$BK: possibly delisted; no timezone found
+[**********************84%***************        ]  153 of 182 completed$CHK: possibly delisted; no timezone found
+[**********************87%*****************      ]  158 of 182 completed$ANTM: possibly delisted; no timezone found
+[**********************91%*******************    ]  165 of 182 completed$BLL: possibly delisted; no timezone found
+[**********************97%********************** ]  176 of 182 completed$DPS: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
 [*********************100%***********************]  182 of 182 completed
 
 31 Failed downloads:
-[&#39;BK&#39;, &#39;CTL&#39;, &#39;ATVI&#39;, &#39;BRK.B&#39;, &#39;MON&#39;, &#39;HES&#39;, &#39;DWDP&#39;, &#39;COG&#39;, &#39;ALXN&#39;, &#39;DRE&#39;, &#39;CXO&#39;, &#39;ANTM&#39;, &#39;HCP&#39;, &#39;ARNC&#39;, &#39;BLL&#39;, &#39;CELG&#39;, &#39;CHK&#39;, &#39;ANSS&#39;, &#39;ADS&#39;, &#39;CERN&#39;, &#39;AGN&#39;, &#39;ABC&#39;, &#39;XEC&#39;, &#39;BHGE&#39;]: possibly delisted; no timezone found
-[&#39;BF.B&#39;, &#39;BCR&#39;, &#39;CBG&#39;, &#39;DPS&#39;, &#39;GGP&#39;]: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
-[&#39;BHF&#39;, &#39;APC&#39;]: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1483246800, endDate = 1496289600&#34;)
+[&#39;HCP&#39;, &#39;XEC&#39;, &#39;ANSS&#39;, &#39;DWDP&#39;, &#39;CTL&#39;, &#39;MON&#39;, &#39;BHGE&#39;, &#39;CELG&#39;, &#39;CERN&#39;, &#39;ATVI&#39;, &#39;ALXN&#39;, &#39;BRK.B&#39;, &#39;AGN&#39;, &#39;ABC&#39;, &#39;ARNC&#39;, &#39;HES&#39;, &#39;COG&#39;, &#39;ADS&#39;, &#39;CXO&#39;, &#39;DRE&#39;, &#39;BK&#39;, &#39;CHK&#39;, &#39;ANTM&#39;, &#39;BLL&#39;]: possibly delisted; no timezone found
+[&#39;APC&#39;, &#39;BHF&#39;]: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1483246800, endDate = 1496289600&#34;)
+[&#39;BCR&#39;, &#39;GGP&#39;, &#39;CBG&#39;, &#39;BF.B&#39;, &#39;DPS&#39;]: possibly delisted; no price data found  (1d 2017-01-01 -&gt; 2017-06-01)
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -643,114 +642,13 @@ dtypes: float64(6)
 memory usage: 785.1+ KB
 </pre></div></div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Price</th>
-      <th>Adj Close</th>
-      <th>Close</th>
-      <th>High</th>
-      <th>Low</th>
-      <th>Open</th>
-      <th>Volume</th>
-    </tr>
-    <tr>
-      <th>date</th>
-      <th>asset</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="5" valign="top">2017-01-03 00:00:00+00:00</th>
-      <th>A</th>
-      <td>NaN</td>
-      <td>43.212627</td>
-      <td>43.454297</td>
-      <td>42.515500</td>
-      <td>42.692104</td>
-      <td>1739600.0</td>
-    </tr>
-    <tr>
-      <th>AAL</th>
-      <td>NaN</td>
-      <td>44.741230</td>
-      <td>45.746218</td>
-      <td>44.586617</td>
-      <td>45.688236</td>
-      <td>6737800.0</td>
-    </tr>
-    <tr>
-      <th>AAP</th>
-      <td>NaN</td>
-      <td>148.275238</td>
-      <td>148.935779</td>
-      <td>147.154040</td>
-      <td>148.431677</td>
-      <td>691300.0</td>
-    </tr>
-    <tr>
-      <th>AAPL</th>
-      <td>NaN</td>
-      <td>26.721235</td>
-      <td>26.762646</td>
-      <td>26.401455</td>
-      <td>26.640715</td>
-      <td>115127600.0</td>
-    </tr>
-    <tr>
-      <th>ABBV</th>
-      <td>NaN</td>
-      <td>41.781937</td>
-      <td>42.197010</td>
-      <td>41.467283</td>
-      <td>42.123368</td>
-      <td>9328200.0</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
-</div>
 </section>
 </section>
 <section id="Factor-Computation">
 <h1>Factor Computation<a class="headerlink" href="#Factor-Computation" title="Link to this heading">#</a></h1>
 <p>Our example factor ranks the stocks based on their overnight price gap (yesterday close to today open price). We’ll see if the factor has some alpha or if it is pure noise.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">available_tickers</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="s1">&#39;asset&#39;</span><span class="p">)</span>
@@ -759,7 +657,7 @@ memory usage: 785.1+ KB
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">today_open</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;Open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s1">&#39;asset&#39;</span><span class="p">)</span>
@@ -769,7 +667,7 @@ memory usage: 785.1+ KB
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">today_open</span> <span class="o">-</span> <span class="n">yesterday_close</span><span class="p">)</span> <span class="o">/</span> <span class="n">yesterday_close</span>
@@ -786,7 +684,7 @@ memory usage: 785.1+ KB
 <section id="Time-Adjustments">
 <h3>Time Adjustments<a class="headerlink" href="#Time-Adjustments" title="Link to this heading">#</a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fix time as Yahoo doesn&#39;t set it</span>
@@ -798,7 +696,7 @@ memory usage: 785.1+ KB
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pricing</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -806,7 +704,7 @@ memory usage: 785.1+ KB
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -878,123 +776,123 @@ memory usage: 785.1+ KB
   <tbody>
     <tr>
       <th>2017-01-03 09:30:00+00:00</th>
-      <td>42.692104</td>
+      <td>42.692127</td>
       <td>45.688236</td>
-      <td>148.431677</td>
-      <td>26.640715</td>
-      <td>42.123368</td>
-      <td>32.204594</td>
-      <td>100.182386</td>
+      <td>148.431646</td>
+      <td>26.640717</td>
+      <td>42.123379</td>
+      <td>32.204613</td>
+      <td>100.182370</td>
       <td>103.430000</td>
-      <td>60.891438</td>
-      <td>34.489502</td>
+      <td>60.891454</td>
+      <td>34.489499</td>
       <td>...</td>
-      <td>10.078508</td>
-      <td>48.747957</td>
-      <td>58.404270</td>
-      <td>64.659136</td>
-      <td>79.797028</td>
-      <td>35.413837</td>
-      <td>132.184616</td>
+      <td>10.042860</td>
+      <td>48.747946</td>
+      <td>58.404266</td>
+      <td>64.659159</td>
+      <td>79.797021</td>
+      <td>35.413852</td>
+      <td>132.184601</td>
       <td>16.310511</td>
-      <td>31.865655</td>
-      <td>59.947654</td>
+      <td>31.865647</td>
+      <td>59.947646</td>
     </tr>
     <tr>
       <th>2017-01-03 16:00:00+00:00</th>
-      <td>43.212627</td>
+      <td>43.212650</td>
       <td>44.741230</td>
-      <td>148.275238</td>
-      <td>26.721235</td>
-      <td>41.781937</td>
-      <td>32.554733</td>
-      <td>99.397179</td>
+      <td>148.275208</td>
+      <td>26.721237</td>
+      <td>41.781948</td>
+      <td>32.554752</td>
+      <td>99.397163</td>
       <td>103.480003</td>
-      <td>60.815956</td>
-      <td>34.866932</td>
+      <td>60.815971</td>
+      <td>34.866928</td>
       <td>...</td>
-      <td>10.062147</td>
-      <td>48.641876</td>
-      <td>57.981674</td>
-      <td>64.537651</td>
-      <td>79.646515</td>
-      <td>35.546474</td>
-      <td>131.962906</td>
+      <td>10.026557</td>
+      <td>48.641865</td>
+      <td>57.981670</td>
+      <td>64.537674</td>
+      <td>79.646507</td>
+      <td>35.546490</td>
+      <td>131.962891</td>
       <td>16.436594</td>
-      <td>32.231792</td>
-      <td>59.914692</td>
+      <td>32.231785</td>
+      <td>59.914684</td>
     </tr>
     <tr>
       <th>2017-01-04 09:30:00+00:00</th>
-      <td>43.621615</td>
+      <td>43.621626</td>
       <td>45.060119</td>
-      <td>148.075318</td>
-      <td>26.652224</td>
-      <td>41.935930</td>
-      <td>32.563072</td>
-      <td>99.781252</td>
+      <td>148.075257</td>
+      <td>26.652217</td>
+      <td>41.935934</td>
+      <td>32.563083</td>
+      <td>99.781244</td>
       <td>103.739998</td>
-      <td>61.034014</td>
-      <td>35.010358</td>
+      <td>61.034006</td>
+      <td>35.010361</td>
       <td>...</td>
-      <td>10.078509</td>
-      <td>48.764266</td>
-      <td>58.212187</td>
-      <td>64.871755</td>
+      <td>10.042861</td>
+      <td>48.764274</td>
+      <td>58.212179</td>
+      <td>64.871740</td>
       <td>80.031150</td>
-      <td>35.723325</td>
-      <td>134.009496</td>
+      <td>35.723318</td>
+      <td>134.009481</td>
       <td>16.406028</td>
-      <td>32.214066</td>
-      <td>60.066335</td>
+      <td>32.214058</td>
+      <td>60.066315</td>
     </tr>
     <tr>
       <th>2017-01-04 16:00:00+00:00</th>
-      <td>43.779629</td>
+      <td>43.779640</td>
       <td>45.127762</td>
-      <td>149.492020</td>
-      <td>26.691334</td>
-      <td>42.371090</td>
-      <td>32.813171</td>
-      <td>99.636154</td>
+      <td>149.491959</td>
+      <td>26.691326</td>
+      <td>42.371094</td>
+      <td>32.813183</td>
+      <td>99.636147</td>
       <td>104.139999</td>
-      <td>60.690140</td>
-      <td>34.806545</td>
+      <td>60.690132</td>
+      <td>34.806549</td>
       <td>...</td>
-      <td>10.659332</td>
-      <td>49.980110</td>
-      <td>58.192978</td>
-      <td>65.577873</td>
+      <td>10.621630</td>
+      <td>49.980118</td>
+      <td>58.192970</td>
+      <td>65.577858</td>
       <td>81.335594</td>
-      <td>36.448402</td>
-      <td>134.725815</td>
+      <td>36.448395</td>
+      <td>134.725800</td>
       <td>16.341076</td>
-      <td>32.196350</td>
-      <td>59.255516</td>
+      <td>32.196342</td>
+      <td>59.255497</td>
     </tr>
     <tr>
       <th>2017-01-05 09:30:00+00:00</th>
       <td>43.733151</td>
-      <td>44.953819</td>
-      <td>148.509871</td>
-      <td>26.668330</td>
-      <td>42.431345</td>
-      <td>32.713151</td>
+      <td>44.953827</td>
+      <td>148.509856</td>
+      <td>26.668320</td>
+      <td>42.431334</td>
+      <td>32.713128</td>
       <td>99.840977</td>
       <td>104.129997</td>
-      <td>60.732073</td>
+      <td>60.732081</td>
       <td>34.798987</td>
       <td>...</td>
-      <td>10.642971</td>
+      <td>10.605325</td>
       <td>49.874037</td>
-      <td>58.260206</td>
-      <td>65.577877</td>
-      <td>80.658270</td>
-      <td>36.227345</td>
-      <td>128.381278</td>
+      <td>58.260202</td>
+      <td>65.577861</td>
+      <td>80.658301</td>
+      <td>36.227337</td>
+      <td>128.381332</td>
       <td>16.371641</td>
-      <td>32.349891</td>
-      <td>59.453257</td>
+      <td>32.349895</td>
+      <td>59.453265</td>
     </tr>
   </tbody>
 </table>
@@ -1005,7 +903,7 @@ memory usage: 785.1+ KB
 <section id="Align-Factor-&amp;-Price">
 <h3>Align Factor &amp; Price<a class="headerlink" href="#Align-Factor-&-Price" title="Link to this heading">#</a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Align factor to open price</span>
@@ -1016,7 +914,7 @@ memory usage: 785.1+ KB
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -1024,7 +922,7 @@ memory usage: 785.1+ KB
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1096,21 +994,21 @@ memory usage: 785.1+ KB
   <tbody>
     <tr>
       <th>2017-01-04 09:30:00+00:00</th>
-      <td>0.009465</td>
+      <td>0.009464</td>
       <td>0.007127</td>
-      <td>-0.001348</td>
+      <td>-0.001349</td>
       <td>-0.002583</td>
-      <td>0.003686</td>
-      <td>2.561335e-04</td>
-      <td>3.864027e-03</td>
+      <td>0.003685</td>
+      <td>2.558963e-04</td>
+      <td>3.864104e-03</td>
       <td>0.002513</td>
-      <td>0.003586</td>
+      <td>0.003585</td>
       <td>0.004114</td>
       <td>...</td>
       <td>0.001626</td>
-      <td>0.002516</td>
+      <td>0.002517</td>
       <td>0.003976</td>
-      <td>5.176883e-03</td>
+      <td>5.176292e-03</td>
       <td>0.004829</td>
       <td>0.004975</td>
       <td>0.015509</td>
@@ -1125,8 +1023,8 @@ memory usage: 785.1+ KB
       <td>-0.006570</td>
       <td>-0.000862</td>
       <td>0.001422</td>
-      <td>-3.048178e-03</td>
-      <td>2.055711e-03</td>
+      <td>-3.049215e-03</td>
+      <td>2.055787e-03</td>
       <td>-0.000096</td>
       <td>0.000691</td>
       <td>-0.000217</td>
@@ -1134,13 +1032,13 @@ memory usage: 785.1+ KB
       <td>-0.001535</td>
       <td>-0.002122</td>
       <td>0.001155</td>
-      <td>5.300322e-08</td>
-      <td>-0.008328</td>
+      <td>5.016731e-08</td>
+      <td>-0.008327</td>
       <td>-0.006065</td>
       <td>-0.047092</td>
       <td>0.001870</td>
       <td>0.004769</td>
-      <td>0.003337</td>
+      <td>0.003338</td>
     </tr>
     <tr>
       <th>2017-01-06 09:30:00+00:00</th>
@@ -1149,20 +1047,20 @@ memory usage: 785.1+ KB
       <td>-0.003258</td>
       <td>0.001458</td>
       <td>0.001725</td>
-      <td>-6.777909e-07</td>
-      <td>7.063923e-08</td>
+      <td>-9.844165e-08</td>
+      <td>-6.223031e-09</td>
       <td>0.000661</td>
       <td>0.003646</td>
       <td>-0.016386</td>
       <td>...</td>
       <td>0.002259</td>
-      <td>-0.000328</td>
+      <td>-0.000329</td>
       <td>-0.003304</td>
-      <td>4.686254e-04</td>
+      <td>4.688610e-04</td>
       <td>0.001569</td>
-      <td>0.008054</td>
-      <td>0.001636</td>
-      <td>-0.000505</td>
+      <td>0.008055</td>
+      <td>0.001635</td>
+      <td>-0.000506</td>
       <td>-0.007251</td>
       <td>0.002710</td>
     </tr>
@@ -1173,8 +1071,8 @@ memory usage: 785.1+ KB
       <td>0.002535</td>
       <td>0.000339</td>
       <td>0.000157</td>
-      <td>2.452715e-04</td>
-      <td>-1.375693e-03</td>
+      <td>2.453837e-04</td>
+      <td>-1.375616e-03</td>
       <td>-0.003139</td>
       <td>0.000559</td>
       <td>-0.004696</td>
@@ -1182,10 +1080,10 @@ memory usage: 785.1+ KB
       <td>-0.000749</td>
       <td>0.009786</td>
       <td>-0.000327</td>
-      <td>-3.440380e-03</td>
-      <td>-0.005649</td>
+      <td>-3.439924e-03</td>
+      <td>-0.005650</td>
       <td>-0.005579</td>
-      <td>0.003747</td>
+      <td>0.003748</td>
       <td>-0.000726</td>
       <td>-0.000751</td>
       <td>-0.003164</td>
@@ -1198,19 +1096,19 @@ memory usage: 785.1+ KB
       <td>-0.001849</td>
       <td>-0.002492</td>
       <td>1.718161e-03</td>
-      <td>-5.218598e-04</td>
+      <td>-5.217821e-04</td>
       <td>0.000000</td>
       <td>-0.000973</td>
       <td>0.001117</td>
       <td>...</td>
-      <td>-0.002970</td>
+      <td>-0.002969</td>
       <td>0.012743</td>
       <td>0.000498</td>
-      <td>-7.973728e-04</td>
+      <td>-7.980586e-04</td>
       <td>-0.002906</td>
       <td>0.001702</td>
       <td>-0.001797</td>
-      <td>-0.003431</td>
+      <td>-0.003432</td>
       <td>0.000190</td>
       <td>0.001493</td>
     </tr>
@@ -1228,7 +1126,7 @@ memory usage: 785.1+ KB
 <section id="Get-Alphalens-Input">
 <h2>Get Alphalens Input<a class="headerlink" href="#Get-Alphalens-Input" title="Link to this heading">#</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">non_predictive_factor_data</span> <span class="o">=</span> <span class="n">alphalens</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_clean_factor_and_forward_returns</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span>
@@ -1252,7 +1150,7 @@ max_loss is 35.0%, not exceeded: OK!
 <section id="Returns-Tear-Sheet">
 <h2>Returns Tear Sheet<a class="headerlink" href="#Returns-Tear-Sheet" title="Link to this heading">#</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_returns_tear_sheet</span><span class="p">(</span><span class="n">non_predictive_factor_data</span><span class="p">)</span>
@@ -1306,18 +1204,18 @@ Returns Analysis
     </tr>
     <tr>
       <th>Mean Period Wise Return Top Quantile (bps)</th>
-      <td>-6.476</td>
-      <td>-1.602</td>
+      <td>-7.498</td>
+      <td>-1.883</td>
     </tr>
     <tr>
       <th>Mean Period Wise Return Bottom Quantile (bps)</th>
-      <td>0.788</td>
-      <td>1.020</td>
+      <td>0.883</td>
+      <td>1.062</td>
     </tr>
     <tr>
       <th>Mean Period Wise Spread (bps)</th>
-      <td>-7.264</td>
-      <td>-2.624</td>
+      <td>-8.381</td>
+      <td>-2.947</td>
     </tr>
   </tbody>
 </table>
@@ -1335,11 +1233,11 @@ Returns Analysis
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_intraday_factor_31_3.png" src="../_images/notebooks_intraday_factor_31_3.png" />
+<img alt="../_images/notebooks_intraday_factor_30_3.png" src="../_images/notebooks_intraday_factor_30_3.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_event_returns_tear_sheet</span><span class="p">(</span><span class="n">non_predictive_factor_data</span><span class="p">,</span> <span class="n">pricing</span><span class="p">);</span>
@@ -1358,15 +1256,7 @@ Returns Analysis
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_intraday_factor_32_1.png" src="../_images/notebooks_intraday_factor_32_1.png" />
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
+<img alt="../_images/notebooks_intraday_factor_31_1.png" src="../_images/notebooks_intraday_factor_31_1.png" />
 </div>
 </div>
 </section>

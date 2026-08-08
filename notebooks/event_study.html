@@ -544,6 +544,7 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2015-06-01&#39;</span><span class="p">,</span>  <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2017-01-01&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -552,64 +553,83 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-[****                   9%                       ]  22 of 247 completedHTTP Error 404: {&#34;quoteSummary&#34;:{&#34;result&#34;:null,&#34;error&#34;:{&#34;code&#34;:&#34;Not Found&#34;,&#34;description&#34;:&#34;Quote not found for symbol: CA&#34;}}}
-[*****                 11%                       ]  28 of 247 completed$IR: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
-[******                12%                       ]  29 of 247 completed$CA: possibly delisted; no timezone found
-[*******               15%                       ]  38 of 247 completed$ANSS: possibly delisted; no timezone found
-[********              16%                       ]  39 of 247 completed$MMC: possibly delisted; no timezone found
-[********              16%                       ]  40 of 247 completedHTTP Error 404: {&#34;quoteSummary&#34;:{&#34;result&#34;:null,&#34;error&#34;:{&#34;code&#34;:&#34;Not Found&#34;,&#34;description&#34;:&#34;Quote not found for symbol: LLL&#34;}}}
-[*********             18%                       ]  45 of 247 completed$ATVI: possibly delisted; no timezone found
-[*********             18%                       ]  45 of 247 completed$STI: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
-[*********             19%                       ]  48 of 247 completed$LLL: possibly delisted; no timezone found
-[**********            20%                       ]  49 of 247 completed$LUK: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01)
-[**********            21%                       ]  53 of 247 completed$PDCO: possibly delisted; no timezone found
-$BRK.B: possibly delisted; no timezone found
-[***********           23%                       ]  58 of 247 completed$FLIR: possibly delisted; no timezone found
-[************          24%                       ]  59 of 247 completed$PBCT: possibly delisted; no timezone found
-[************          26%                       ]  64 of 247 completed$DFS: possibly delisted; no timezone found
-[************          26%                       ]  65 of 247 completed$RE: possibly delisted; no timezone found
-[**************        29%                       ]  71 of 247 completed$HRS: possibly delisted; no timezone found
-[****************      34%                       ]  84 of 247 completed$CERN: possibly delisted; no timezone found
-[*****************     35%                       ]  86 of 247 completed$CMA: possibly delisted; no timezone found
-[********************* 43%                       ]  106 of 247 completed$KSU: possibly delisted; no timezone found
-[**********************45%                       ]  110 of 247 completed$RTN: possibly delisted; no timezone found
-[**********************45%                       ]  111 of 247 completed$ALXN: possibly delisted; no timezone found
-[**********************46%                       ]  113 of 247 completed$FBHS: possibly delisted; no timezone found
-[**********************49%                       ]  122 of 247 completed$ABC: possibly delisted; no timezone found
-[**********************51%                       ]  126 of 247 completed$JNPR: possibly delisted; no timezone found
-[**********************51%                       ]  127 of 247 completed$BK: possibly delisted; no timezone found
-[**********************54%*                      ]  134 of 247 completed$AGN: possibly delisted; no timezone found
-[**********************56%**                     ]  139 of 247 completed$BCR: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01)
-[**********************60%****                   ]  148 of 247 completed$RHT: possibly delisted; no timezone found
-[**********************63%*****                  ]  155 of 247 completed$FB: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
-[**********************66%*******                ]  163 of 247 completed$ETFC: possibly delisted; no timezone found
-[**********************66%*******                ]  164 of 247 completed$CELG: possibly delisted; no timezone found
-[**********************69%********               ]  170 of 247 completed$ADS: possibly delisted; no timezone found
-[**********************80%*************          ]  198 of 247 completed$INFO: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
-[**********************85%****************       ]  211 of 247 completed$VAR: possibly delisted; no timezone found
-[**********************90%******************     ]  222 of 247 completed$NLSN: possibly delisted; no timezone found
-[**********************92%*******************    ]  228 of 247 completed$PKI: possibly delisted; no timezone found
-[**********************93%********************   ]  229 of 247 completed$HOLX: possibly delisted; no timezone found
-[**********************94%********************   ]  232 of 247 completed$ANTM: possibly delisted; no timezone found
-[**********************94%********************   ]  233 of 247 completed$CTXS: possibly delisted; no timezone found
-[**********************95%*********************  ]  234 of 247 completed$MYL: possibly delisted; no timezone found
-[**********************95%*********************  ]  234 of 247 completed$JEC: possibly delisted; no timezone found
-[**********************96%*********************  ]  236 of 247 completed$BHF: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
-$ARNC: possibly delisted; no timezone found
-[**********************98%********************** ]  243 of 247 completed$SRCL: possibly delisted; no timezone found
+[*                      2%                       ]  6 of 247 completedHTTP Error 404: {&#34;quoteSummary&#34;:{&#34;result&#34;:null,&#34;error&#34;:{&#34;code&#34;:&#34;Not Found&#34;,&#34;description&#34;:&#34;Quote not found for symbol: BK&#34;}}}
+[**                     4%                       ]  9 of 247 completed$BK: possibly delisted; no timezone found
+[***                    7%                       ]  17 of 247 completed$HOLX: possibly delisted; no timezone found
+[*****                 10%                       ]  25 of 247 completed$AGN: possibly delisted; no timezone found
+[******                12%                       ]  29 of 247 completed$ATVI: possibly delisted; no timezone found
+$CMA: possibly delisted; no timezone found
+[*******               15%                       ]  38 of 247 completed$RHT: possibly delisted; no timezone found
+[*********             19%                       ]  46 of 247 completed$KSU: possibly delisted; no timezone found
+[**********            21%                       ]  53 of 247 completed$FB: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
+[************          26%                       ]  63 of 247 completed$JNPR: possibly delisted; no timezone found
+$CA: possibly delisted; no timezone found
+[************          26%                       ]  64 of 247 completed$RE: possibly delisted; no timezone found
+[**************        30%                       ]  73 of 247 completed$CERN: possibly delisted; no timezone found
+[****************      33%                       ]  82 of 247 completed$PBCT: possibly delisted; no timezone found
+[****************      34%                       ]  84 of 247 completed$LUK: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01)
+[******************    38%                       ]  94 of 247 completed$FBHS: possibly delisted; no timezone found
+$CELG: possibly delisted; no timezone found
+[*******************   40%                       ]  98 of 247 completed$HRS: possibly delisted; no timezone found
+$SRCL: possibly delisted; no timezone found
+[********************  41%                       ]  102 of 247 completed$BRK.B: possibly delisted; no timezone found
+[********************* 44%                       ]  109 of 247 completed$PKI: possibly delisted; no timezone found
+[**********************47%                       ]  116 of 247 completed$FLIR: possibly delisted; no timezone found
+[**********************48%                       ]  118 of 247 completed$ARNC: possibly delisted; no timezone found
+[**********************50%                       ]  124 of 247 completed$RTN: possibly delisted; no timezone found
+[**********************54%*                      ]  133 of 247 completed$ABC: possibly delisted; no timezone found
+[**********************56%**                     ]  138 of 247 completed$CTXS: possibly delisted; no timezone found
+[**********************57%**                     ]  140 of 247 completed$BHF: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
+[**********************57%**                     ]  142 of 247 completed$LLL: possibly delisted; no timezone found
+[**********************61%****                   ]  150 of 247 completed$INFO: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
+[**********************64%******                 ]  158 of 247 completed$MYL: possibly delisted; no timezone found
+[**********************65%******                 ]  161 of 247 completed$IR: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
+[**********************67%*******                ]  166 of 247 completed$DFS: possibly delisted; no timezone found
+[**********************68%********               ]  167 of 247 completed$PDCO: possibly delisted; no timezone found
+[**********************71%*********              ]  175 of 247 completed$ANTM: possibly delisted; no timezone found
+[**********************72%**********             ]  177 of 247 completed$STI: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
+[**********************74%***********            ]  184 of 247 completed$JEC: possibly delisted; no timezone found
+$ETFC: possibly delisted; no timezone found
+[**********************77%************           ]  191 of 247 completed$ADS: possibly delisted; no timezone found
+[**********************79%*************          ]  196 of 247 completed$ANSS: possibly delisted; no timezone found
+[**********************85%****************       ]  211 of 247 completed$NLSN: possibly delisted; no timezone found
+[**********************86%****************       ]  212 of 247 completed$BCR: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01)
+[**********************88%*****************      ]  218 of 247 completed$MMC: possibly delisted; no timezone found
+[**********************93%********************   ]  230 of 247 completed$VAR: possibly delisted; no timezone found
+[**********************94%********************   ]  231 of 247 completed$ALXN: possibly delisted; no timezone found
 [*********************100%***********************]  247 of 247 completed
 
 43 Failed downloads:
-[&#39;IR&#39;, &#39;STI&#39;, &#39;FB&#39;, &#39;INFO&#39;, &#39;BHF&#39;]: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
-[&#39;CA&#39;, &#39;ANSS&#39;, &#39;MMC&#39;, &#39;ATVI&#39;, &#39;LLL&#39;, &#39;PDCO&#39;, &#39;BRK.B&#39;, &#39;FLIR&#39;, &#39;PBCT&#39;, &#39;DFS&#39;, &#39;RE&#39;, &#39;HRS&#39;, &#39;CERN&#39;, &#39;CMA&#39;, &#39;KSU&#39;, &#39;RTN&#39;, &#39;ALXN&#39;, &#39;FBHS&#39;, &#39;ABC&#39;, &#39;JNPR&#39;, &#39;BK&#39;, &#39;AGN&#39;, &#39;RHT&#39;, &#39;ETFC&#39;, &#39;CELG&#39;, &#39;ADS&#39;, &#39;VAR&#39;, &#39;NLSN&#39;, &#39;PKI&#39;, &#39;HOLX&#39;, &#39;ANTM&#39;, &#39;CTXS&#39;, &#39;MYL&#39;, &#39;JEC&#39;, &#39;ARNC&#39;, &#39;SRCL&#39;]: possibly delisted; no timezone found
+[&#39;BK&#39;, &#39;HOLX&#39;, &#39;AGN&#39;, &#39;ATVI&#39;, &#39;CMA&#39;, &#39;RHT&#39;, &#39;KSU&#39;, &#39;JNPR&#39;, &#39;CA&#39;, &#39;RE&#39;, &#39;CERN&#39;, &#39;PBCT&#39;, &#39;FBHS&#39;, &#39;CELG&#39;, &#39;HRS&#39;, &#39;SRCL&#39;, &#39;BRK.B&#39;, &#39;PKI&#39;, &#39;FLIR&#39;, &#39;ARNC&#39;, &#39;RTN&#39;, &#39;ABC&#39;, &#39;CTXS&#39;, &#39;LLL&#39;, &#39;MYL&#39;, &#39;DFS&#39;, &#39;PDCO&#39;, &#39;ANTM&#39;, &#39;JEC&#39;, &#39;ETFC&#39;, &#39;ADS&#39;, &#39;ANSS&#39;, &#39;NLSN&#39;, &#39;MMC&#39;, &#39;VAR&#39;, &#39;ALXN&#39;]: possibly delisted; no timezone found
+[&#39;FB&#39;, &#39;BHF&#39;, &#39;INFO&#39;, &#39;IR&#39;, &#39;STI&#39;]: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1433131200, endDate = 1483246800&#34;)
 [&#39;LUK&#39;, &#39;BCR&#39;]: possibly delisted; no price data found  (1d 2015-06-01 -&gt; 2017-01-01)
 </pre></div></div>
 </div>
 </section>
 <section id="Data-Formatting">
 <h2>Data Formatting<a class="headerlink" href="#Data-Formatting" title="Link to this heading">#</a></h2>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+DatetimeIndex: 402 entries, 2015-06-01 to 2016-12-30
+Columns: 1278 entries, (&#39;Adj Close&#39;, &#39;ABC&#39;) to (&#39;Volume&#39;, &#39;XRAY&#39;)
+dtypes: float64(1079), int64(199)
+memory usage: 3.9 MB
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
@@ -619,7 +639,7 @@ $ARNC: possibly delisted; no timezone found
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
@@ -655,7 +675,7 @@ memory usage: 4.1+ MB
 <p>Also, make sure the event values are positive (it doesn’t matter the value but they must be positive) if you intend to go long on the events and use negative values if you intent to go short. This impacts the cumulative returns plots.</p>
 <p>Let’s create the event DataFrame where we “mark” (any value) each day a security price fall below 30$.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">today_price</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;Open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s1">&#39;asset&#39;</span><span class="p">)</span>
@@ -668,31 +688,31 @@ memory usage: 4.1+ MB
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 date                       asset
-2015-06-08 00:00:00+00:00  BAX      29.887307
-                           BEN      29.581980
-2015-06-12 00:00:00+00:00  BEN      29.873572
-2015-06-17 00:00:00+00:00  LUV      29.709388
-2015-06-29 00:00:00+00:00  BEN      29.730130
+2015-06-08 00:00:00+00:00  BAX      29.887305
+                           BEN      29.581990
+2015-06-12 00:00:00+00:00  BEN      29.873582
+2015-06-17 00:00:00+00:00  LUV      29.709386
+2015-06-29 00:00:00+00:00  BEN      29.730147
                                       ...
-2016-11-18 00:00:00+00:00  NTAP     28.935897
 2016-11-21 00:00:00+00:00  EW       29.683332
-2016-12-05 00:00:00+00:00  CMS      29.992486
+2016-11-23 00:00:00+00:00  CMS      29.976819
+2016-12-01 00:00:00+00:00  CMS      29.887034
 2016-12-13 00:00:00+00:00  EW       29.476667
-2016-12-29 00:00:00+00:00  INTC     29.806305
-Length: 127, dtype: float64
+2016-12-29 00:00:00+00:00  INTC     29.806299
+Length: 131, dtype: float64
 </pre></div></div>
 </div>
 <p>The pricing data passed to alphalens should contain the entry price for the assets so it must reflect the next available price after an event was observed at a given timestamp. Those prices must not be used in the calculation of the events for that time. Always double check to ensure you are not introducing lookahead bias to your study.</p>
 <p>The pricing data must also contain the exit price for the assets, for period 1 the price at the next timestamp will be used, for period 2 the price after 2 timestats will be used and so on.</p>
 <p>While Alphalens is time frequency agnostic, in our example we build ‘pricing’ DataFrame so that for each event timestamp it contains the assets open price for the next day afer the event is detected, this price will be used as the assets entry price. Also, we are not adding additional prices so the assets exit price will be the following days open prices (how many days depends on ‘periods’ argument).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pricing</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;Open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s1">&#39;asset&#39;</span><span class="p">)</span>
@@ -700,7 +720,7 @@ Length: 127, dtype: float64
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pricing</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
@@ -726,7 +746,7 @@ memory usage: 643.8 KB
 <h2>Configuration<a class="headerlink" href="#Configuration" title="Link to this heading">#</a></h2>
 <p>Before running Alphalens beware of some important options:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># we don&#39;t want any filtering to be done</span>
@@ -736,7 +756,7 @@ memory usage: 643.8 KB
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># We want to have only one  bin/quantile. So we can either use quantiles=1 or bins=1</span>
@@ -755,7 +775,7 @@ memory usage: 643.8 KB
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># You don&#39;t have to directly set &#39;long_short&#39; option when running alphalens.tears.create_event_study_tear_sheet</span>
@@ -772,7 +792,7 @@ memory usage: 643.8 KB
 <section id="Get-Alphalens-Input">
 <h2>Get Alphalens Input<a class="headerlink" href="#Get-Alphalens-Input" title="Link to this heading">#</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor_data</span> <span class="o">=</span> <span class="n">alphalens</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_clean_factor_and_forward_returns</span><span class="p">(</span><span class="n">events</span><span class="p">,</span>
@@ -798,11 +818,12 @@ max_loss is 35.0%, not exceeded: OK!
 <section id="Run-Event-Tearsheet">
 <h2>Run Event Tearsheet<a class="headerlink" href="#Run-Event-Tearsheet" title="Link to this heading">#</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_event_study_tear_sheet</span><span class="p">(</span>
-    <span class="n">factor_data</span><span class="p">,</span> <span class="n">pricing</span><span class="p">,</span> <span class="n">avgretplot</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_event_study_tear_sheet</span><span class="p">(</span><span class="n">factor_data</span><span class="p">,</span>
+                                              <span class="n">pricing</span><span class="p">,</span>
+                                              <span class="n">avgretplot</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">));</span>
 </pre></div>
 </div>
 </div>
@@ -857,10 +878,10 @@ Quantiles Statistics
     <tr>
       <th>1</th>
       <td>26.549999</td>
-      <td>29.993163</td>
-      <td>29.503415</td>
-      <td>0.558334</td>
-      <td>126</td>
+      <td>29.997997</td>
+      <td>29.509051</td>
+      <td>0.552223</td>
+      <td>130</td>
       <td>100.0</td>
     </tr>
   </tbody>
@@ -879,7 +900,7 @@ Quantiles Statistics
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_event_study_29_3.png" src="../_images/notebooks_event_study_29_3.png" />
+<img alt="../_images/notebooks_event_study_30_3.png" src="../_images/notebooks_event_study_30_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -894,14 +915,14 @@ Quantiles Statistics
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_event_study_29_5.png" src="../_images/notebooks_event_study_29_5.png" />
+<img alt="../_images/notebooks_event_study_30_5.png" src="../_images/notebooks_event_study_30_5.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_event_study_29_6.png" src="../_images/notebooks_event_study_29_6.png" />
+<img alt="../_images/notebooks_event_study_30_6.png" src="../_images/notebooks_event_study_30_6.png" />
 </div>
 </div>
 </section>
@@ -909,7 +930,7 @@ Quantiles Statistics
 <h2>Short Signal Analysis<a class="headerlink" href="#Short-Signal-Analysis" title="Link to this heading">#</a></h2>
 <p>If we wanted to analyze the performance of short signal, we only had to switch from positive to negative event values</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="o">-</span><span class="n">events</span>
@@ -917,7 +938,7 @@ Quantiles Statistics
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor_data</span> <span class="o">=</span> <span class="n">alphalens</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_clean_factor_and_forward_returns</span><span class="p">(</span><span class="n">events</span><span class="p">,</span>
@@ -940,11 +961,12 @@ max_loss is 35.0%, not exceeded: OK!
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_event_study_tear_sheet</span><span class="p">(</span>
-    <span class="n">factor_data</span><span class="p">,</span> <span class="n">pricing</span><span class="p">,</span> <span class="n">avgretplot</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_event_study_tear_sheet</span><span class="p">(</span><span class="n">factor_data</span><span class="p">,</span>
+                                              <span class="n">pricing</span><span class="p">,</span>
+                                              <span class="n">avgretplot</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">));</span>
 </pre></div>
 </div>
 </div>
@@ -998,11 +1020,11 @@ Quantiles Statistics
   <tbody>
     <tr>
       <th>1</th>
-      <td>-29.993163</td>
+      <td>-29.997997</td>
       <td>-26.549999</td>
-      <td>-29.503415</td>
-      <td>0.558334</td>
-      <td>126</td>
+      <td>-29.509051</td>
+      <td>0.552223</td>
+      <td>130</td>
       <td>100.0</td>
     </tr>
   </tbody>
@@ -1021,7 +1043,7 @@ Quantiles Statistics
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_event_study_34_3.png" src="../_images/notebooks_event_study_34_3.png" />
+<img alt="../_images/notebooks_event_study_35_3.png" src="../_images/notebooks_event_study_35_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -1036,22 +1058,14 @@ Quantiles Statistics
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_event_study_34_5.png" src="../_images/notebooks_event_study_34_5.png" />
+<img alt="../_images/notebooks_event_study_35_5.png" src="../_images/notebooks_event_study_35_5.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_event_study_34_6.png" src="../_images/notebooks_event_study_34_6.png" />
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
+<img alt="../_images/notebooks_event_study_35_6.png" src="../_images/notebooks_event_study_35_6.png" />
 </div>
 </div>
 </section>
