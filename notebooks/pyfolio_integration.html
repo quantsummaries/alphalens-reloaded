@@ -1,0 +1,2087 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Pyfolio Integration &#8212; Alphalens 0.1.dev619+dirty documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=7483cb1a"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/pyfolio_integration';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API" href="../api-reference.html" />
+    <link rel="prev" title="Event Study" href="event_study.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.dev619+dirty" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Alphalens 0.1.dev619+dirty documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="intraday_factor.html">
+    Intraday Factor
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="event_study.html">
+    Event Study
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Pyfolio Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api-reference.html">
+    API
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://ml4trading.io">
+    ML for Trading
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://exchange.ml4trading.io">
+    Community
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/stefan-jansen/alphalens-reloaded" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/ml4trading" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="intraday_factor.html">
+    Intraday Factor
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="event_study.html">
+    Event Study
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Pyfolio Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api-reference.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://ml4trading.io">
+    ML for Trading
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://exchange.ml4trading.io">
+    Community
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/stefan-jansen/alphalens-reloaded" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/ml4trading" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Pyfolio Integration</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="Pyfolio-Integration">
+<h1>Pyfolio Integration<a class="headerlink" href="#Pyfolio-Integration" title="Link to this heading">#</a></h1>
+<p>Alphalens can simulate the performance of a portfolio where the factor values are use to weight stocks. Once the portfolio is built, it can be analyzed by Pyfolio. For details on how this portfolio is built see:</p>
+<ul class="simple">
+<li><p>alphalens.performance.factor_returns</p></li>
+<li><p>alphalens.performance.cumulative_returns</p></li>
+<li><p>alphalens.performance.create_pyfolio_input</p></li>
+</ul>
+<section id="Imports-&amp;-Settings">
+<h2>Imports &amp; Settings<a class="headerlink" href="#Imports-&-Settings" title="Link to this heading">#</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">alphalens</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyfolio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Load-Data">
+<h2>Load Data<a class="headerlink" href="#Load-Data" title="Link to this heading">#</a></h2>
+<p>First load some stocks data</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tickers</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;ACN&#39;</span><span class="p">,</span> <span class="s1">&#39;ATVI&#39;</span><span class="p">,</span> <span class="s1">&#39;ADBE&#39;</span><span class="p">,</span> <span class="s1">&#39;AMD&#39;</span><span class="p">,</span> <span class="s1">&#39;AKAM&#39;</span><span class="p">,</span> <span class="s1">&#39;ADS&#39;</span><span class="p">,</span> <span class="s1">&#39;GOOGL&#39;</span><span class="p">,</span> <span class="s1">&#39;GOOG&#39;</span><span class="p">,</span> <span class="s1">&#39;APH&#39;</span><span class="p">,</span> <span class="s1">&#39;ADI&#39;</span><span class="p">,</span> <span class="s1">&#39;ANSS&#39;</span><span class="p">,</span> <span class="s1">&#39;AAPL&#39;</span><span class="p">,</span>
+<span class="s1">&#39;AVGO&#39;</span><span class="p">,</span> <span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="s1">&#39;CDNS&#39;</span><span class="p">,</span> <span class="s1">&#39;CSCO&#39;</span><span class="p">,</span> <span class="s1">&#39;CTXS&#39;</span><span class="p">,</span> <span class="s1">&#39;CTSH&#39;</span><span class="p">,</span> <span class="s1">&#39;GLW&#39;</span><span class="p">,</span> <span class="s1">&#39;CSRA&#39;</span><span class="p">,</span> <span class="s1">&#39;DXC&#39;</span><span class="p">,</span> <span class="s1">&#39;EBAY&#39;</span><span class="p">,</span> <span class="s1">&#39;EA&#39;</span><span class="p">,</span> <span class="s1">&#39;FFIV&#39;</span><span class="p">,</span> <span class="s1">&#39;FB&#39;</span><span class="p">,</span>
+<span class="s1">&#39;FLIR&#39;</span><span class="p">,</span> <span class="s1">&#39;IT&#39;</span><span class="p">,</span> <span class="s1">&#39;GPN&#39;</span><span class="p">,</span> <span class="s1">&#39;HRS&#39;</span><span class="p">,</span> <span class="s1">&#39;HPE&#39;</span><span class="p">,</span> <span class="s1">&#39;HPQ&#39;</span><span class="p">,</span> <span class="s1">&#39;INTC&#39;</span><span class="p">,</span> <span class="s1">&#39;IBM&#39;</span><span class="p">,</span> <span class="s1">&#39;INTU&#39;</span><span class="p">,</span> <span class="s1">&#39;JNPR&#39;</span><span class="p">,</span> <span class="s1">&#39;KLAC&#39;</span><span class="p">,</span> <span class="s1">&#39;LRCX&#39;</span><span class="p">,</span> <span class="s1">&#39;MA&#39;</span><span class="p">,</span> <span class="s1">&#39;MCHP&#39;</span><span class="p">,</span>
+<span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;MSI&#39;</span><span class="p">,</span> <span class="s1">&#39;NTAP&#39;</span><span class="p">,</span> <span class="s1">&#39;NFLX&#39;</span><span class="p">,</span> <span class="s1">&#39;NVDA&#39;</span><span class="p">,</span> <span class="s1">&#39;ORCL&#39;</span><span class="p">,</span> <span class="s1">&#39;PAYX&#39;</span><span class="p">,</span> <span class="s1">&#39;PYPL&#39;</span><span class="p">,</span> <span class="s1">&#39;QRVO&#39;</span><span class="p">,</span> <span class="s1">&#39;QCOM&#39;</span><span class="p">,</span> <span class="s1">&#39;RHT&#39;</span><span class="p">,</span> <span class="s1">&#39;CRM&#39;</span><span class="p">,</span> <span class="s1">&#39;STX&#39;</span><span class="p">,</span>
+<span class="s1">&#39;AMG&#39;</span><span class="p">,</span> <span class="s1">&#39;AFL&#39;</span><span class="p">,</span> <span class="s1">&#39;ALL&#39;</span><span class="p">,</span> <span class="s1">&#39;AXP&#39;</span><span class="p">,</span> <span class="s1">&#39;AIG&#39;</span><span class="p">,</span> <span class="s1">&#39;AMP&#39;</span><span class="p">,</span> <span class="s1">&#39;AON&#39;</span><span class="p">,</span> <span class="s1">&#39;AJG&#39;</span><span class="p">,</span> <span class="s1">&#39;AIZ&#39;</span><span class="p">,</span> <span class="s1">&#39;BAC&#39;</span><span class="p">,</span> <span class="s1">&#39;BK&#39;</span><span class="p">,</span> <span class="s1">&#39;BBT&#39;</span><span class="p">,</span> <span class="s1">&#39;BRK.B&#39;</span><span class="p">,</span> <span class="s1">&#39;BLK&#39;</span><span class="p">,</span> <span class="s1">&#39;HRB&#39;</span><span class="p">,</span>
+<span class="s1">&#39;BHF&#39;</span><span class="p">,</span> <span class="s1">&#39;COF&#39;</span><span class="p">,</span> <span class="s1">&#39;CBOE&#39;</span><span class="p">,</span> <span class="s1">&#39;SCHW&#39;</span><span class="p">,</span> <span class="s1">&#39;CB&#39;</span><span class="p">,</span> <span class="s1">&#39;CINF&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;CFG&#39;</span><span class="p">,</span> <span class="s1">&#39;CME&#39;</span><span class="p">,</span> <span class="s1">&#39;CMA&#39;</span><span class="p">,</span> <span class="s1">&#39;DFS&#39;</span><span class="p">,</span> <span class="s1">&#39;ETFC&#39;</span><span class="p">,</span> <span class="s1">&#39;RE&#39;</span><span class="p">,</span> <span class="s1">&#39;FITB&#39;</span><span class="p">,</span> <span class="s1">&#39;BEN&#39;</span><span class="p">,</span>
+<span class="s1">&#39;GS&#39;</span><span class="p">,</span> <span class="s1">&#39;HIG&#39;</span><span class="p">,</span> <span class="s1">&#39;HBAN&#39;</span><span class="p">,</span> <span class="s1">&#39;ICE&#39;</span><span class="p">,</span> <span class="s1">&#39;IVZ&#39;</span><span class="p">,</span> <span class="s1">&#39;JPM&#39;</span><span class="p">,</span> <span class="s1">&#39;KEY&#39;</span><span class="p">,</span> <span class="s1">&#39;LUK&#39;</span><span class="p">,</span> <span class="s1">&#39;LNC&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="s1">&#39;MTB&#39;</span><span class="p">,</span> <span class="s1">&#39;MMC&#39;</span><span class="p">,</span> <span class="s1">&#39;MET&#39;</span><span class="p">,</span> <span class="s1">&#39;MCO&#39;</span><span class="p">,</span> <span class="s1">&#39;MS&#39;</span><span class="p">,</span>
+<span class="s1">&#39;NDAQ&#39;</span><span class="p">,</span> <span class="s1">&#39;NAVI&#39;</span><span class="p">,</span> <span class="s1">&#39;NTRS&#39;</span><span class="p">,</span> <span class="s1">&#39;PBCT&#39;</span><span class="p">,</span> <span class="s1">&#39;PNC&#39;</span><span class="p">,</span> <span class="s1">&#39;PFG&#39;</span><span class="p">,</span> <span class="s1">&#39;PGR&#39;</span><span class="p">,</span> <span class="s1">&#39;PRU&#39;</span><span class="p">,</span> <span class="s1">&#39;RJF&#39;</span><span class="p">,</span> <span class="s1">&#39;RF&#39;</span><span class="p">,</span> <span class="s1">&#39;SPGI&#39;</span><span class="p">,</span> <span class="s1">&#39;STT&#39;</span><span class="p">,</span> <span class="s1">&#39;STI&#39;</span><span class="p">,</span> <span class="s1">&#39;SYF&#39;</span><span class="p">,</span> <span class="s1">&#39;TROW&#39;</span><span class="p">,</span>
+<span class="s1">&#39;ABT&#39;</span><span class="p">,</span> <span class="s1">&#39;ABBV&#39;</span><span class="p">,</span> <span class="s1">&#39;AET&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;ALXN&#39;</span><span class="p">,</span> <span class="s1">&#39;ALGN&#39;</span><span class="p">,</span> <span class="s1">&#39;AGN&#39;</span><span class="p">,</span> <span class="s1">&#39;ABC&#39;</span><span class="p">,</span> <span class="s1">&#39;AMGN&#39;</span><span class="p">,</span> <span class="s1">&#39;ANTM&#39;</span><span class="p">,</span> <span class="s1">&#39;BCR&#39;</span><span class="p">,</span> <span class="s1">&#39;BAX&#39;</span><span class="p">,</span> <span class="s1">&#39;BDX&#39;</span><span class="p">,</span> <span class="s1">&#39;BIIB&#39;</span><span class="p">,</span> <span class="s1">&#39;BSX&#39;</span><span class="p">,</span>
+<span class="s1">&#39;BMY&#39;</span><span class="p">,</span> <span class="s1">&#39;CAH&#39;</span><span class="p">,</span> <span class="s1">&#39;CELG&#39;</span><span class="p">,</span> <span class="s1">&#39;CNC&#39;</span><span class="p">,</span> <span class="s1">&#39;CERN&#39;</span><span class="p">,</span> <span class="s1">&#39;CI&#39;</span><span class="p">,</span> <span class="s1">&#39;COO&#39;</span><span class="p">,</span> <span class="s1">&#39;DHR&#39;</span><span class="p">,</span> <span class="s1">&#39;DVA&#39;</span><span class="p">,</span> <span class="s1">&#39;XRAY&#39;</span><span class="p">,</span> <span class="s1">&#39;EW&#39;</span><span class="p">,</span> <span class="s1">&#39;EVHC&#39;</span><span class="p">,</span> <span class="s1">&#39;ESRX&#39;</span><span class="p">,</span> <span class="s1">&#39;GILD&#39;</span><span class="p">,</span> <span class="s1">&#39;HCA&#39;</span><span class="p">,</span>
+<span class="s1">&#39;HSIC&#39;</span><span class="p">,</span> <span class="s1">&#39;HOLX&#39;</span><span class="p">,</span> <span class="s1">&#39;HUM&#39;</span><span class="p">,</span> <span class="s1">&#39;IDXX&#39;</span><span class="p">,</span> <span class="s1">&#39;ILMN&#39;</span><span class="p">,</span> <span class="s1">&#39;INCY&#39;</span><span class="p">,</span> <span class="s1">&#39;ISRG&#39;</span><span class="p">,</span> <span class="s1">&#39;IQV&#39;</span><span class="p">,</span> <span class="s1">&#39;JNJ&#39;</span><span class="p">,</span> <span class="s1">&#39;LH&#39;</span><span class="p">,</span> <span class="s1">&#39;LLY&#39;</span><span class="p">,</span> <span class="s1">&#39;MCK&#39;</span><span class="p">,</span> <span class="s1">&#39;MDT&#39;</span><span class="p">,</span> <span class="s1">&#39;MRK&#39;</span><span class="p">,</span> <span class="s1">&#39;MTD&#39;</span><span class="p">,</span>
+<span class="s1">&#39;MYL&#39;</span><span class="p">,</span> <span class="s1">&#39;PDCO&#39;</span><span class="p">,</span> <span class="s1">&#39;PKI&#39;</span><span class="p">,</span> <span class="s1">&#39;PRGO&#39;</span><span class="p">,</span> <span class="s1">&#39;PFE&#39;</span><span class="p">,</span> <span class="s1">&#39;DGX&#39;</span><span class="p">,</span> <span class="s1">&#39;REGN&#39;</span><span class="p">,</span> <span class="s1">&#39;RMD&#39;</span><span class="p">,</span> <span class="s1">&#39;SYK&#39;</span><span class="p">,</span> <span class="s1">&#39;TMO&#39;</span><span class="p">,</span> <span class="s1">&#39;UNH&#39;</span><span class="p">,</span> <span class="s1">&#39;UHS&#39;</span><span class="p">,</span> <span class="s1">&#39;VAR&#39;</span><span class="p">,</span> <span class="s1">&#39;VRTX&#39;</span><span class="p">,</span> <span class="s1">&#39;WAT&#39;</span><span class="p">,</span>
+<span class="s1">&#39;MMM&#39;</span><span class="p">,</span> <span class="s1">&#39;AYI&#39;</span><span class="p">,</span> <span class="s1">&#39;ALK&#39;</span><span class="p">,</span> <span class="s1">&#39;ALLE&#39;</span><span class="p">,</span> <span class="s1">&#39;AAL&#39;</span><span class="p">,</span> <span class="s1">&#39;AME&#39;</span><span class="p">,</span> <span class="s1">&#39;AOS&#39;</span><span class="p">,</span> <span class="s1">&#39;ARNC&#39;</span><span class="p">,</span> <span class="s1">&#39;BA&#39;</span><span class="p">,</span> <span class="s1">&#39;CHRW&#39;</span><span class="p">,</span> <span class="s1">&#39;CAT&#39;</span><span class="p">,</span> <span class="s1">&#39;CTAS&#39;</span><span class="p">,</span> <span class="s1">&#39;CSX&#39;</span><span class="p">,</span> <span class="s1">&#39;CMI&#39;</span><span class="p">,</span> <span class="s1">&#39;DE&#39;</span><span class="p">,</span>
+<span class="s1">&#39;DAL&#39;</span><span class="p">,</span> <span class="s1">&#39;DOV&#39;</span><span class="p">,</span> <span class="s1">&#39;ETN&#39;</span><span class="p">,</span> <span class="s1">&#39;EMR&#39;</span><span class="p">,</span> <span class="s1">&#39;EFX&#39;</span><span class="p">,</span> <span class="s1">&#39;EXPD&#39;</span><span class="p">,</span> <span class="s1">&#39;FAST&#39;</span><span class="p">,</span> <span class="s1">&#39;FDX&#39;</span><span class="p">,</span> <span class="s1">&#39;FLS&#39;</span><span class="p">,</span> <span class="s1">&#39;FLR&#39;</span><span class="p">,</span> <span class="s1">&#39;FTV&#39;</span><span class="p">,</span> <span class="s1">&#39;FBHS&#39;</span><span class="p">,</span> <span class="s1">&#39;GD&#39;</span><span class="p">,</span> <span class="s1">&#39;GE&#39;</span><span class="p">,</span> <span class="s1">&#39;GWW&#39;</span><span class="p">,</span>
+<span class="s1">&#39;HON&#39;</span><span class="p">,</span> <span class="s1">&#39;INFO&#39;</span><span class="p">,</span> <span class="s1">&#39;ITW&#39;</span><span class="p">,</span> <span class="s1">&#39;IR&#39;</span><span class="p">,</span> <span class="s1">&#39;JEC&#39;</span><span class="p">,</span> <span class="s1">&#39;JBHT&#39;</span><span class="p">,</span> <span class="s1">&#39;JCI&#39;</span><span class="p">,</span> <span class="s1">&#39;KSU&#39;</span><span class="p">,</span> <span class="s1">&#39;LLL&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="s1">&#39;MAS&#39;</span><span class="p">,</span> <span class="s1">&#39;NLSN&#39;</span><span class="p">,</span> <span class="s1">&#39;NSC&#39;</span><span class="p">,</span> <span class="s1">&#39;NOC&#39;</span><span class="p">,</span> <span class="s1">&#39;PCAR&#39;</span><span class="p">,</span>
+<span class="s1">&#39;PH&#39;</span><span class="p">,</span> <span class="s1">&#39;PNR&#39;</span><span class="p">,</span> <span class="s1">&#39;PWR&#39;</span><span class="p">,</span> <span class="s1">&#39;RTN&#39;</span><span class="p">,</span> <span class="s1">&#39;RSG&#39;</span><span class="p">,</span> <span class="s1">&#39;RHI&#39;</span><span class="p">,</span> <span class="s1">&#39;ROK&#39;</span><span class="p">,</span> <span class="s1">&#39;COL&#39;</span><span class="p">,</span> <span class="s1">&#39;ROP&#39;</span><span class="p">,</span> <span class="s1">&#39;LUV&#39;</span><span class="p">,</span> <span class="s1">&#39;SRCL&#39;</span><span class="p">,</span> <span class="s1">&#39;TXT&#39;</span><span class="p">,</span> <span class="s1">&#39;TDG&#39;</span><span class="p">,</span> <span class="s1">&#39;UNP&#39;</span><span class="p">,</span> <span class="s1">&#39;UAL&#39;</span><span class="p">,</span>
+<span class="s1">&#39;AES&#39;</span><span class="p">,</span> <span class="s1">&#39;LNT&#39;</span><span class="p">,</span> <span class="s1">&#39;AEE&#39;</span><span class="p">,</span> <span class="s1">&#39;AEP&#39;</span><span class="p">,</span> <span class="s1">&#39;AWK&#39;</span><span class="p">,</span> <span class="s1">&#39;CNP&#39;</span><span class="p">,</span> <span class="s1">&#39;CMS&#39;</span><span class="p">,</span> <span class="s1">&#39;ED&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;DTE&#39;</span><span class="p">,</span> <span class="s1">&#39;DUK&#39;</span><span class="p">,</span> <span class="s1">&#39;EIX&#39;</span><span class="p">,</span> <span class="s1">&#39;ETR&#39;</span><span class="p">,</span> <span class="s1">&#39;ES&#39;</span><span class="p">,</span> <span class="s1">&#39;EXC&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<section id="YFinance-Download">
+<h3>YFinance Download<a class="headerlink" href="#YFinance-Download" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">yfinance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">yf</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;2015-01-01&#39;</span><span class="p">,</span>  <span class="n">end</span><span class="o">=</span><span class="s1">&#39;2017-01-01&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+[                       1%                       ]  3 of 247 completed$JEC: possibly delisted; no timezone found
+[*                      2%                       ]  5 of 247 completed$RE: possibly delisted; no timezone found
+[**                     4%                       ]  10 of 247 completed$ARNC: possibly delisted; no timezone found
+[**                     4%                       ]  11 of 247 completed$ATVI: possibly delisted; no timezone found
+[**                     4%                       ]  11 of 247 completed$ADS: possibly delisted; no timezone found
+[**                     5%                       ]  13 of 247 completed$LUK: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01)
+[******                12%                       ]  30 of 247 completed$JNPR: possibly delisted; no timezone found
+[******                13%                       ]  31 of 247 completed$HRS: possibly delisted; no timezone found
+[*******               15%                       ]  38 of 247 completed$LLL: possibly delisted; no timezone found
+[********              16%                       ]  39 of 247 completed$FBHS: possibly delisted; no timezone found
+[*********             18%                       ]  45 of 247 completed$HOLX: possibly delisted; no timezone found
+[*********             19%                       ]  46 of 247 completed$INFO: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1420088400, endDate = 1483246800&#34;)
+[*********             19%                       ]  47 of 247 completed$NLSN: possibly delisted; no timezone found
+[***********           22%                       ]  54 of 247 completed$ANTM: possibly delisted; no timezone found
+[***********           22%                       ]  55 of 247 completed$ALXN: possibly delisted; no timezone found
+[*************         27%                       ]  66 of 247 completed$PDCO: possibly delisted; no timezone found
+[*************         27%                       ]  67 of 247 completed$BHF: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1420088400, endDate = 1483246800&#34;)
+[*************         28%                       ]  68 of 247 completed$ABC: possibly delisted; no timezone found
+[****************      33%                       ]  81 of 247 completed$PBCT: possibly delisted; no timezone found
+[******************    38%                       ]  94 of 247 completed$AGN: possibly delisted; no timezone found
+[********************* 43%                       ]  106 of 247 completed$FLIR: possibly delisted; no timezone found
+[**********************45%                       ]  111 of 247 completed$CA: possibly delisted; no timezone found
+[**********************45%                       ]  112 of 247 completed$KSU: possibly delisted; no timezone found
+[**********************58%***                    ]  143 of 247 completed$RHT: possibly delisted; no timezone found
+[**********************58%***                    ]  144 of 247 completed$FB: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1420088400, endDate = 1483246800&#34;)
+[**********************60%****                   ]  149 of 247 completed$MYL: possibly delisted; no timezone found
+[**********************63%*****                  ]  156 of 247 completed$CTXS: possibly delisted; no timezone found
+[**********************64%******                 ]  157 of 247 completed$BRK.B: possibly delisted; no timezone found
+[**********************64%******                 ]  159 of 247 completed$BCR: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01)
+[**********************66%*******                ]  162 of 247 completed$ANSS: possibly delisted; no timezone found
+[**********************66%*******                ]  163 of 247 completed$DFS: possibly delisted; no timezone found
+[**********************66%*******                ]  164 of 247 completed$CMA: possibly delisted; no timezone found
+[**********************67%*******                ]  165 of 247 completed$MMC: possibly delisted; no timezone found
+[**********************69%********               ]  170 of 247 completed$IR: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1420088400, endDate = 1483246800&#34;)
+[**********************69%********               ]  171 of 247 completed$BK: possibly delisted; no timezone found
+[**********************69%********               ]  171 of 247 completed$STI: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1420088400, endDate = 1483246800&#34;)
+[**********************77%************           ]  189 of 247 completed$RTN: possibly delisted; no timezone found
+[**********************81%**************         ]  200 of 247 completed$SRCL: possibly delisted; no timezone found
+$ETFC: possibly delisted; no timezone found
+[**********************84%***************        ]  208 of 247 completed$CERN: possibly delisted; no timezone found
+[**********************85%****************       ]  209 of 247 completed$PKI: possibly delisted; no timezone found
+[**********************91%*******************    ]  225 of 247 completed$CELG: possibly delisted; no timezone found
+[**********************99%***********************]  245 of 247 completed$VAR: possibly delisted; no timezone found
+[*********************100%***********************]  247 of 247 completed
+
+43 Failed downloads:
+[&#39;JEC&#39;, &#39;RE&#39;, &#39;ARNC&#39;, &#39;ATVI&#39;, &#39;ADS&#39;, &#39;JNPR&#39;, &#39;HRS&#39;, &#39;LLL&#39;, &#39;FBHS&#39;, &#39;HOLX&#39;, &#39;NLSN&#39;, &#39;ANTM&#39;, &#39;ALXN&#39;, &#39;PDCO&#39;, &#39;ABC&#39;, &#39;PBCT&#39;, &#39;AGN&#39;, &#39;FLIR&#39;, &#39;CA&#39;, &#39;KSU&#39;, &#39;RHT&#39;, &#39;MYL&#39;, &#39;CTXS&#39;, &#39;BRK.B&#39;, &#39;ANSS&#39;, &#39;DFS&#39;, &#39;CMA&#39;, &#39;MMC&#39;, &#39;BK&#39;, &#39;RTN&#39;, &#39;SRCL&#39;, &#39;ETFC&#39;, &#39;CERN&#39;, &#39;PKI&#39;, &#39;CELG&#39;, &#39;VAR&#39;]: possibly delisted; no timezone found
+[&#39;LUK&#39;, &#39;BCR&#39;]: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01)
+[&#39;INFO&#39;, &#39;BHF&#39;, &#39;FB&#39;, &#39;IR&#39;, &#39;STI&#39;]: possibly delisted; no price data found  (1d 2015-01-01 -&gt; 2017-01-01) (Yahoo error = &#34;Data doesn&#39;t exist for startDate = 1420088400, endDate = 1483246800&#34;)
+</pre></div></div>
+</div>
+</section>
+<section id="Data-Formatting">
+<h3>Data Formatting<a class="headerlink" href="#Data-Formatting" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;asset&#39;</span><span class="p">]</span>
+<span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+MultiIndex: 101882 entries, (Timestamp(&#39;2015-01-02 00:00:00+0000&#39;, tz=&#39;UTC&#39;), &#39;A&#39;) to (Timestamp(&#39;2016-12-30 00:00:00+0000&#39;, tz=&#39;UTC&#39;), &#39;XRAY&#39;)
+Data columns (total 6 columns):
+ #   Column     Non-Null Count   Dtype
+---  ------     --------------   -----
+ 0   Adj Close  0 non-null       float64
+ 1   Close      101882 non-null  float64
+ 2   High       101882 non-null  float64
+ 3   Low        101882 non-null  float64
+ 4   Open       101882 non-null  float64
+ 5   Volume     101882 non-null  float64
+dtypes: float64(6)
+memory usage: 5.1+ MB
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Compute-Factor">
+<h2>Compute Factor<a class="headerlink" href="#Compute-Factor" title="Link to this heading">#</a></h2>
+<p>We’ll compute a simple mean reversion factor looking at recent stocks performance: stocks that performed well in the last 5 days will have high rank and vice versa.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;Open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s1">&#39;asset&#39;</span><span class="p">)</span>
+<span class="n">factor</span> <span class="o">=</span> <span class="o">-</span><span class="n">factor</span><span class="o">.</span><span class="n">pct_change</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
+<span class="n">factor</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+date                       asset
+2015-01-09 00:00:00+00:00  A        0.004371
+                           AAL      0.011238
+                           AAPL    -0.011491
+                           ABBV    -0.019102
+                           ABT     -0.011050
+                                      ...
+2016-12-30 00:00:00+00:00  XRAY     0.021179
+                           PYPL     0.001998
+                           HPE      0.028440
+                           CSRA    -0.004107
+                           FTV     -0.001478
+Length: 100872, dtype: float64
+</pre></div></div>
+</div>
+<p>The pricing data passed to alphalens should contain the entry price for the assets so it must reflect the next available price after a factor value was observed at a given timestamp. Those prices must not be used in the calculation of the factor values for that time. Always double check to ensure you are not introducing lookahead bias to your study.</p>
+<p>The pricing data must also contain the exit price for the assets, for period 1 the price at the next timestamp will be used, for period 2 the price after 2 timestats will be used and so on.</p>
+<p>There are no restrinctions/assumptions on the time frequencies a factor should be computed at and neither on the specific time a factor should be traded (trading at the open vs trading at the close vs intraday trading), it is only required that factor and price DataFrames are properly aligned given the rules above.</p>
+<p>In our example, before the trading starts every day, we observe yesterday factor values. The price we pass to alphalens is the next available price after that factor observation: the daily open price that will be used as assets entry price. Also, we are not adding additional prices so the assets exit price will be the following days open prices (how many days depends on ‘periods’ argument). The retuns computed by Alphalens will therefore based on assets open prices.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pricing</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;Open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="s1">&#39;asset&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Run-Alphalens-Analysis">
+<h2>Run Alphalens Analysis<a class="headerlink" href="#Run-Alphalens-Analysis" title="Link to this heading">#</a></h2>
+<section id="Get-Input-Data">
+<h3>Get Input Data<a class="headerlink" href="#Get-Input-Data" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor_data</span> <span class="o">=</span> <span class="n">alphalens</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_clean_factor_and_forward_returns</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span>
+                                                                   <span class="n">pricing</span><span class="p">,</span>
+                                                                   <span class="n">periods</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+                                                                   <span class="n">quantiles</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                                                   <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Dropped 1.0% entries from factor data: 1.0% in forward returns computation and 0.0% in binning phase (set max_loss=0 to see potentially suppressed Exceptions).
+max_loss is 35.0%, not exceeded: OK!
+</pre></div></div>
+</div>
+</section>
+<section id="Summary-Tear-Sheet">
+<h3>Summary Tear Sheet<a class="headerlink" href="#Summary-Tear-Sheet" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alphalens</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_summary_tear_sheet</span><span class="p">(</span><span class="n">factor_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Quantiles Statistics
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>min</th>
+      <th>max</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>count</th>
+      <th>count %</th>
+    </tr>
+    <tr>
+      <th>factor_quantile</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>-0.750000</td>
+      <td>0.075580</td>
+      <td>-0.042620</td>
+      <td>0.038201</td>
+      <td>20128</td>
+      <td>20.158035</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.116319</td>
+      <td>0.094967</td>
+      <td>-0.014323</td>
+      <td>0.020766</td>
+      <td>19876</td>
+      <td>19.905659</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.080439</td>
+      <td>0.109978</td>
+      <td>-0.002114</td>
+      <td>0.019736</td>
+      <td>19917</td>
+      <td>19.946721</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.048482</td>
+      <td>0.127588</td>
+      <td>0.009922</td>
+      <td>0.020126</td>
+      <td>19876</td>
+      <td>19.905659</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>-0.028052</td>
+      <td>0.428571</td>
+      <td>0.036718</td>
+      <td>0.033673</td>
+      <td>20054</td>
+      <td>20.083925</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Returns Analysis
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1D</th>
+      <th>3D</th>
+      <th>5D</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Ann. alpha</th>
+      <td>0.311</td>
+      <td>0.141</td>
+      <td>0.103</td>
+    </tr>
+    <tr>
+      <th>beta</th>
+      <td>0.108</td>
+      <td>0.048</td>
+      <td>0.052</td>
+    </tr>
+    <tr>
+      <th>Mean Period Wise Return Top Quantile (bps)</th>
+      <td>5.391</td>
+      <td>2.621</td>
+      <td>2.016</td>
+    </tr>
+    <tr>
+      <th>Mean Period Wise Return Bottom Quantile (bps)</th>
+      <td>-3.376</td>
+      <td>-1.929</td>
+      <td>-1.834</td>
+    </tr>
+    <tr>
+      <th>Mean Period Wise Spread (bps)</th>
+      <td>8.767</td>
+      <td>4.546</td>
+      <td>3.845</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Information Analysis
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1D</th>
+      <th>3D</th>
+      <th>5D</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>IC Mean</th>
+      <td>0.016</td>
+      <td>0.012</td>
+      <td>0.016</td>
+    </tr>
+    <tr>
+      <th>IC Std.</th>
+      <td>0.180</td>
+      <td>0.176</td>
+      <td>0.176</td>
+    </tr>
+    <tr>
+      <th>Risk-Adjusted IC</th>
+      <td>0.089</td>
+      <td>0.068</td>
+      <td>0.093</td>
+    </tr>
+    <tr>
+      <th>t-stat(IC)</th>
+      <td>1.983</td>
+      <td>1.503</td>
+      <td>2.058</td>
+    </tr>
+    <tr>
+      <th>p-value(IC)</th>
+      <td>0.048</td>
+      <td>0.133</td>
+      <td>0.040</td>
+    </tr>
+    <tr>
+      <th>IC Skew</th>
+      <td>0.050</td>
+      <td>0.126</td>
+      <td>0.052</td>
+    </tr>
+    <tr>
+      <th>IC Kurtosis</th>
+      <td>0.285</td>
+      <td>0.159</td>
+      <td>0.273</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Turnover Analysis
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1D</th>
+      <th>3D</th>
+      <th>5D</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Quantile 1 Mean Turnover</th>
+      <td>0.348</td>
+      <td>0.600</td>
+      <td>0.787</td>
+    </tr>
+    <tr>
+      <th>Quantile 2 Mean Turnover</th>
+      <td>0.605</td>
+      <td>0.741</td>
+      <td>0.799</td>
+    </tr>
+    <tr>
+      <th>Quantile 3 Mean Turnover</th>
+      <td>0.651</td>
+      <td>0.761</td>
+      <td>0.784</td>
+    </tr>
+    <tr>
+      <th>Quantile 4 Mean Turnover</th>
+      <td>0.604</td>
+      <td>0.743</td>
+      <td>0.796</td>
+    </tr>
+    <tr>
+      <th>Quantile 5 Mean Turnover</th>
+      <td>0.351</td>
+      <td>0.596</td>
+      <td>0.781</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1D</th>
+      <th>3D</th>
+      <th>5D</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Mean Factor Rank Autocorrelation</th>
+      <td>0.749</td>
+      <td>0.358</td>
+      <td>-0.016</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;Figure size 640x480 with 0 Axes&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_22_10.png" src="../_images/notebooks_pyfolio_integration_22_10.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Run-Pyfolio-Analysis">
+<h2>Run Pyfolio Analysis<a class="headerlink" href="#Run-Pyfolio-Analysis" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3>Get Input Data<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>We can see in Alphalens analysis that quantiles 1 and 5 are the most predictive so we’ll build a portfolio data using only those quantiles.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pf_returns</span><span class="p">,</span> <span class="n">pf_positions</span><span class="p">,</span> <span class="n">pf_benchmark</span> <span class="o">=</span> \
+    <span class="n">alphalens</span><span class="o">.</span><span class="n">performance</span><span class="o">.</span><span class="n">create_pyfolio_input</span><span class="p">(</span><span class="n">factor_data</span><span class="p">,</span>
+                                               <span class="n">period</span><span class="o">=</span><span class="s1">&#39;1D&#39;</span><span class="p">,</span>
+                                               <span class="n">capital</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                                               <span class="n">long_short</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                               <span class="n">group_neutral</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                               <span class="n">equal_weight</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                               <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span>
+                                               <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                               <span class="n">benchmark_period</span><span class="o">=</span><span class="s1">&#39;1D&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Pyfolio-Tearsheet">
+<h3>Pyfolio Tearsheet<a class="headerlink" href="#Pyfolio-Tearsheet" title="Link to this heading">#</a></h3>
+<p>Now that we have prepared the data we can run Pyfolio functions</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pyfolio</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_full_tear_sheet</span><span class="p">(</span><span class="n">pf_returns</span><span class="p">,</span>
+                                     <span class="n">positions</span><span class="o">=</span><span class="n">pf_positions</span><span class="p">,</span>
+                                     <span class="n">benchmark_rets</span><span class="o">=</span><span class="n">pf_benchmark</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;"><th>Start date</th><td colspan=2>2015-01-09</td></tr>
+    <tr style="text-align: right;"><th>End date</th><td colspan=2>2016-12-22</td></tr>
+    <tr style="text-align: right;"><th>Total months</th><td colspan=2>34</td></tr>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Backtest</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Annual return</th>
+      <td>8.102%</td>
+    </tr>
+    <tr>
+      <th>Cumulative returns</th>
+      <td>24.699%</td>
+    </tr>
+    <tr>
+      <th>Annual volatility</th>
+      <td>5.167%</td>
+    </tr>
+    <tr>
+      <th>Sharpe ratio</th>
+      <td>1.53</td>
+    </tr>
+    <tr>
+      <th>Calmar ratio</th>
+      <td>2.00</td>
+    </tr>
+    <tr>
+      <th>Stability</th>
+      <td>0.88</td>
+    </tr>
+    <tr>
+      <th>Max drawdown</th>
+      <td>-4.043%</td>
+    </tr>
+    <tr>
+      <th>Omega ratio</th>
+      <td>1.39</td>
+    </tr>
+    <tr>
+      <th>Sortino ratio</th>
+      <td>2.47</td>
+    </tr>
+    <tr>
+      <th>Skew</th>
+      <td>1.47</td>
+    </tr>
+    <tr>
+      <th>Kurtosis</th>
+      <td>19.73</td>
+    </tr>
+    <tr>
+      <th>Tail ratio</th>
+      <td>1.17</td>
+    </tr>
+    <tr>
+      <th>Daily value at risk</th>
+      <td>-0.62%</td>
+    </tr>
+    <tr>
+      <th>Gross leverage</th>
+      <td>0.69</td>
+    </tr>
+    <tr>
+      <th>Alpha</th>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>Beta</th>
+      <td>0.11</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Worst drawdown periods</th>
+      <th>Net drawdown in %</th>
+      <th>Peak date</th>
+      <th>Valley date</th>
+      <th>Recovery date</th>
+      <th>Duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>4.04</td>
+      <td>2016-03-30</td>
+      <td>2016-11-14</td>
+      <td>NaT</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.52</td>
+      <td>2016-01-04</td>
+      <td>2016-01-19</td>
+      <td>2016-02-01</td>
+      <td>21</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2.32</td>
+      <td>2015-02-04</td>
+      <td>2015-03-17</td>
+      <td>2015-04-07</td>
+      <td>45</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2.31</td>
+      <td>2015-09-17</td>
+      <td>2015-09-28</td>
+      <td>2015-10-22</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2.05</td>
+      <td>2015-08-18</td>
+      <td>2015-08-21</td>
+      <td>2015-08-24</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Stress Events</th>
+      <th>mean</th>
+      <th>min</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Fall2015</th>
+      <td>0.03%</td>
+      <td>-1.39%</td>
+      <td>3.51%</td>
+    </tr>
+    <tr>
+      <th>New Normal</th>
+      <td>0.03%</td>
+      <td>-1.39%</td>
+      <td>3.51%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Top 10 long positions of all time</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>asset</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>A</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEE</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEP</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AKAM</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AWK</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>BAX</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>BIIB</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>BLK</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>BMY</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>CBOE</th>
+      <td>1.25%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Top 10 short positions of all time</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>asset</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>AAL</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AIG</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ALGN</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ALK</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AMD</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AMGN</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>BAC</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>C</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>CFG</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>CHRW</th>
+      <td>-1.25%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Top 10 positions of all time</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>asset</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>A</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AAL</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEE</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEP</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AIG</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AKAM</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ALGN</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ALK</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AMD</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AMGN</th>
+      <td>1.25%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_29_6.png" src="../_images/notebooks_pyfolio_integration_29_6.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_29_7.png" src="../_images/notebooks_pyfolio_integration_29_7.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_29_8.png" src="../_images/notebooks_pyfolio_integration_29_8.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Subset-Performance">
+<h2>Subset Performance<a class="headerlink" href="#Subset-Performance" title="Link to this heading">#</a></h2>
+<section id="Weekday-Analysis">
+<h3>Weekday Analysis<a class="headerlink" href="#Weekday-Analysis" title="Link to this heading">#</a></h3>
+<p>Sometimes it might be useful to analyze subets of your factor data, for example it could be interesting to see the comparison of your factor in different days of the week. Below we’ll see how to select and analyze factor data corresponding to Mondays, the positions will be held the for a period of 5 days</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">monday_factor_data</span> <span class="o">=</span> <span class="n">factor_data</span><span class="p">[</span> <span class="n">factor_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">weekday</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pf_returns</span><span class="p">,</span> <span class="n">pf_positions</span><span class="p">,</span> <span class="n">pf_benchmark</span> <span class="o">=</span> \
+    <span class="n">alphalens</span><span class="o">.</span><span class="n">performance</span><span class="o">.</span><span class="n">create_pyfolio_input</span><span class="p">(</span><span class="n">monday_factor_data</span><span class="p">,</span>
+                                               <span class="n">period</span><span class="o">=</span><span class="s1">&#39;5D&#39;</span><span class="p">,</span>
+                                               <span class="n">capital</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                                               <span class="n">long_short</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                               <span class="n">group_neutral</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                               <span class="n">equal_weight</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                               <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span>
+                                               <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                               <span class="n">benchmark_period</span><span class="o">=</span><span class="s1">&#39;1D&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="id2">
+<h3>Pyfolio Tearsheet<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pyfolio</span><span class="o">.</span><span class="n">tears</span><span class="o">.</span><span class="n">create_full_tear_sheet</span><span class="p">(</span><span class="n">pf_returns</span><span class="p">,</span>
+                                     <span class="n">positions</span><span class="o">=</span><span class="n">pf_positions</span><span class="p">,</span>
+                                     <span class="n">benchmark_rets</span><span class="o">=</span><span class="n">pf_benchmark</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;"><th>Start date</th><td colspan=2>2015-01-12</td></tr>
+    <tr style="text-align: right;"><th>End date</th><td colspan=2>2016-12-19</td></tr>
+    <tr style="text-align: right;"><th>Total months</th><td colspan=2>33</td></tr>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Backtest</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Annual return</th>
+      <td>3.299%</td>
+    </tr>
+    <tr>
+      <th>Cumulative returns</th>
+      <td>9.549%</td>
+    </tr>
+    <tr>
+      <th>Annual volatility</th>
+      <td>5.329%</td>
+    </tr>
+    <tr>
+      <th>Sharpe ratio</th>
+      <td>0.64</td>
+    </tr>
+    <tr>
+      <th>Calmar ratio</th>
+      <td>0.39</td>
+    </tr>
+    <tr>
+      <th>Stability</th>
+      <td>0.42</td>
+    </tr>
+    <tr>
+      <th>Max drawdown</th>
+      <td>-8.433%</td>
+    </tr>
+    <tr>
+      <th>Omega ratio</th>
+      <td>1.37</td>
+    </tr>
+    <tr>
+      <th>Sortino ratio</th>
+      <td>1.16</td>
+    </tr>
+    <tr>
+      <th>Skew</th>
+      <td>4.48</td>
+    </tr>
+    <tr>
+      <th>Kurtosis</th>
+      <td>64.66</td>
+    </tr>
+    <tr>
+      <th>Tail ratio</th>
+      <td>1.23</td>
+    </tr>
+    <tr>
+      <th>Daily value at risk</th>
+      <td>-0.658%</td>
+    </tr>
+    <tr>
+      <th>Gross leverage</th>
+      <td>0.13</td>
+    </tr>
+    <tr>
+      <th>Alpha</th>
+      <td>0.03</td>
+    </tr>
+    <tr>
+      <th>Beta</th>
+      <td>0.15</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Worst drawdown periods</th>
+      <th>Net drawdown in %</th>
+      <th>Peak date</th>
+      <th>Valley date</th>
+      <th>Recovery date</th>
+      <th>Duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8.43</td>
+      <td>2015-12-20</td>
+      <td>2016-08-29</td>
+      <td>NaT</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.49</td>
+      <td>2015-02-08</td>
+      <td>2015-03-30</td>
+      <td>2015-04-27</td>
+      <td>56</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.84</td>
+      <td>2015-06-28</td>
+      <td>2015-08-17</td>
+      <td>2015-08-24</td>
+      <td>41</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.52</td>
+      <td>2015-10-04</td>
+      <td>2015-10-05</td>
+      <td>2015-10-12</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.44</td>
+      <td>2015-05-17</td>
+      <td>2015-05-18</td>
+      <td>2015-06-15</td>
+      <td>21</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Stress Events</th>
+      <th>mean</th>
+      <th>min</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Fall2015</th>
+      <td>0.10%</td>
+      <td>-0.70%</td>
+      <td>4.57%</td>
+    </tr>
+    <tr>
+      <th>New Normal</th>
+      <td>0.01%</td>
+      <td>-2.10%</td>
+      <td>4.57%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Top 10 long positions of all time</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>asset</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>A</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AAL</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AAPL</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ABBV</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ABT</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ACN</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ADI</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEE</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEP</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AES</th>
+      <td>1.25%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Top 10 short positions of all time</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>asset</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>A</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AAL</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AAPL</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ABBV</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ABT</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ACN</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ADBE</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>ADI</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AEE</th>
+      <td>-1.25%</td>
+    </tr>
+    <tr>
+      <th>AEP</th>
+      <td>-1.25%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Top 10 positions of all time</th>
+      <th>max</th>
+    </tr>
+    <tr>
+      <th>asset</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>A</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AAL</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AAPL</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ABBV</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ABT</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ACN</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ADBE</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>ADI</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEE</th>
+      <td>1.25%</td>
+    </tr>
+    <tr>
+      <th>AEP</th>
+      <td>1.25%</td>
+    </tr>
+  </tbody>
+</table></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_36_6.png" src="../_images/notebooks_pyfolio_integration_36_6.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_36_7.png" src="../_images/notebooks_pyfolio_integration_36_7.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_pyfolio_integration_36_8.png" src="../_images/notebooks_pyfolio_integration_36_8.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="event_study.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Event Study</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api-reference.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Imports-&amp;-Settings">Imports &amp; Settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-Data">Load Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#YFinance-Download">YFinance Download</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Data-Formatting">Data Formatting</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Compute-Factor">Compute Factor</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Run-Alphalens-Analysis">Run Alphalens Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Get-Input-Data">Get Input Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Summary-Tear-Sheet">Summary Tear Sheet</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Run-Pyfolio-Analysis">Run Pyfolio Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Get Input Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Pyfolio-Tearsheet">Pyfolio Tearsheet</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Subset-Performance">Subset Performance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Weekday-Analysis">Weekday Analysis</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Pyfolio Tearsheet</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/stefan-jansen/alphalens-reloaded/edit/main/docs/source/notebooks/pyfolio_integration.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/notebooks/pyfolio_integration.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2016, Quantopian, Inc..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
