@@ -16,6 +16,7 @@
 import warnings
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 
 from . import plotting
@@ -330,7 +331,7 @@ def create_returns_tear_sheet(
 
 
 @plotting.customize
-def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False):
+def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, save_file=None):
     """
     Creates a tear sheet for information analysis of a factor.
 
@@ -346,6 +347,8 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
         Demean forward returns by group before computing IC.
     by_group : bool
         If True, display graphs separately for each group.
+    save_file : str or None
+        If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     """
 
     ic = perf.factor_information_coefficient(factor_data, group_neutral)
@@ -383,12 +386,20 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
 
         plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row())
 
-    plt.show()
+    if save_file is not None:
+        if save_file.endswith(".pdf"):
+            with PdfPages(save_file) as pdf:
+                for fig_num in plt.get_fignums():
+                    pdf.savefig(plt.figure(fig_num), bbox_inches="tight")
+        else:
+            plt.savefig(save_file, bbox_inches="tight")
+    else:
+        plt.show()
     gf.close()
 
 
 @plotting.customize
-def create_turnover_tear_sheet(factor_data, turnover_periods=None):
+def create_turnover_tear_sheet(factor_data, turnover_periods=None, save_file=None):
     """
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -407,6 +418,10 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None):
         frequency at which factor values are computed i.e. the periods
         are 2h and 4h and the factor is computed daily and so values like
         ['1D', '2D'] could be used instead
+    save_file : str or None
+        If specified, the tear sheet will be saved to this file. If the file
+        extension is ".pdf", the tear sheet will be saved as a PDF. Otherwise,
+        it will be saved as an image file.
     """
 
     if turnover_periods is None:
@@ -460,7 +475,15 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None):
             autocorrelation[period], period=period, ax=gf.next_row()
         )
 
-    plt.show()
+    if save_file is not None:
+        if save_file.endswith(".pdf"):
+            with PdfPages(save_file) as pdf:
+                for fig_num in plt.get_fignums():
+                    pdf.savefig(plt.figure(fig_num), bbox_inches="tight")
+        else:
+            plt.savefig(save_file, bbox_inches="tight")
+    else:
+        plt.show()
     gf.close()
 
 
