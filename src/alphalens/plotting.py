@@ -177,7 +177,7 @@ def plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False
         utils.print_table(auto_corr.apply(lambda x: x.round(3)))
 
 
-def plot_information_table(ic_data, return_df=False):
+def plot_information_table(ic_data, return_df=False, as_figure=True):
     ic_summary_table = pd.DataFrame()
     ic_summary_table["IC Mean"] = ic_data.mean()
     ic_summary_table["IC Std."] = ic_data.std()
@@ -188,12 +188,31 @@ def plot_information_table(ic_data, return_df=False):
     ic_summary_table["IC Skew"] = stats.skew(ic_data)
     ic_summary_table["IC Kurtosis"] = stats.kurtosis(ic_data)
 
+    print("Information Analysis")
+    utils.print_table(ic_summary_table.apply(lambda x: x.round(3)).T)
+
     if return_df:
         return ic_summary_table
-    else:
-        print("Information Analysis")
-        utils.print_table(ic_summary_table.apply(lambda x: x.round(3)).T)
 
+    # Create a Matplotlib figure so `plt.get_fignums()` captures it
+    if as_figure:
+        fig, ax = plt.subplots(figsize=(8, 2))
+        ax.axis("off")
+        ax.axis("tight")
+        table_data = ic_summary_table.T.map(lambda x: f"{x:.3f}")
+
+        table = ax.table(
+            cellText=table_data.values,
+            colLabels=table_data.columns,
+            rowLabels=table_data.index,
+            loc="center",
+            cellLoc="center"
+        )
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
+        table.scale(1.2, 1.2)
+        ax.set_title("Information Analysis Summary", fontweight="bold", pad=10)
+        return fig
 
 def plot_quantile_statistics_table(factor_data, return_df=False):
     quantile_stats = factor_data.groupby("factor_quantile")["factor"].agg(
