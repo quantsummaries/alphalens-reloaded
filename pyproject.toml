@@ -1,7 +1,7 @@
 [project]
 name = "alphalens-reloaded"
 description = "Performance analysis of predictive (alpha) stock factors"
-requires-python = '>=3.10'
+requires-python = '>=3.9.5'
 dynamic = ["version"]
 readme = "README.md"
 authors = [
