@@ -59,7 +59,7 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
         return _ic
 
     date_idx = factor_data.index.names.index("date")
-    freq = factor_data.index.levels[date_idx].freq
+    freq = getattr(factor_data.index.levels[date_idx], "freq", None)
 
     factor_data = factor_data.copy()
 
@@ -74,7 +74,7 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
     if by_group:
         return ic
     else:
-        return ic.asfreq(freq)
+        return ic.asfreq(freq) if freq is not None else ic
 
 
 def mean_information_coefficient(
@@ -594,14 +594,20 @@ def quantile_turnover(quantile_factor, quantile, period=1):
 
     # keep DateTimeIndex frequency information
     date_idx = quantile_factor.index.names.index("date")
-    freq = quantile_factor.index.levels[date_idx].freq
+    freq = getattr(quantile_factor.index.levels[date_idx], "freq", None)
 
     quant_names = quantile_factor[quantile_factor == quantile]
-    quant_name_sets = (
-        quant_names.groupby(level=["date"])
-        .apply(lambda x: set(x.index.get_level_values("asset")))
-        .asfreq(freq)
-    )
+    if freq is not None:
+        quant_name_sets = (
+            quant_names.groupby(level=["date"])
+            .apply(lambda x: set(x.index.get_level_values("asset")))
+            .asfreq(freq)
+        )
+    else:
+        quant_name_sets = (
+            quant_names.groupby(level=["date"])
+            .apply(lambda x: set(x.index.get_level_values("asset")))
+        )
 
     name_shifted = quant_name_sets.shift(periods=period)
 
@@ -646,22 +652,30 @@ def factor_rank_autocorrelation(factor_data, period=1):
     # grouper = [factor_data.index.get_level_values('date')]
 
     date_idx = factor_data.index.names.index("date")
-    freq = factor_data.index.levels[date_idx].freq
+    freq = getattr(factor_data.index.levels[date_idx], "freq", None)
 
-    asset_ranks_by_day = (
-        factor_data.groupby(level="date")["factor"]
-        .rank()
-        .reset_index()
-        .pivot(index="date", columns="asset", values="factor")
-        .asfreq(freq)
-    )
+    if freq is not None:
+        asset_ranks_by_day = (
+            factor_data.groupby(level="date")["factor"]
+            .rank()
+            .reset_index()
+            .pivot(index="date", columns="asset", values="factor")
+            .asfreq(freq)
+        )
+    else:
+        asset_ranks_by_day = (
+            factor_data.groupby(level="date")["factor"]
+            .rank()
+            .reset_index()
+            .pivot(index="date", columns="asset", values="factor")
+        )
 
     # asset_factor_rank = ranks
 
     asset_shifted = asset_ranks_by_day.shift(period)
 
     return (
-        asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period).asfreq(freq)
+        asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period) if freq is None else asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period).asfreq(freq)
     )
 
 
