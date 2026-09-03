@@ -233,6 +233,8 @@ Typical Alphalens usage looks like this:
 3. Call `get_clean_factor_and_forward_returns()`.
 4. Pass the result into tear sheets or plotting helpers.
 
+The same cleaned output is also the required input for the new high-level wrappers in `alphalens.wrapper` (`return_analysis_wrapper`, `information_analysis_wrapper`, and `turnover_analysis_wrapper`).
+
 Example call: `get_clean_factor_and_forward_returns(factor=..., prices=..., periods=(1, 5, 10))`.
 
 ## Notes

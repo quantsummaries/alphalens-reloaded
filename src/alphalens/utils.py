@@ -16,6 +16,7 @@
 import pandas as pd
 import numpy as np
 import re
+import statsmodels.api as sm
 import warnings
 
 from IPython.display import display
@@ -26,6 +27,7 @@ from pandas.tseries.offsets import (
     BusinessDay,
 )
 from scipy.stats import mode
+from statsmodels.stats.diagnostic import acorr_ljungbox
 
 
 class NonMatchingTimezoneError(Exception):
@@ -171,7 +173,7 @@ def quantize_factor(
     if by_group:
         grouper.append("group")
 
-    factor_quantile = factor_data.groupby(grouper, group_keys=False)["factor"].apply(
+    factor_quantile = factor_data.groupby(grouper, observed=True, group_keys=False)["factor"].apply(
         quantile_calc, quantiles, bins, zero_aware, no_raise
     )
     factor_quantile.name = "factor_quantile"
@@ -1064,3 +1066,42 @@ def diff_custom_calendar_timedeltas(start, end, freq):
     timediff = end - start
     delta_days = timediff.components.days - actual_days
     return timediff - pd.Timedelta(days=delta_days)
+
+def ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -> pd.DataFrame:
+    """Adjusts the standard error of the information coefficient (IC) for autocorrelation.
+
+    Args:
+        daily_ic (pd.DataFrame): DataFrame (indexed by 'date') containing the daily IC values in columns.
+        lag (int): Number of lags to consider for the Ljung-Box test. Default is 5.
+
+    Returns:
+        pd.DataFrame: DataFrame with adjusted standard errors for the IC. Columns are the same as those
+        of the input 'daily_ic' DataFrame.
+    """
+    results = []
+    for col in daily_ic.columns:
+        ic_series = daily_ic[col].dropna()
+
+        # Ljung-Box test for lag-n autocorrelation
+        lag_autocorr = ic_series.autocorr(lag=lag)
+        lb_test = acorr_ljungbox(ic_series, lags=[lag], return_df=True)
+        lb_pvalue = lb_test['lb_pvalue'].values[0]
+
+        # Newey-West adjusted t-statistic for mean IC (accounts for autocorrelation): regression of IC on a constant
+        X = sm.add_constant(np.ones(len(ic_series)))
+        model = sm.OLS(ic_series, X).fit(cov_type='HAC', cov_kwds={'maxlags': lag})
+        nw_tstat = model.tvalues.iloc[0]
+        nw_pvalue = model.pvalues.iloc[0]
+
+        results.append(
+            {
+                'horizon': col,
+                f'lag{lag}_autocorr': lag_autocorr,
+                'lb_pvalue': lb_pvalue,
+                'nw_tstat': nw_tstat,
+                'nw_pvalue': nw_pvalue
+            }
+        )
+
+    return pd.DataFrame(results).set_index('horizon').T.round(3)
+

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>alphalens.wrapper API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>alphalens.wrapper</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="alphalens.wrapper.call_with_matching_args"><code class="name flex">
+<span>def <span class="ident">call_with_matching_args</span></span>(<span>func, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def call_with_matching_args(func, *args, **kwargs):
+    &#34;&#34;&#34;Filters kwargs to only those accepted by func, keeping all positional args.&#34;&#34;&#34;
+    sig = inspect.signature(func)
+    valid_keys = sig.parameters.keys()
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_keys}
+
+    return func(*args, **filtered_kwargs)</code></pre>
+</details>
+<div class="desc"><p>Filters kwargs to only those accepted by func, keeping all positional args.</p></div>
+</dd>
+<dt id="alphalens.wrapper.ic_autocor_adj"><code class="name flex">
+<span>def <span class="ident">ic_autocor_adj</span></span>(<span>daily_ic: pandas.core.frame.DataFrame, lag: int = 5) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;Adjusts the standard error of the information coefficient (IC) for autocorrelation.
+
+    Args:
+        daily_ic (pd.DataFrame): DataFrame (indexed by &#39;date&#39;) containing the daily IC values in columns.
+        lag (int): Number of lags to consider for the Ljung-Box test. Default is 5.
+
+    Returns:
+        pd.DataFrame: DataFrame with adjusted standard errors for the IC.
+    &#34;&#34;&#34;
+    results = []
+    for col in daily_ic.columns:
+        ic_series = daily_ic[col].dropna()
+
+        # Ljung-Box test for lag-n autocorrelation
+        lag_autocorr = ic_series.autocorr(lag=lag)
+        lb_test = acorr_ljungbox(ic_series, lags=[lag], return_df=True)
+        lb_pvalue = lb_test[&#39;lb_pvalue&#39;].values[0]
+
+        # Newey-West adjusted t-statistic for mean IC (accounts for autocorrelation): regression of IC on a constant
+        X = sm.add_constant(np.ones(len(ic_series)))
+        model = sm.OLS(ic_series, X).fit(cov_type=&#39;HAC&#39;, cov_kwds={&#39;maxlags&#39;: lag})
+        nw_tstat = model.tvalues.iloc[0]
+        nw_pvalue = model.pvalues.iloc[0]
+
+        results.append(
+            {
+                &#39;horizon&#39;: col,
+                f&#39;lag{lag}_autocorr&#39;: lag_autocorr,
+                &#39;lb_pvalue&#39;: lb_pvalue,
+                &#39;nw_tstat&#39;: nw_tstat,
+                &#39;nw_pvalue&#39;: nw_pvalue
+            }
+        )
+
+    return pd.DataFrame(results).set_index(&#39;horizon&#39;).T.round(3)</code></pre>
+</details>
+<div class="desc"><p>Adjusts the standard error of the information coefficient (IC) for autocorrelation.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>daily_ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame (indexed by 'date') containing the daily IC values in columns.</dd>
+<dt><strong><code>lag</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of lags to consider for the Ljung-Box test. Default is 5.</dd>
+<dt>Returns</dt>
+<dt>-----=</dt>
+<dt><code>pd.DataFrame</code></dt>
+<dd>DataFrame with adjusted standard errors for the IC.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.wrapper.information_analysis_wrapper"><code class="name flex">
+<span>def <span class="ident">information_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame, tear_sheet_filepath: str) ‑> dict[str, pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def information_analysis_wrapper(data: pd.DataFrame,
+                                 tear_sheet_filepath: str) -&gt; dict[str, pd.DataFrame]:
+    &#34;&#34;&#34;Wrapper for alphalens information analysis functions.
+
+    Args:
+        data (pd.DataFrame): Factor data in the format expected by alphalens.
+        tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
+    Returns:
+        dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
+    &#34;&#34;&#34;
+
+    # spearman correlation
+    daily_ic_spearman = alphalens.performance.factor_information_coefficient(factor_data=data,
+                                                                           by_group=False,
+                                                                           group_adjust=False,
+                                                                           ic_type=&#39;spearman&#39;)
+    ic_spearman = alphalens.plotting.plot_information_table(daily_ic_spearman.dropna(),
+                                                            return_df=True,
+                                                            as_figure=False,
+                                                            ic_type=&#39;spearman&#39;)
+    ic_spearman = ic_spearman.round(3).T
+    ic_spearman = pd.concat([ic_spearman, ic_autocor_adj(daily_ic_spearman, lag=1)], axis=0)
+
+    # pearson correlation
+    daily_ic_pearson = alphalens.performance.factor_information_coefficient(factor_data=data,
+                                                                           by_group=False,
+                                                                           group_adjust=False,
+                                                                           ic_type=&#39;pearson&#39;)
+    ic_pearson = alphalens.plotting.plot_information_table(daily_ic_pearson.dropna(),
+                                                           return_df=True,
+                                                           as_figure=False,
+                                                           ic_type=&#39;pearson&#39;)
+    ic_pearson = ic_pearson.round(3).T
+    ic_pearson = pd.concat([ic_pearson, ic_autocor_adj(daily_ic_pearson, lag=1)], axis=0)
+
+    # tear sheet
+    if tear_sheet_filepath:
+        ic_tble = alphalens.tears.create_information_tear_sheet(factor_data=data,
+                                                                group_neutral=False,
+                                                                by_group=False,
+                                                                return_df=True,
+                                                                save_file=tear_sheet_filepath)
+        print(f&#34;\nInformation tear sheet saved to {tear_sheet_filepath}\n&#34;)
+
+    return {&#39;ic_spearman&#39;: ic_spearman,
+            &#39;ic_pearson&#39;: ic_pearson}</code></pre>
+</details>
+<div class="desc"><p>Wrapper for alphalens information analysis functions.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Factor data in the format expected by alphalens.</dd>
+<dt><strong><code>tear_sheet_filepath</code></strong> :&ensp;<code>str</code></dt>
+<dd>File path to save the tear sheet. Do not save if None.</dd>
+<dt>Returns</dt>
+<dt>-----=</dt>
+<dt><code>dict[str, pd.DataFrame]</code></dt>
+<dd>Dictionary containing information coefficient and rank IC data frames.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.wrapper.return_analysis_wrapper"><code class="name flex">
+<span>def <span class="ident">return_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame, tear_sheet_filepath: str) ‑> dict[str, pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def return_analysis_wrapper(data: pd.DataFrame,
+                            tear_sheet_filepath: str) -&gt; dict[str, pd.DataFrame]:
+    &#34;&#34;&#34;Wrapper for alphalens return analysis functions.
+
+    Args:
+        data (pd.DataFrame): Factor data in the format expected by alphalens.
+        tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
+    Returns:
+        dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
+    &#34;&#34;&#34;
+    # data frames indexed by quantiles, with columns being the average forward returns or standard error of
+    # average forward returns
+    mean_return_by_q, std_err_by_q = alphalens.performance.mean_return_by_quantile(factor_data=data,
+                                                                                   by_date=False,
+                                                                                   by_group=False,
+                                                                                   demeaned=True,
+                                                                                   group_adjust=False
+                                                                                   )
+
+    if tear_sheet_filepath:
+        rtrns_tbl = alphalens.tears.create_returns_tear_sheet(factor_data=data,
+                                                              long_short=True,
+                                                              group_neutral=False,
+                                                              by_group=False,
+                                                              return_df=True,
+                                                              save_file=tear_sheet_filepath)
+        print(f&#34;\nReturns tear sheet saved to {tear_sheet_filepath}\n&#34;)
+
+    return {&#39;mean_return_by_q&#39;: mean_return_by_q,
+            &#39;std_err_by_q&#39;: std_err_by_q}</code></pre>
+</details>
+<div class="desc"><p>Wrapper for alphalens return analysis functions.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Factor data in the format expected by alphalens.</dd>
+<dt><strong><code>tear_sheet_filepath</code></strong> :&ensp;<code>str</code></dt>
+<dd>File path to save the tear sheet. Do not save if None.</dd>
+<dt>Returns</dt>
+<dt>-----=</dt>
+<dt><code>dict[str, pd.DataFrame]</code></dt>
+<dd>Dictionary containing mean / std error return by quantile and standard error by quantile data frames.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.wrapper.turnover_analysis_wrapper"><code class="name flex">
+<span>def <span class="ident">turnover_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame,<br>turnover_period: int,<br>period_unit: str,<br>tear_sheet_filepath: str) ‑> dict[str, pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def turnover_analysis_wrapper(data: pd.DataFrame,
+                              turnover_period: int,
+                              period_unit: str,
+                              tear_sheet_filepath: str) -&gt; dict[str, pd.DataFrame]:
+    &#34;&#34;&#34;Wrapper for alphalens turnover analysis functions.
+
+    Args:
+        data (pd.DataFrame): Factor data in the format expected by alphalens.
+        turnover_period (int): Number of period for turnover analysis.
+        tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
+    Returns:
+        dict[str, pd.DataFrame]: Dictionary containing turnover data frames.
+    &#34;&#34;&#34;
+    # Calculate turnover
+    quantile_factor = data[&#39;factor_quantile&#39;]
+
+    quantile_turnover = pd.concat([alphalens.performance.quantile_turnover(quantile_factor=quantile_factor,
+                                                                           quantile=q,
+                                                                           period=turnover_period)
+                                   for q in range(1, int(quantile_factor.max()) + 1)],
+                                  axis=1)
+
+    factor_autocorr = alphalens.performance.factor_rank_autocorrelation(factor_data=data,
+                                                                        period=turnover_period)
+
+    if tear_sheet_filepath:
+        alphalens.tears.create_turnover_tear_sheet(factor_data=data,
+                                                   turnover_periods=[f&#34;{turnover_period}{period_unit}&#34;],
+                                                   return_df=True,
+                                                   save_file=tear_sheet_filepath)
+        print(f&#34;\nTurnover tear sheet saved to {tear_sheet_filepath}\n&#34;)
+
+    return {&#39;turnover&#39;: quantile_turnover,
+            &#39;factor_autocorr&#39;: factor_autocorr}</code></pre>
+</details>
+<div class="desc"><p>Wrapper for alphalens turnover analysis functions.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Factor data in the format expected by alphalens.</dd>
+<dt><strong><code>turnover_period</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of period for turnover analysis.</dd>
+<dt><strong><code>tear_sheet_filepath</code></strong> :&ensp;<code>str</code></dt>
+<dd>File path to save the tear sheet. Do not save if None.</dd>
+<dt>Returns</dt>
+<dt>-----=</dt>
+<dt><code>dict[str, pd.DataFrame]</code></dt>
+<dd>Dictionary containing turnover data frames.</dd>
+</dl></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="alphalens" href="index.html">alphalens</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="alphalens.wrapper.call_with_matching_args" href="#alphalens.wrapper.call_with_matching_args">call_with_matching_args</a></code></li>
+<li><code><a title="alphalens.wrapper.ic_autocor_adj" href="#alphalens.wrapper.ic_autocor_adj">ic_autocor_adj</a></code></li>
+<li><code><a title="alphalens.wrapper.information_analysis_wrapper" href="#alphalens.wrapper.information_analysis_wrapper">information_analysis_wrapper</a></code></li>
+<li><code><a title="alphalens.wrapper.return_analysis_wrapper" href="#alphalens.wrapper.return_analysis_wrapper">return_analysis_wrapper</a></code></li>
+<li><code><a title="alphalens.wrapper.turnover_analysis_wrapper" href="#alphalens.wrapper.turnover_analysis_wrapper">turnover_analysis_wrapper</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

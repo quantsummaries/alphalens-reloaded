@@ -383,7 +383,7 @@ flag affects information analysis</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.tears.create_information_tear_sheet"><code class="name flex">
-<span>def <span class="ident">create_information_tear_sheet</span></span>(<span>factor_data, group_neutral=False, by_group=False)</span>
+<span>def <span class="ident">create_information_tear_sheet</span></span>(<span>factor_data,<br>group_neutral=False,<br>by_group=False,<br>return_df: bool = False,<br>save_file=None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -391,7 +391,7 @@ flag affects information analysis</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@plotting.customize
-def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False):
+def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, return_df: bool= False, save_file=None):
     &#34;&#34;&#34;
     Creates a tear sheet for information analysis of a factor.
 
@@ -407,11 +407,15 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
         Demean forward returns by group before computing IC.
     by_group : bool
         If True, display graphs separately for each group.
+    save_file : str or None
+        If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
+    return_df : bool
+        If True, the function will return the information table as a DataFrame.
     &#34;&#34;&#34;
 
-    ic = perf.factor_information_coefficient(factor_data, group_neutral)
-
-    plotting.plot_information_table(ic)
+    ic = perf.factor_information_coefficient(factor_data, group_neutral, ic_type=&#34;spearman&#34;)
+    ic = ic.dropna()
+    ic_tbl = plotting.plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=&#34;spearman&#34;)
 
     columns_wide = 2
     fr_cols = len(ic.columns)
@@ -432,7 +436,7 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
             factor_data,
             group_adjust=group_neutral,
             by_group=False,
-            by_time=&#34;M&#34;,
+            by_time=&#34;ME&#34;,
         )
         ax_monthly_ic_heatmap = [gf.next_cell() for x in range(fr_cols)]
         plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ax=ax_monthly_ic_heatmap)
@@ -444,8 +448,54 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
 
         plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row())
 
-    plt.show()
-    gf.close()</code></pre>
+    if save_file is not None:
+        if save_file.endswith(&#34;.pdf&#34;):
+            with PdfPages(save_file) as pdf:
+                for fig_num in plt.get_fignums():
+                    fig = plt.figure(fig_num)
+                    # skip empty figure 1
+                    if fig.get_axes():
+                        pdf.savefig(fig, bbox_inches=&#34;tight&#34;)
+        else:
+            # Collect non-empty figures
+            valid_figs = [
+                plt.figure(num) for num in plt.get_fignums()
+                if plt.figure(num).get_axes()
+            ]
+
+            pil_images = []
+            for fig in valid_figs:
+                # Save figure to in-memory bytes with tight boundaries
+                buf = io.BytesIO()
+                fig.savefig(buf, format=&#34;png&#34;, bbox_inches=&#34;tight&#34;, dpi=150)
+                buf.seek(0)
+                pil_images.append(Image.open(buf))
+
+            if pil_images:
+                # Determine maximum canvas width needed
+                max_width = max(img.width for img in pil_images)
+                total_height = sum(img.height for img in pil_images)
+
+                # Create a clean white background canvas
+                combined_image = Image.new(&#34;RGB&#34;, (max_width, total_height), (255, 255, 255))
+
+                # Paste each image centered horizontally
+                y_offset = 0
+                for img in pil_images:
+                    # Center-align narrower figures (like the table)
+                    x_offset = (max_width - img.width) // 2
+                    combined_image.paste(img, (x_offset, y_offset))
+                    y_offset += img.height
+
+                # Save final stitched PNG
+                combined_image.save(save_file)
+
+        plt.close(&#34;all&#34;)
+    else:
+        plt.show()
+    gf.close()
+
+    return ic_tbl</code></pre>
 </details>
 <div class="desc"><p>Creates a tear sheet for information analysis of a factor.</p>
 <h2 id="parameters">Parameters</h2>
@@ -460,10 +510,14 @@ each period, the factor quantile/bin that factor value belongs to, and
 <dd>Demean forward returns by group before computing IC.</dd>
 <dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True, display graphs separately for each group.</dd>
+<dt><strong><code>save_file</code></strong> :&ensp;<code>str</code> or <code>None</code></dt>
+<dd>If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.</dd>
+<dt><strong><code>return_df</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, the function will return the information table as a DataFrame.</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.tears.create_returns_tear_sheet"><code class="name flex">
-<span>def <span class="ident">create_returns_tear_sheet</span></span>(<span>factor_data, long_short=True, group_neutral=False, by_group=False)</span>
+<span>def <span class="ident">create_returns_tear_sheet</span></span>(<span>factor_data,<br>long_short=True,<br>group_neutral=False,<br>by_group=False,<br>return_df: bool = False,<br>save_file=None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -472,7 +526,7 @@ each period, the factor quantile/bin that factor value belongs to, and
 </summary>
 <pre><code class="python">@plotting.customize
 def create_returns_tear_sheet(
-    factor_data, long_short=True, group_neutral=False, by_group=False
+    factor_data, long_short=True, group_neutral=False, by_group=False, return_df: bool = False, save_file=None
 ):
     &#34;&#34;&#34;
     Creates a tear sheet for returns analysis of a factor.
@@ -497,6 +551,8 @@ def create_returns_tear_sheet(
         plots
     by_group : bool
         If True, display graphs separately for each group.
+    save_file : str or None
+        If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     &#34;&#34;&#34;
 
     factor_returns = perf.factor_returns(factor_data, long_short, group_neutral)
@@ -545,7 +601,7 @@ def create_returns_tear_sheet(
     vertical_sections = 2 + fr_cols * 3
     gf = GridFigure(rows=vertical_sections, cols=1)
 
-    plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant)
+    rtrns_tbl = plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant, return_df=return_df)
 
     plotting.plot_quantile_returns_bar(
         mean_quant_rateret,
@@ -592,8 +648,7 @@ def create_returns_tear_sheet(
         ax=ax_mean_quantile_returns_spread_ts,
     )
 
-    plt.show()
-    gf.close()
+    group_gf = None
 
     if by_group:
         (
@@ -618,17 +673,69 @@ def create_returns_tear_sheet(
         )
 
         vertical_sections = 1 + (((num_groups - 1) // 2) + 1)
-        gf = GridFigure(rows=vertical_sections, cols=2)
+        group_gf = GridFigure(rows=vertical_sections, cols=2)
 
-        ax_quantile_returns_bar_by_group = [gf.next_cell() for _ in range(num_groups)]
+        ax_quantile_returns_bar_by_group = [
+            group_gf.next_cell() for _ in range(num_groups)
+        ]
         plotting.plot_quantile_returns_bar(
             mean_quant_rateret_group,
             by_group=True,
             ylim_percentiles=(5, 95),
             ax=ax_quantile_returns_bar_by_group,
         )
+
+    if save_file is not None:
+        if save_file.endswith(&#34;.pdf&#34;):
+            with PdfPages(save_file) as pdf:
+                for fig_num in plt.get_fignums():
+                    fig = plt.figure(fig_num)
+                    # skip empty figure 1
+                    if fig.get_axes():
+                        pdf.savefig(fig, bbox_inches=&#34;tight&#34;)
+        else:
+            # Collect non-empty figures
+            valid_figs = [
+                plt.figure(num) for num in plt.get_fignums()
+                if plt.figure(num).get_axes()
+            ]
+
+            pil_images = []
+            for fig in valid_figs:
+                # Save figure to in-memory bytes with tight boundaries
+                buf = io.BytesIO()
+                fig.savefig(buf, format=&#34;png&#34;, bbox_inches=&#34;tight&#34;, dpi=150)
+                buf.seek(0)
+                pil_images.append(Image.open(buf))
+
+            if pil_images:
+                # Determine maximum canvas width needed
+                max_width = max(img.width for img in pil_images)
+                total_height = sum(img.height for img in pil_images)
+
+                # Create a clean white background canvas
+                combined_image = Image.new(&#34;RGB&#34;, (max_width, total_height), (255, 255, 255))
+
+                # Paste each image centered horizontally
+                y_offset = 0
+                for img in pil_images:
+                    # Center-align narrower figures (like the table)
+                    x_offset = (max_width - img.width) // 2
+                    combined_image.paste(img, (x_offset, y_offset))
+                    y_offset += img.height
+
+                # Save final stitched PNG
+                combined_image.save(save_file)
+
+        plt.close(&#34;all&#34;)
+    else:
         plt.show()
-        gf.close()</code></pre>
+
+    if group_gf is not None:
+        group_gf.close()
+    gf.close()
+
+    return rtrns_tbl</code></pre>
 </details>
 <div class="desc"><p>Creates a tear sheet for returns analysis of a factor.</p>
 <h2 id="parameters">Parameters</h2>
@@ -651,6 +758,8 @@ Additionally each group will weight the same in cumulative returns
 plots</dd>
 <dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True, display graphs separately for each group.</dd>
+<dt><strong><code>save_file</code></strong> :&ensp;<code>str</code> or <code>None</code></dt>
+<dd>If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.tears.create_summary_tear_sheet"><code class="name flex">
@@ -789,7 +898,7 @@ returns demeaning will occur on the group level.</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.tears.create_turnover_tear_sheet"><code class="name flex">
-<span>def <span class="ident">create_turnover_tear_sheet</span></span>(<span>factor_data, turnover_periods=None)</span>
+<span>def <span class="ident">create_turnover_tear_sheet</span></span>(<span>factor_data, turnover_periods=None, return_df=False, save_file=None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -797,7 +906,7 @@ returns demeaning will occur on the group level.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@plotting.customize
-def create_turnover_tear_sheet(factor_data, turnover_periods=None):
+def create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=False, save_file=None):
     &#34;&#34;&#34;
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -816,6 +925,10 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None):
         frequency at which factor values are computed i.e. the periods
         are 2h and 4h and the factor is computed daily and so values like
         [&#39;1D&#39;, &#39;2D&#39;] could be used instead
+    save_file : str or None
+        If specified, the tear sheet will be saved to this file. If the file
+        extension is &#34;.pdf&#34;, the tear sheet will be saved as a PDF. Otherwise,
+        it will be saved as an image file.
     &#34;&#34;&#34;
 
     if turnover_periods is None:
@@ -847,7 +960,7 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None):
         axis=1,
     )
 
-    plotting.plot_turnover_table(autocorrelation, quantile_turnover)
+    plotting.plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)
 
     fr_cols = len(turnover_periods)
     columns_wide = 1
@@ -869,7 +982,16 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None):
             autocorrelation[period], period=period, ax=gf.next_row()
         )
 
-    plt.show()
+    if save_file is not None:
+        if save_file.endswith(&#34;.pdf&#34;):
+            with PdfPages(save_file) as pdf:
+                for fig_num in plt.get_fignums():
+                    pdf.savefig(plt.figure(fig_num), bbox_inches=&#34;tight&#34;)
+        else:
+            plt.savefig(save_file, bbox_inches=&#34;tight&#34;)
+        plt.close(&#34;all&#34;)
+    else:
+        plt.show()
     gf.close()</code></pre>
 </details>
 <div class="desc"><p>Creates a tear sheet for analyzing the turnover properties of a factor.</p>
@@ -888,6 +1010,10 @@ can be useful when periods in 'factor_data' are not multiples of the
 frequency at which factor values are computed i.e. the periods
 are 2h and 4h and the factor is computed daily and so values like
 ['1D', '2D'] could be used instead</dd>
+<dt><strong><code>save_file</code></strong> :&ensp;<code>str</code> or <code>None</code></dt>
+<dd>If specified, the tear sheet will be saved to this file. If the file
+extension is ".pdf", the tear sheet will be saved as a PDF. Otherwise,
+it will be saved as an image file.</dd>
 </dl></div>
 </dd>
 </dl>

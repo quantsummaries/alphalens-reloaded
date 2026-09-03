@@ -45,7 +45,7 @@ Displays a matplotlib figure with the complete summary.
 
 ---
 
-### `create_returns_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False)`
+### `create_returns_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, return_df=False, save_file=None)`
 Detailed tear sheet focused on returns analysis by factor quantile.
 
 **Behavior**
@@ -57,20 +57,25 @@ Detailed tear sheet focused on returns analysis by factor quantile.
 - If '1D' returns are available, plots cumulative portfolio returns and quantile-level cumulative returns.
 - Displays top-minus-bottom quantile return spread over time with optional error bands.
 - When `by_group=True`, creates separate bar charts for each asset group.
+- When `save_file` is set:
+  - `*.pdf`: writes all generated return tear-sheet figures into one PDF file.
+  - other extensions: stitches all generated figures into one tall image file.
 
 **Parameters**
 
 - `long_short` — Enable long-short demeaning for dollar-neutral analysis.
 - `group_neutral` — Normalize weights and returns across groups.
 - `by_group` — Create separate visualizations per group.
+- `return_df` — Return the returns summary table as a `DataFrame` instead of only printing it.
+- `save_file` — Output path for saving all generated plots.
 
 **Returns**
 
-Displays one or more matplotlib figures.
+Returns the summary returns table when `return_df=True`; otherwise returns `None` after rendering/saving figures.
 
 ---
 
-### `create_information_tear_sheet(factor_data, group_neutral=False, by_group=False)`
+### `create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, return_df=False, save_file=None)`
 Tear sheet focused on Information Coefficient (IC) analysis.
 
 **Behavior**
@@ -81,19 +86,23 @@ Tear sheet focused on Information Coefficient (IC) analysis.
 - Plots IC Q-Q plots against normal distribution.
 - When `by_group=False` (default), creates a heatmap of monthly mean IC.
 - When `by_group=True`, shows mean IC separately for each group.
+- Uses Spearman IC explicitly when computing and labeling IC statistics.
+- When `save_file` is set, saves all generated figures into one file (`*.pdf` multipage, otherwise stitched image).
 
 **Parameters**
 
 - `group_neutral` — Demean forward returns by group before computing IC.
 - `by_group` — Separate analysis by asset group.
+- `return_df` — Forwarded to the IC table helper; currently not exposed as a returned DataFrame by this tear-sheet function.
+- `save_file` — Output path for saving generated plots.
 
 **Returns**
 
-Displays matplotlib figure(s).
+Returns the summary-table figure handle created by `plot_information_table(...)`, and displays/saves the rest of the tear-sheet plots.
 
 ---
 
-### `create_turnover_tear_sheet(factor_data, turnover_periods=None)`
+### `create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=False, save_file=None)`
 Tear sheet analyzing factor turnover and rank stability.
 
 **Behavior**
@@ -103,14 +112,17 @@ Tear sheet analyzing factor turnover and rank stability.
 - Plots time series of top and bottom quantile turnover for each period.
 - Plots factor rank autocorrelation over time for each period.
 - Automatically extracts day-multiple forward-return periods if `turnover_periods` is not provided.
+- Supports `save_file` output (`*.pdf` or image via matplotlib save).
 
 **Parameters**
 
 - `turnover_periods` — Custom periods for turnover analysis. If not provided, uses exact day multiples from `factor_data`.
+- `return_df` — Forwarded to `plot_turnover_table(...)` for table generation.
+- `save_file` — Output path for saving generated plots.
 
 **Returns**
 
-Displays matplotlib figure with turnover and autocorrelation plots.
+Displays or saves turnover figures; this function does not currently return the turnover tables.
 
 ---
 

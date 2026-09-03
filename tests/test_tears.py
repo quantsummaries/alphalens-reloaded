@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import warnings
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from unittest import TestCase
 from unittest.mock import patch, Mock
@@ -205,6 +207,33 @@ class TearsTestCase(TestCase):
         create_returns_tear_sheet(
             factor_data, long_short=False, group_neutral=False, by_group=False
         )
+
+    def test_create_returns_tear_sheet_save_file(self):
+        """
+        Test tear sheet can be written to a single file.
+        """
+
+        factor_data = get_clean_factor_and_forward_returns(
+            self.factor,
+            self.prices,
+            groupby=self.factor_groups,
+            quantiles=2,
+            periods=(1, 5, 10),
+            filter_zscore=None,
+        )
+
+        with TemporaryDirectory() as tmpdir:
+            save_file = Path(tmpdir) / "returns_tear_sheet.png"
+            create_returns_tear_sheet(
+                factor_data,
+                long_short=False,
+                group_neutral=False,
+                by_group=True,
+                save_file=str(save_file),
+            )
+
+            self.assertTrue(save_file.exists())
+            self.assertGreater(save_file.stat().st_size, 0)
 
     @parameterized.expand([(1, (1, 5, 10), None), (4, (1, 2, 3, 7), 20)])
     def test_create_information_tear_sheet(self, quantiles, periods, filter_zscore):

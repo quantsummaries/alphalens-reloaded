@@ -153,6 +153,7 @@ def plot_returns_table(
     else:
         print("Returns Analysis")
         utils.print_table(returns_table.apply(lambda x: x.round(3)))
+        return None
 
 
 def plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False):
@@ -175,28 +176,26 @@ def plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False
         print("Turnover Analysis")
         utils.print_table(turnover_table.apply(lambda x: x.round(3)))
         utils.print_table(auto_corr.apply(lambda x: x.round(3)))
+        return None
 
-
-def plot_information_table(ic_data, return_df=False, as_figure=True):
+def plot_information_table(ic_data, return_df=False, as_figure=True, ic_type="spearman"):
     ic_summary_table = pd.DataFrame()
-    ic_summary_table["IC Mean"] = ic_data.mean()
+    ic_summary_table[f"IC Mean ({ic_type})"] = ic_data.mean()
     ic_summary_table["IC Std."] = ic_data.std()
-    ic_summary_table["Risk-Adjusted IC"] = ic_data.mean() / ic_data.std()
+    ic_summary_table["Risk-Adjusted IC (ICIR)"] = ic_data.mean() / ic_data.std()
     t_stat, p_value = stats.ttest_1samp(ic_data, 0)
     ic_summary_table["t-stat(IC)"] = t_stat
     ic_summary_table["p-value(IC)"] = p_value
     ic_summary_table["IC Skew"] = stats.skew(ic_data)
     ic_summary_table["IC Kurtosis"] = stats.kurtosis(ic_data)
 
-    print("Information Analysis")
-    utils.print_table(ic_summary_table.apply(lambda x: x.round(3)).T)
-
-    if return_df:
-        return ic_summary_table
+    # Ljung-Box test for autocorrelation and Newey-West adjusted t-statistic for IC
+    ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=1)
+    ic_summary_table = pd.concat([ic_summary_table, ic_supplements_df.T], axis=1)
 
     # Create a Matplotlib figure so `plt.get_fignums()` captures it
     if as_figure:
-        fig, ax = plt.subplots(figsize=(8, 2))
+        fig, ax = plt.subplots(figsize=(8, 3))
         ax.axis("off")
         ax.axis("tight")
         table_data = ic_summary_table.T.map(lambda x: f"{x:.3f}")
@@ -211,8 +210,15 @@ def plot_information_table(ic_data, return_df=False, as_figure=True):
         table.auto_set_font_size(False)
         table.set_fontsize(9)
         table.scale(1.2, 1.2)
-        ax.set_title("Information Analysis Summary", fontweight="bold", pad=10)
+        ax.set_title(f"Information Analysis Summary ({ic_type})", fontweight="bold", pad=10)
         return fig
+
+    if return_df:
+        return ic_summary_table
+    else:
+        print(f"Information Analysis ({ic_type})")
+        utils.print_table(ic_summary_table.apply(lambda x: x.round(3)).T)
+        return None
 
 def plot_quantile_statistics_table(factor_data, return_df=False):
     quantile_stats = factor_data.groupby("factor_quantile")["factor"].agg(

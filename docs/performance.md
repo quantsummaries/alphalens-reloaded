@@ -22,15 +22,18 @@ Forward-return column names are detected using `alphalens.utils.get_forward_retu
 
 ## Core analysis functions
 
-### `factor_information_coefficient(factor_data, group_adjust=False, by_group=False)`
-Compute the Spearman rank correlation between factor values and each forward-return horizon.
+### `factor_information_coefficient(factor_data, group_adjust=False, by_group=False, ic_type="spearman")`
+Compute the Information Coefficient (IC) between factor values and each forward-return horizon.
 
 **Behavior**
 
-- Calculates the Information Coefficient (IC) period by period.
+- Calculates IC period by period using either:
+  - Spearman rank correlation (`ic_type="spearman"`, default), or
+  - Pearson linear correlation (`ic_type="pearson"`).
 - Optionally demeans forward returns by group before computing IC.
 - Optionally computes IC separately for each group.
 - Preserves the factor data frequency on the date index when not grouped by asset group.
+- Raises `ValueError` for unsupported `ic_type` values.
 
 **Returns**
 

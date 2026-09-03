@@ -173,7 +173,7 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)
 
 @plotting.customize
 def create_returns_tear_sheet(
-    factor_data, long_short=True, group_neutral=False, by_group=False
+    factor_data, long_short=True, group_neutral=False, by_group=False, return_df: bool = False, save_file=None
 ):
     """
     Creates a tear sheet for returns analysis of a factor.
@@ -198,6 +198,8 @@ def create_returns_tear_sheet(
         plots
     by_group : bool
         If True, display graphs separately for each group.
+    save_file : str or None
+        If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     """
 
     factor_returns = perf.factor_returns(factor_data, long_short, group_neutral)
@@ -246,7 +248,7 @@ def create_returns_tear_sheet(
     vertical_sections = 2 + fr_cols * 3
     gf = GridFigure(rows=vertical_sections, cols=1)
 
-    plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant)
+    rtrns_tbl = plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant, return_df=return_df)
 
     plotting.plot_quantile_returns_bar(
         mean_quant_rateret,
@@ -293,8 +295,7 @@ def create_returns_tear_sheet(
         ax=ax_mean_quantile_returns_spread_ts,
     )
 
-    plt.show()
-    gf.close()
+    group_gf = None
 
     if by_group:
         (
@@ -319,23 +320,80 @@ def create_returns_tear_sheet(
         )
 
         vertical_sections = 1 + (((num_groups - 1) // 2) + 1)
-        gf = GridFigure(rows=vertical_sections, cols=2)
+        group_gf = GridFigure(rows=vertical_sections, cols=2)
 
-        ax_quantile_returns_bar_by_group = [gf.next_cell() for _ in range(num_groups)]
+        ax_quantile_returns_bar_by_group = [
+            group_gf.next_cell() for _ in range(num_groups)
+        ]
         plotting.plot_quantile_returns_bar(
             mean_quant_rateret_group,
             by_group=True,
             ylim_percentiles=(5, 95),
             ax=ax_quantile_returns_bar_by_group,
         )
+
+    if save_file is not None:
+        if save_file.endswith(".pdf"):
+            with PdfPages(save_file) as pdf:
+                for fig_num in plt.get_fignums():
+                    fig = plt.figure(fig_num)
+                    # skip empty figure 1
+                    if fig.get_axes():
+                        pdf.savefig(fig, bbox_inches="tight")
+        else:
+            # Collect non-empty figures
+            valid_figs = [
+                plt.figure(num) for num in plt.get_fignums()
+                if plt.figure(num).get_axes()
+            ]
+
+            pil_images = []
+            for fig in valid_figs:
+                # Save figure to in-memory bytes with tight boundaries
+                buf = io.BytesIO()
+                fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
+                buf.seek(0)
+                pil_images.append(Image.open(buf))
+
+            if pil_images:
+                # Determine maximum canvas width needed
+                max_width = max(img.width for img in pil_images)
+                total_height = sum(img.height for img in pil_images)
+
+                # Create a clean white background canvas
+                combined_image = Image.new("RGB", (max_width, total_height), (255, 255, 255))
+
+                # Paste each image centered horizontally
+                y_offset = 0
+                for img in pil_images:
+                    # Center-align narrower figures (like the table)
+                    x_offset = (max_width - img.width) // 2
+                    combined_image.paste(img, (x_offset, y_offset))
+                    y_offset += img.height
+
+                # Save final stitched PNG
+                combined_image.save(save_file)
+
+        plt.close("all")
+    else:
         plt.show()
-        gf.close()
+
+    if group_gf is not None:
+        group_gf.close()
+    gf.close()
+
+    return rtrns_tbl
 
 
 @plotting.customize
-def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, save_file=None):
+def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, return_df: bool= False, save_file=None):
     """
     Creates a tear sheet for information analysis of a factor.
+
+    First set of plots show IC statistics: mean, std, skew, kurtosis, IC IR, Ljung-Box test, t-statistics (w.i. and w.o. Newey-West adjustment).
+    Second set of plots show time series of IC values.
+    Third set of plots show histogram and QQ-plot of IC values.
+    Fourth set of plots show monthly IC heatmaps if not by group and mean IC values if by group.
 
     Parameters
     ----------
@@ -351,11 +409,13 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
         If True, display graphs separately for each group.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
+    return_df : bool
+        If True, the function will return the information table as a DataFrame.
     """
-
-    ic = perf.factor_information_coefficient(factor_data, group_neutral)
-    ic = ic.dropna()
-    plotting.plot_information_table(ic)
+    for ic_type in ["spearman", "pearson"]:
+        ic = perf.factor_information_coefficient(factor_data, group_neutral, ic_type=ic_type)
+        ic = ic.dropna()
+        ic_tbl = plotting.plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)
 
     columns_wide = 2
     fr_cols = len(ic.columns)
@@ -435,9 +495,11 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
         plt.show()
     gf.close()
 
+    return ic_tbl
+
 
 @plotting.customize
-def create_turnover_tear_sheet(factor_data, turnover_periods=None, save_file=None):
+def create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=False, save_file=None):
     """
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -491,7 +553,7 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None, save_file=Non
         axis=1,
     )
 
-    plotting.plot_turnover_table(autocorrelation, quantile_turnover)
+    plotting.plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)
 
     fr_cols = len(turnover_periods)
     columns_wide = 1

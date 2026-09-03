@@ -1,7 +1,55 @@
 # Alphalens Documentation
 
+## Review Addendum
+
+_Since commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`._
+
+### Scope reviewed
+
+- `src/alphalens/performance.py`
+- `src/alphalens/plotting.py`
+- `src/alphalens/tears.py`
+- `src/alphalens/wrapper.py`
+- `src/alphalens/__init__.py`
+- related tests under `tests/`
+
+### Findings (ordered by severity)
+
+1. **Medium**: `return_df` is effectively ignored in `create_information_tear_sheet(...)` because `plot_information_table(...)` is always called with `as_figure=True`, so the function returns a figure handle rather than a DataFrame.
+   - Ref: `src/alphalens/tears.py`
+2. **Medium**: `create_turnover_tear_sheet(...)` accepts `return_df` and forwards it to `plot_turnover_table(...)`, but does not return the tables.
+   - Ref: `src/alphalens/tears.py`
+3. **Low (testing gap)**: `tests/test_wrapper.py` currently has no pytest test functions (`collected 0 items`), so wrapper behavior is not covered by automated tests.
+   - Ref: `tests/test_wrapper.py`
+
+### API / behavior changes captured
+
+- `performance.factor_information_coefficient(...)` now supports `ic_type` (`"spearman"` or `"pearson"`).
+- `plotting.plot_information_table(...)` now supports `as_figure` and `ic_type` and can return a matplotlib figure.
+- Table display helpers explicitly return `None` when not returning DataFrames.
+- `tears.create_returns_tear_sheet(...)` supports `return_df` and `save_file` and can save all generated return plots into a single output file.
+- `tears.create_information_tear_sheet(...)` and `tears.create_turnover_tear_sheet(...)` now expose `return_df` / `save_file` parameters.
+- New top-level wrapper module exposed as `alphalens.wrapper`.
+
+### Documentation updates completed
+
+The following docs were updated to reflect current implementation:
+
+- `docs/performance.md`
+- `docs/plotting.md`
+- `docs/tears.md`
+- `docs/utils.md`
+- `docs/wrapper.md`
+
+### Follow-up recommendations
+
+- Align `create_information_tear_sheet(...)` return behavior with its `return_df` parameter intent.
+- Return table outputs from `create_turnover_tear_sheet(...)` when `return_df=True`.
+- Add real unit tests in `tests/test_wrapper.py` for wrapper function outputs and save-file behavior.
+
 ## Table of Contents
 
+- [0 Review Addendum](#review-addendum)
 - [1 Overview](#overview)
 - [2 alphalens.utils](#alphalensutils)
   - 2.1 Data model used by this module
@@ -104,15 +152,26 @@
   - 5.4 Dependencies and concepts
   - 5.5 Practical usage
   - 5.6 Notes
+- [6 alphalens.wrapper](#alphalenswrapper)
+  - 6.1 Input data expectation
+  - 6.2 Utility helpers
+    - [6.2.1 `ic_autocor_adj()`](#ic_autocor_adjdaily_ic-lag5)
+    - [6.2.2 `call_with_matching_args()`](#call_with_matching_argsfunc-args-kwargs)
+  - 6.3 Workflow wrappers
+    - [6.3.1 `return_analysis_wrapper()`](#return_analysis_wrapperdata-tear_sheet_filepath)
+    - [6.3.2 `information_analysis_wrapper()`](#information_analysis_wrapperdata-tear_sheet_filepath)
+    - [6.3.3 `turnover_analysis_wrapper()`](#turnover_analysis_wrapperdata-turnover_period-period_unit-tear_sheet_filepath)
+  - 6.4 Notes
 
 ## Overview
 
-Alphalens is organized as a pipeline of four core modules:
+Alphalens is organized as a pipeline of five core modules:
 
 - `alphalens.utils` prepares factor data and computes forward returns.
 - `alphalens.performance` analyzes factor behavior and simulated portfolio performance.
 - `alphalens.plotting` visualizes metrics and diagnostics.
 - `alphalens.tears` assembles the results into tear sheets.
+- `alphalens.wrapper` provides convenience wrappers for end-to-end analysis workflows.
 
 The usual workflow is:
 
@@ -1265,3 +1324,41 @@ create_full_tear_sheet(factor_data, long_short=True, group_neutral=False)
 - The `by_group` parameter enables side-by-side or panel analysis when asset groups are present.
 - For large datasets or many forward-return periods, tear sheets can take time to render; `create_summary_tear_sheet()` is faster for quick feedback.
 - All plotting occurs within the tear sheet functions; call `plt.show()` or allow the Jupyter kernel to display results automatically.
+
+## alphalens.wrapper
+
+High-level helpers that bundle common analysis flows and optional tear-sheet export.
+
+### Input data expectation
+
+Wrapper functions expect cleaned Alphalens factor data, typically from `alphalens.utils.get_clean_factor_and_forward_returns(...)`.
+
+### Utility helpers
+
+#### `ic_autocor_adj(daily_ic, lag=5)`
+
+Computes lag autocorrelation, Ljung-Box p-values, and HAC/Newey-West adjusted t-stats for each IC horizon.
+
+#### `call_with_matching_args(func, *args, **kwargs)`
+
+Calls `func` after filtering keyword arguments to names accepted by the callable signature.
+
+### Workflow wrappers
+
+#### `return_analysis_wrapper(data, tear_sheet_filepath)`
+
+Returns mean return by quantile and standard-error tables, and optionally saves a returns tear sheet.
+
+#### `information_analysis_wrapper(data, tear_sheet_filepath)`
+
+Computes Spearman and Pearson IC summaries (with autocorrelation-adjusted diagnostics) and optionally saves an information tear sheet.
+
+#### `turnover_analysis_wrapper(data, turnover_period, period_unit, tear_sheet_filepath)`
+
+Computes quantile turnover and factor-rank autocorrelation for the requested horizon and optionally saves a turnover tear sheet.
+
+### Notes
+
+- Wrapper functions are exposed at package level as `alphalens.wrapper`.
+- The current `tests/test_wrapper.py` file is script-style and does not yet contain pytest unit tests.
+

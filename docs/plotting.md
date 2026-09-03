@@ -53,11 +53,12 @@ Display a summary table of factor portfolio returns, alpha, beta, and quantile s
 
 - Combines alpha/beta results with quantile return statistics.
 - Converts decimal returns to basis points.
-- Prints a formatted table or returns as a `DataFrame`.
+- Returns a `DataFrame` when `return_df=True`.
+- Otherwise prints a formatted table and returns `None`.
 
 **Returns**
 
-Pretty-printed table or a `DataFrame` when `return_df=True`.
+`DataFrame` when `return_df=True`; otherwise `None`.
 
 ---
 
@@ -68,26 +69,29 @@ Display quantile turnover and factor rank autocorrelation statistics.
 
 - Shows mean turnover for each quantile by period.
 - Shows mean factor rank autocorrelation.
-- Prints formatted tables or returns as `DataFrame`s.
+- Returns a tuple `(turnover_table, auto_corr)` when `return_df=True`.
+- Otherwise prints formatted tables and returns `None`.
 
 **Returns**
 
-Printed tables or a pair of `DataFrame`s when `return_df=True`.
+Tuple of `DataFrame`s when `return_df=True`; otherwise `None`.
 
 ---
 
-### `plot_information_table(ic_data, return_df=False)`
+### `plot_information_table(ic_data, return_df=False, as_figure=True, ic_type="spearman")`
 Display Information Coefficient summary statistics.
 
 **Behavior**
 
-- Computes IC mean, standard deviation, risk-adjusted IC, and t-statistics.
+- Computes IC mean, standard deviation, risk-adjusted IC (ICIR), and t-statistics.
 - Includes skewness and kurtosis.
-- Prints a summary table or returns as a `DataFrame`.
+- Labels the IC mean column with the selected `ic_type`.
+- If `as_figure=True` (default), renders the summary as a matplotlib table figure and returns that figure.
+- If `as_figure=False`, either returns a `DataFrame` (`return_df=True`) or prints the table (`return_df=False`).
 
 **Returns**
 
-Pretty-printed table or a `DataFrame` when `return_df=True`.
+`matplotlib.figure.Figure` when `as_figure=True`; otherwise a `DataFrame` when `return_df=True`, else `None`.
 
 ---
 

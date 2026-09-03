@@ -1075,18 +1075,18 @@ are used</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.performance.factor_information_coefficient"><code class="name flex">
-<span>def <span class="ident">factor_information_coefficient</span></span>(<span>factor_data, group_adjust=False, by_group=False)</span>
+<span>def <span class="ident">factor_information_coefficient</span></span>(<span>factor_data, group_adjust=False, by_group=False, ic_type='spearman')</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def factor_information_coefficient(factor_data, group_adjust=False, by_group=False):
+<pre><code class="python">def factor_information_coefficient(factor_data, group_adjust=False, by_group=False,
+                                   ic_type=&#34;spearman&#34;):
     &#34;&#34;&#34;
-    Computes the Spearman Rank Correlation based Information Coefficient (IC)
-    between factor values and N period forward returns for each period in
-    the factor index.
+    Computes the Spearman Rank Correlation or Pearson Correlation based Information Coefficient (IC)
+    between factor values and N period forward returns for each period in the factor index.
 
     Parameters
     ----------
@@ -1100,11 +1100,13 @@ are used</dd>
         Demean forward returns by group before computing IC.
     by_group : bool
         If True, compute period wise IC separately for each group.
+    ic_type : str
+        Type of information coefficient to compute (&#34;spearman&#34; or &#34;pearson&#34;).
 
     Returns
     -------
     ic : pd.DataFrame
-        Spearman Rank correlation between factor and
+        Spearman Rank correlation or Pearson correlation between factor and
         provided forward returns.
     &#34;&#34;&#34;
 
@@ -1115,8 +1117,15 @@ are used</dd>
         )
         return _ic
 
+    def src_ic_pearson(group):
+        f = group[&#34;factor&#34;]
+        _ic = group[utils.get_forward_returns_columns(factor_data.columns)].apply(
+            lambda x: stats.pearsonr(x, f)[0]
+        )
+        return _ic
+
     date_idx = factor_data.index.names.index(&#34;date&#34;)
-    freq = factor_data.index.levels[date_idx].freq
+    freq = getattr(factor_data.index.levels[date_idx], &#34;freq&#34;, None)
 
     factor_data = factor_data.copy()
 
@@ -1127,15 +1136,20 @@ are used</dd>
     if by_group:
         grouper.append(&#34;group&#34;)
 
-    ic = factor_data.groupby(grouper, observed=True).apply(src_ic)
+    if ic_type == &#34;spearman&#34;:
+        ic = factor_data.groupby(grouper, observed=True).apply(src_ic)
+    elif ic_type == &#34;pearson&#34;:
+        ic = factor_data.groupby(grouper, observed=True).apply(src_ic_pearson)
+    else:
+        raise ValueError(&#34;Invalid information coefficient type. Use &#39;spearman&#39; or &#39;pearson&#39;.&#34;)
+
     if by_group:
         return ic
     else:
-        return ic.asfreq(freq)</code></pre>
+        return ic.asfreq(freq) if freq is not None else ic</code></pre>
 </details>
-<div class="desc"><p>Computes the Spearman Rank Correlation based Information Coefficient (IC)
-between factor values and N period forward returns for each period in
-the factor index.</p>
+<div class="desc"><p>Computes the Spearman Rank Correlation or Pearson Correlation based Information Coefficient (IC)
+between factor values and N period forward returns for each period in the factor index.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
@@ -1148,11 +1162,13 @@ each period, the factor quantile/bin that factor value belongs to, and
 <dd>Demean forward returns by group before computing IC.</dd>
 <dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True, compute period wise IC separately for each group.</dd>
+<dt><strong><code>ic_type</code></strong> :&ensp;<code>str</code></dt>
+<dd>Type of information coefficient to compute ("spearman" or "pearson").</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
-<dd>Spearman Rank correlation between factor and
+<dd>Spearman Rank correlation or Pearson correlation between factor and
 provided forward returns.</dd>
 </dl></div>
 </dd>
@@ -1334,22 +1350,30 @@ cash
     # grouper = [factor_data.index.get_level_values(&#39;date&#39;)]
 
     date_idx = factor_data.index.names.index(&#34;date&#34;)
-    freq = factor_data.index.levels[date_idx].freq
+    freq = getattr(factor_data.index.levels[date_idx], &#34;freq&#34;, None)
 
-    asset_ranks_by_day = (
-        factor_data.groupby(level=&#34;date&#34;)[&#34;factor&#34;]
-        .rank()
-        .reset_index()
-        .pivot(index=&#34;date&#34;, columns=&#34;asset&#34;, values=&#34;factor&#34;)
-        .asfreq(freq)
-    )
+    if freq is not None:
+        asset_ranks_by_day = (
+            factor_data.groupby(level=&#34;date&#34;)[&#34;factor&#34;]
+            .rank()
+            .reset_index()
+            .pivot(index=&#34;date&#34;, columns=&#34;asset&#34;, values=&#34;factor&#34;)
+            .asfreq(freq)
+        )
+    else:
+        asset_ranks_by_day = (
+            factor_data.groupby(level=&#34;date&#34;)[&#34;factor&#34;]
+            .rank()
+            .reset_index()
+            .pivot(index=&#34;date&#34;, columns=&#34;asset&#34;, values=&#34;factor&#34;)
+        )
 
     # asset_factor_rank = ranks
 
     asset_shifted = asset_ranks_by_day.shift(period)
 
     return (
-        asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period).asfreq(freq)
+        asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period) if freq is None else asset_ranks_by_day.corrwith(asset_shifted, axis=1).rename(period).asfreq(freq)
     )</code></pre>
 </details>
 <div class="desc"><p>Computes autocorrelation of mean factor ranks in specified time spans.
@@ -1956,14 +1980,20 @@ cash
 
     # keep DateTimeIndex frequency information
     date_idx = quantile_factor.index.names.index(&#34;date&#34;)
-    freq = quantile_factor.index.levels[date_idx].freq
+    freq = getattr(quantile_factor.index.levels[date_idx], &#34;freq&#34;, None)
 
     quant_names = quantile_factor[quantile_factor == quantile]
-    quant_name_sets = (
-        quant_names.groupby(level=[&#34;date&#34;])
-        .apply(lambda x: set(x.index.get_level_values(&#34;asset&#34;)))
-        .asfreq(freq)
-    )
+    if freq is not None:
+        quant_name_sets = (
+            quant_names.groupby(level=[&#34;date&#34;])
+            .apply(lambda x: set(x.index.get_level_values(&#34;asset&#34;)))
+            .asfreq(freq)
+        )
+    else:
+        quant_name_sets = (
+            quant_names.groupby(level=[&#34;date&#34;])
+            .apply(lambda x: set(x.index.get_level_values(&#34;asset&#34;)))
+        )
 
     name_shifted = quant_name_sets.shift(periods=period)
 

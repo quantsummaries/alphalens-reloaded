@@ -25,11 +25,11 @@ from statsmodels.tools.tools import add_constant
 from . import utils
 
 
-def factor_information_coefficient(factor_data, group_adjust=False, by_group=False):
+def factor_information_coefficient(factor_data, group_adjust=False, by_group=False,
+                                   ic_type="spearman"):
     """
-    Computes the Spearman Rank Correlation based Information Coefficient (IC)
-    between factor values and N period forward returns for each period in
-    the factor index.
+    Computes the Spearman Rank Correlation or Pearson Correlation based Information Coefficient (IC)
+    between factor values and N period forward returns for each period in the factor index.
 
     Parameters
     ----------
@@ -43,18 +43,27 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
         Demean forward returns by group before computing IC.
     by_group : bool
         If True, compute period wise IC separately for each group.
+    ic_type : str
+        Type of information coefficient to compute ("spearman" or "pearson").
 
     Returns
     -------
     ic : pd.DataFrame
-        Spearman Rank correlation between factor and
-        provided forward returns.
+        Spearman Rank correlation or Pearson correlation between factor and
+        provided forward returns; indexed by 'date' with columns like '1D', '2D', etc..
     """
 
     def src_ic(group):
         f = group["factor"]
         _ic = group[utils.get_forward_returns_columns(factor_data.columns)].apply(
             lambda x: stats.spearmanr(x, f)[0]
+        )
+        return _ic
+
+    def src_ic_pearson(group):
+        f = group["factor"]
+        _ic = group[utils.get_forward_returns_columns(factor_data.columns)].apply(
+            lambda x: stats.pearsonr(x, f)[0]
         )
         return _ic
 
@@ -70,7 +79,13 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
     if by_group:
         grouper.append("group")
 
-    ic = factor_data.groupby(grouper, observed=True).apply(src_ic)
+    if ic_type == "spearman":
+        ic = factor_data.groupby(grouper, observed=True).apply(src_ic, include_groups=False)
+    elif ic_type == "pearson":
+        ic = factor_data.groupby(grouper, observed=True).apply(src_ic_pearson, include_groups=False)
+    else:
+        raise ValueError("Invalid information coefficient type. Use 'spearman' or 'pearson'.")
+
     if by_group:
         return ic
     else:
