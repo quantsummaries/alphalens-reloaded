@@ -198,6 +198,8 @@ def create_returns_tear_sheet(
         plots
     by_group : bool
         If True, display graphs separately for each group.
+    return_df : bool
+        If True, the function will return the data frame containing the returns analysis results.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     """

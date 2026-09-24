@@ -352,6 +352,40 @@ Compute asset weights from factor values.
 \paragraph{Returns}
 A \texttt{Series} of weights indexed by \texttt{(date, asset)}.
 
+\paragraph{Worked example}
+Suppose one date contains three assets with these factor values:
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+asset & factor \\
+\midrule
+A & 2.0 \\
+B & 1.0 \\
+C & -1.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+With the default \texttt{demeaned=True}, \texttt{group\_adjust=False}, and \texttt{equal\_weight=False}:
+
+\begin{enumerate}
+  \item Demean factor values by date.
+  \begin{itemize}
+    \item Mean factor = \((2.0 + 1.0 - 1.0) / 3 = 0.6667\)
+    \item Demeaned values = \texttt{A: 1.3333}, \texttt{B: 0.3333}, \texttt{C: -1.6667}
+  \end{itemize}
+  \item Normalize by the sum of absolute values.
+  \begin{itemize}
+    \item Gross exposure = \(|1.3333| + |0.3333| + |-1.6667| = 3.3333\)
+    \item Weights = \texttt{A: 0.40}, \texttt{B: 0.10}, \texttt{C: -0.50}
+  \end{itemize}
+\end{enumerate}
+
+These weights represent a dollar-neutral long-short portfolio: long positions (\texttt{A: 0.40}, \texttt{B: 0.10}) total \(0.50\) and short positions (\texttt{C: -0.50}) total \(0.50\) in absolute value.
+
+If \texttt{demeaned=False}, weights come directly from the raw (non-demeaned) factor values: the sum of absolute raw factors would be \(|2.0| + |1.0| + |-1.0| = 4.0\), yielding weights \texttt{A: 0.50}, \texttt{B: 0.25}, \texttt{C: -0.25}. If \texttt{group\_adjust=True}, weights are adjusted to be group-neutral. If \texttt{equal\_weight=True}, assets are equal-weighted within long and short buckets instead of using factor magnitudes.
+
 \subsubsection{\texttt{factor\_returns(factor\_data, demeaned=True, group\_adjust=False, equal\_weight=False, by\_asset=False)}}
 Compute period-wise returns for a factor-weighted portfolio.
 
@@ -491,6 +525,42 @@ Measure the proportion of names that leave a given quantile over time.
   \item Preserves the date frequency of the input.
 \end{itemize}
 
+\paragraph{Worked example}
+Suppose we evaluate \texttt{quantile=5} with \texttt{period=1}, and the names in quantile 5 are:
+
+\begin{center}
+\begin{tabular}{ll}
+date & names in quantile 5 \\
+2026-01-02 & \(\{A, B, C\}\) \\
+2026-01-03 & \(\{B, C, D\}\) \\
+2026-01-06 & \(\{C, D, E\}\) \\
+\end{tabular}
+\end{center}
+
+For each date after the first, turnover is:
+
+\[
+\frac{\#\text{ new names vs previous date}}{\text{current quantile size}}
+\]
+
+\begin{itemize}
+  \item On \texttt{2026-01-03}, new names vs \texttt{2026-01-02} are \(\{D\}\), so turnover is \(1 / 3 = 0.3333\).
+  \item On \texttt{2026-01-06}, new names vs \texttt{2026-01-03} are \(\{E\}\), so turnover is \(1 / 3 = 0.3333\).
+\end{itemize}
+
+The first date has no prior comparison point, so no turnover value is reported for it.
+
+\paragraph{Companion example (\texttt{period=2})}
+Using the same memberships, each date is compared to the set two dates earlier.
+
+\begin{itemize}
+  \item On \texttt{2026-01-06}, compare \(\{C, D, E\}\) to \texttt{2026-01-02} (\(\{A, B, C\}\)).
+  \item New names are \(\{D, E\}\), so turnover is \(2 / 3 = 0.6667\).
+\end{itemize}
+
+This highlights that larger \texttt{period} values measure non-adjacent membership change.
+If intermediate dates are missing after frequency alignment (for example via \texttt{asfreq}), larger \texttt{period} comparisons can be skipped or shifted to different comparable dates.
+
 \paragraph{Returns}
 A \texttt{Series} indexed by date.
 
@@ -502,6 +572,36 @@ Measure the autocorrelation of factor ranks across periods.
   \item Ranks assets by their factor values within each date, then computes the correlation between each date's rank vector and the rank vector period dates earlier.
   \item Useful as a turnover/stability diagnostic.
 \end{itemize}
+
+\paragraph{Worked example (\texttt{period=1})}
+Suppose the factor values for assets \texttt{A}, \texttt{B}, \texttt{C}, \texttt{D} are:
+
+\begin{center}
+\begin{tabular}{lll}
+date & factor values (A, B, C, D) & rank vector (A, B, C, D) \\
+2026-01-02 & \((1, 2, 3, 4)\) & \((1, 2, 3, 4)\) \\
+2026-01-03 & \((4, 3, 2, 1)\) & \((4, 3, 2, 1)\) \\
+2026-01-06 & \((1, 2, 3, 4)\) & \((1, 2, 3, 4)\) \\
+\end{tabular}
+\end{center}
+
+With \texttt{period=1}, each date is correlated with the immediately prior date:
+
+\begin{itemize}
+  \item On \texttt{2026-01-03}: corr\((4, 3, 2, 1), (1, 2, 3, 4)\) = \(-1.0\).
+  \item On \texttt{2026-01-06}: corr\((1, 2, 3, 4), (4, 3, 2, 1)\) = \(-1.0\).
+\end{itemize}
+
+The first date has no prior rank vector, so its value is \texttt{NaN}.
+
+\paragraph{Companion example (\texttt{period=2})}
+Using the same data with \texttt{period=2}, \texttt{2026-01-06} is compared to \texttt{2026-01-02}:
+
+\begin{itemize}
+  \item corr\((1, 2, 3, 4), (1, 2, 3, 4)\) = \(1.0\).
+\end{itemize}
+
+So a larger \texttt{period} can reveal longer-horizon rank stability even when adjacent dates are unstable.
 
 \paragraph{Returns}
 A \texttt{Series} of autocorrelation values indexed by date.

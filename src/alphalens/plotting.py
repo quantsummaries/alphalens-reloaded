@@ -460,7 +460,7 @@ def plot_quantile_returns_bar(
             )
             ax = ax.flatten()
 
-        for a, (sc, cor) in zip(ax, mean_ret_by_q.groupby(level="group")):
+        for a, (sc, cor) in zip(ax, mean_ret_by_q.groupby(level="group", observed=True)):
             (
                 cor.xs(sc, level="group")
                 .multiply(DECIMAL_TO_BPS)

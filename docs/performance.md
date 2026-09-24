@@ -70,6 +70,36 @@ Compute asset weights from factor values.
 
 A `Series` of weights indexed by `(date, asset)`.
 
+**Worked example**
+
+Suppose one date contains three assets with these factor values:
+
+| asset | factor |
+| --- | ---: |
+| A | 2.0 |
+| B | 1.0 |
+| C | -1.0 |
+
+With the default `demeaned=True`, `group_adjust=False`, and
+`equal_weight=False`:
+
+1. Demean factor values by date.
+   - Mean factor = `(2.0 + 1.0 - 1.0) / 3 = 0.6667`
+   - Demeaned values = `A: 1.3333`, `B: 0.3333`, `C: -1.6667`
+2. Normalize by the sum of absolute values.
+   - Gross exposure = `|1.3333| + |0.3333| + |−1.6667| = 3.3333`
+   - Weights = `A: 0.40`, `B: 0.10`, `C: -0.50`
+
+These weights represent a dollar-neutral long-short portfolio: long positions
+(`A: 0.40`, `B: 0.10`) total `0.50` and short positions (`C: -0.50`) total
+`0.50` in absolute value.
+
+If `demeaned=False`, weights come directly from the raw (non-demeaned) factor
+values: the sum of absolute raw factors would be `|2.0| + |1.0| + |−1.0| = 4.0`,
+yielding weights `A: 0.50`, `B: 0.25`, `C: -0.25`. If `group_adjust=True`,
+weights are adjusted to be group-neutral. If `equal_weight=True`, assets are
+equal-weighted within long and short buckets instead of using factor magnitudes.
+
 ---
 
 ### `factor_returns(factor_data, demeaned=True, group_adjust=False, equal_weight=False, by_asset=False)`
@@ -208,6 +238,38 @@ Measure the proportion of names that leave a given quantile over time.
 - Compares membership in the selected quantile against the prior period.
 - Preserves the date frequency of the input.
 
+**Worked example**
+
+Suppose we evaluate `quantile=5` with `period=1`, and the names in quantile 5 are:
+
+| date | names in quantile 5 |
+| --- | --- |
+| 2026-01-02 | `{A, B, C}` |
+| 2026-01-03 | `{B, C, D}` |
+| 2026-01-06 | `{C, D, E}` |
+
+For each date after the first, turnover is:
+
+`(# names that are new vs previous date) / (current quantile size)`
+
+- On `2026-01-03`, new names vs `2026-01-02` are `{D}`.
+  - Turnover = `1 / 3 = 0.3333`
+- On `2026-01-06`, new names vs `2026-01-03` are `{E}`.
+  - Turnover = `1 / 3 = 0.3333`
+
+The first date has no prior comparison point, so no turnover value is reported for it.
+
+**Companion example (`period=2`)**
+
+Using the same memberships, each date is compared to the set two dates earlier.
+
+- On `2026-01-06`, compare `{C, D, E}` to `2026-01-02` (`{A, B, C}`).
+  - New names are `{D, E}`.
+  - Turnover = `2 / 3 = 0.6667`
+
+This highlights that larger `period` values measure non-adjacent membership change.
+If intermediate dates are missing after frequency alignment (for example via `asfreq`), larger `period` comparisons can be skipped or shifted to different comparable dates.
+
 **Returns**
 
 A `Series` indexed by date.
@@ -221,6 +283,31 @@ Measure the autocorrelation of factor ranks across periods.
 
 - Ranks assets by their factor values within each date, then computes the correlation between each date’s rank vector and the rank vector period dates earlier.
 - Useful as a turnover/stability diagnostic.
+
+**Worked example (`period=1`)**
+
+Suppose the factor values for assets `A, B, C, D` are:
+
+| date | factor values (A, B, C, D) | rank vector (A, B, C, D) |
+| --- | --- | --- |
+| 2026-01-02 | `(1, 2, 3, 4)` | `(1, 2, 3, 4)` |
+| 2026-01-03 | `(4, 3, 2, 1)` | `(4, 3, 2, 1)` |
+| 2026-01-06 | `(1, 2, 3, 4)` | `(1, 2, 3, 4)` |
+
+With `period=1`, each date is correlated with the immediately prior date:
+
+- On `2026-01-03`: corr(`(4, 3, 2, 1)`, `(1, 2, 3, 4)`) = `-1.0`
+- On `2026-01-06`: corr(`(1, 2, 3, 4)`, `(4, 3, 2, 1)`) = `-1.0`
+
+The first date has no prior rank vector, so its value is `NaN`.
+
+**Companion example (`period=2`)**
+
+Using the same data with `period=2`, `2026-01-06` is compared to `2026-01-02`:
+
+- corr(`(1, 2, 3, 4)`, `(1, 2, 3, 4)`) = `1.0`
+
+So a larger `period` can reveal longer-horizon rank stability even when adjacent dates are unstable.
 
 **Returns**
 

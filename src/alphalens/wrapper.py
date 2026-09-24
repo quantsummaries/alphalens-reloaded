@@ -18,11 +18,17 @@ def call_with_matching_args(func, *args, **kwargs):
     return func(*args, **filtered_kwargs)
 
 def return_analysis_wrapper(data: pd.DataFrame,
-                            tear_sheet_filepath: str) -> dict[str, pd.DataFrame]:
+                            long_short: bool = True,
+                            group_neutral: bool = False,
+                            by_group: bool = False,
+                            tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens return analysis functions.
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
+        long_short (bool): Should this computation happen on a long short portfolio?
+        group_neutral (bool): Should this computation happen on a group neutral portfolio?
+        by_group (bool): If True, display graphs separately for each group.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
@@ -31,16 +37,16 @@ def return_analysis_wrapper(data: pd.DataFrame,
     # average forward returns
     mean_return_by_q, std_err_by_q = alphalens.performance.mean_return_by_quantile(factor_data=data,
                                                                                    by_date=False,
-                                                                                   by_group=False,
-                                                                                   demeaned=True,
-                                                                                   group_adjust=False
+                                                                                   by_group=by_group,
+                                                                                   demeaned=long_short,
+                                                                                   group_adjust=group_neutral
                                                                                    )
 
     if tear_sheet_filepath:
         rtrns_tbl = alphalens.tears.create_returns_tear_sheet(factor_data=data,
-                                                              long_short=True,
-                                                              group_neutral=False,
-                                                              by_group=False,
+                                                              long_short=long_short,
+                                                              group_neutral=group_neutral,
+                                                              by_group=by_group,
                                                               return_df=True,
                                                               save_file=tear_sheet_filepath)
         print(f"\nReturns tear sheet saved to {tear_sheet_filepath}\n")
@@ -103,7 +109,8 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
-        turnover_period (int): Number of period for turnover analysis.
+        turnover_period (int): Number of periods for turnover analysis.
+        period_unit (str): Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks, 'M' for months).
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing turnover data frames.

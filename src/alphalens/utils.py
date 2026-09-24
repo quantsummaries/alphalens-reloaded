@@ -430,7 +430,7 @@ def demean_forward_returns(factor_data, grouper=None):
         grouper = factor_data.index.get_level_values("date")
 
     cols = get_forward_returns_columns(factor_data.columns)
-    factor_data[cols] = factor_data.groupby(grouper)[cols].transform(
+    factor_data[cols] = factor_data.groupby(grouper, observed=True)[cols].transform(
         lambda x: x - x.mean()
     )
 
