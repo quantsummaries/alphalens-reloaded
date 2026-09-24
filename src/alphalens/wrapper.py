@@ -159,6 +159,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     if 'date' not in data.columns or 'asset' not in data.columns:
         raise ValueError("Data must contain 'date' and 'asset' columns.")
 
+    assert sorted(alphalens.utils.get_forward_returns_columns(data)) == sorted(fwd_rtrn_cols), "Forward return columns in data do not match fwd_rtrn_cols."
+
     # information coefficient analysis
     essential_cols = ['date', 'asset'] + fwd_rtrn_cols
     if 'group' in data.columns:

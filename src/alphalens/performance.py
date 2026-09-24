@@ -16,6 +16,7 @@
 import pandas as pd
 import numpy as np
 import warnings
+from typing import Optional, Union
 
 import empyrical as ep
 from pandas.tseries.offsets import BDay
@@ -100,7 +101,7 @@ def mean_information_coefficient(
     Answers questions like:
     What is the mean IC for each month?
     What is the mean IC for each group for our whole timerange?
-    What is the mean IC for for each group, each week?
+    What is the mean IC for each group, each week?
 
     Parameters
     ----------
@@ -278,12 +279,12 @@ def factor_returns(
 
 
 def factor_alpha_beta(
-    factor_data,
-    returns=None,
-    demeaned=True,
-    group_adjust=False,
-    equal_weight=False,
-):
+    factor_data: pd.DataFrame,
+    returns: Optional[Union[pd.DataFrame, pd.Series]] = None,
+    demeaned: bool = True,
+    group_adjust: bool = False,
+    equal_weight: bool = False,
+) -> pd.DataFrame:
     """
     Compute the alpha (excess returns), alpha t-stat (alpha significance),
     and beta (market exposure) of a factor. A regression is run with

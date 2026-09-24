@@ -18,6 +18,7 @@ import numpy as np
 import re
 import statsmodels.api as sm
 import warnings
+from typing import Optional, Sequence, Union, cast, Any
 
 from IPython.display import display
 from pandas.tseries.offsets import (
@@ -91,13 +92,13 @@ def non_unique_bin_edges_error(func):
 
 @non_unique_bin_edges_error
 def quantize_factor(
-    factor_data,
-    quantiles=5,
-    bins=None,
-    by_group=False,
-    no_raise=False,
-    zero_aware=False,
-):
+    factor_data: pd.DataFrame,
+    quantiles: Optional[Union[int, Sequence[float]]] = 5,
+    bins: Optional[Union[int, Sequence[float]]] = None,
+    by_group: bool = False,
+    no_raise: bool = False,
+    zero_aware: bool = False,
+) -> pd.Series:
     """
     Computes period wise factor quantiles.
 
@@ -178,7 +179,7 @@ def quantize_factor(
     )
     factor_quantile.name = "factor_quantile"
 
-    return factor_quantile.dropna()
+    return cast(pd.Series, factor_quantile.dropna())
 
 
 def infer_trading_calendar(factor_idx, prices_idx):
@@ -227,12 +228,12 @@ def infer_trading_calendar(factor_idx, prices_idx):
 
 
 def compute_forward_returns(
-    factor,
-    prices,
-    periods=(1, 5, 10),
-    filter_zscore=None,
-    cumulative_returns=True,
-):
+    factor: pd.Series,
+    prices: pd.DataFrame,
+    periods: Sequence[int] = (1, 5, 10),
+    filter_zscore: Optional[float] = None,
+    cumulative_returns: bool = True,
+) -> pd.DataFrame:
     """
     Finds the N period forward returns (as percent change) for each asset
     provided.
@@ -255,7 +256,7 @@ def compute_forward_returns(
         periods to compute forward returns on.
     filter_zscore : int or float, optional
         Sets forward returns greater than X standard deviations
-        from the the mean to nan. Set it to 'None' to avoid filtering.
+        from the mean to nan. Set it to 'None' to avoid filtering.
         Caution: this outlier filtering incorporates lookahead bias.
     cumulative_returns : bool, optional
         If True, forward returns columns will contain cumulative returns.
@@ -472,16 +473,16 @@ def print_table(table, name=None, fmt=None):
 
 
 def get_clean_factor(
-    factor,
-    forward_returns,
-    groupby=None,
-    binning_by_group=False,
-    quantiles=5,
-    bins=None,
-    groupby_labels=None,
-    max_loss=0.35,
-    zero_aware=False,
-):
+    factor: pd.Series,
+    forward_returns: pd.DataFrame,
+    groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None,
+    binning_by_group: bool = False,
+    quantiles: Optional[Union[int, Sequence[float]]] = 5,
+    bins: Optional[Union[int, Sequence[float]]] = None,
+    groupby_labels: Optional[dict[Any, Any]] = None,
+    max_loss: float = 0.35,
+    zero_aware: bool = False,
+) -> pd.DataFrame:
     """
     Formats the factor data, forward return data, and group mappings into a
     DataFrame that contains aligned MultiIndex indices of timestamp and asset.
@@ -682,19 +683,19 @@ def get_clean_factor(
 
 
 def get_clean_factor_and_forward_returns(
-    factor,
-    prices,
-    groupby=None,
-    binning_by_group=False,
-    quantiles=5,
-    bins=None,
-    periods=(1, 5, 10),
-    filter_zscore=20,
-    groupby_labels=None,
-    max_loss=0.35,
-    zero_aware=False,
-    cumulative_returns=True,
-):
+    factor: pd.Series,
+    prices: pd.DataFrame,
+    groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None,
+    binning_by_group: bool = False,
+    quantiles: Optional[Union[int, Sequence[float]]] = 5,
+    bins: Optional[Union[int, Sequence[float]]] = None,
+    periods: Sequence[int] = (1, 5, 10),
+    filter_zscore: Optional[float] = 20,
+    groupby_labels: Optional[dict[Any, Any]] = None,
+    max_loss: float = 0.35,
+    zero_aware: bool = False,
+    cumulative_returns: bool = True,
+) -> pd.DataFrame:
     """
     Formats the factor data, pricing data, and group mappings into a DataFrame
     that contains aligned MultiIndex indices of timestamp and asset. The
@@ -915,9 +916,23 @@ def std_conversion(period_std, base_period):
     return period_std / np.sqrt(conversion_factor)
 
 
-def get_forward_returns_columns(columns, require_exact_day_multiple=False):
+def get_forward_returns_columns(
+    columns: pd.Index, require_exact_day_multiple: bool = False
+) -> pd.Index:
     """
-    Utility that detects and returns the columns that are forward returns
+    Utility that detects and returns the columns that are forward returns.
+
+    Parameters
+    ----------
+    columns : pd.Index
+        Column labels to filter.
+    require_exact_day_multiple : bool, optional
+        If True, keep only exact day-multiple horizons (e.g. '1D', '5D').
+
+    Returns
+    -------
+    pd.Index
+        Filtered subset of ``columns`` containing forward return horizons.
     """
 
     # If exact day multiples are required in the forward return periods,

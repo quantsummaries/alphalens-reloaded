@@ -80,7 +80,7 @@ Raised by \texttt{get\_clean\_factor()} when the share of dropped factor data ex
 
 \subsection{Core workflow}
 
-\subsubsection{\texttt{compute\_forward\_returns(factor, prices, periods=(1, 5, 10), filter\_zscore=None, cumulative\_returns=True)}}
+\subsubsection{\texttt{compute\_forward\_returns(factor: pd.Series, prices: pd.DataFrame, periods: Sequence[int]=(1, 5, 10), filter\_zscore: Optional[float]=None, cumulative\_returns=True) -> pd.DataFrame}}
 Compute N-period forward returns for each asset in \texttt{factor}.
 
 \paragraph{Input expectations}
@@ -102,7 +102,7 @@ Compute N-period forward returns for each asset in \texttt{factor}.
 \paragraph{Returns}
 A MultiIndex \texttt{DataFrame} with the same \texttt{(date, asset)} index as the input factor.
 
-\subsubsection{\texttt{get\_clean\_factor(factor, forward\_returns, groupby=None, binning\_by\_group=False, quantiles=5, bins=None, groupby\_labels=None, max\_loss=0.35, zero\_aware=False)}}
+\subsubsection{\texttt{get\_clean\_factor(factor: pd.Series, forward\_returns: pd.DataFrame, groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None, binning\_by\_group: bool = False, quantiles: Optional[Union[int, Sequence[float]]] = 5, bins: Optional[Union[int, Sequence[float]]] = None, groupby\_labels: Optional[dict[Any, Any]] = None, max\_loss: float = 0.35, zero\_aware: bool = False) -> pd.DataFrame}}
 Align a factor series with already-computed forward returns and assign factor quantiles or bins.
 
 Use this when you already have forward returns and do not need to recompute them.
@@ -119,7 +119,7 @@ Use this when you already have forward returns and do not need to recompute them
 \paragraph{Returns}
 A cleaned MultiIndex \texttt{DataFrame} containing forward return columns, \texttt{factor}, optionally \texttt{group}, and \texttt{factor\_quantile}.
 
-\subsubsection{\texttt{get\_clean\_factor\_and\_forward\_returns(factor, prices, groupby=None, binning\_by\_group=False, quantiles=5, bins=None, periods=(1, 5, 10), filter\_zscore=20, groupby\_labels=None, max\_loss=0.35, zero\_aware=False, cumulative\_returns=True)}}
+\subsubsection{\texttt{get\_clean\_factor\_and\_forward\_returns(factor: pd.Series, prices: pd.DataFrame, groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None, binning\_by\_group: bool = False, quantiles: Optional[Union[int, Sequence[float]]] = 5, bins: Optional[Union[int, Sequence[float]]] = None, periods: Sequence[int] = (1, 5, 10), filter\_zscore: Optional[float] = 20, groupby\_labels: Optional[dict[Any, Any]] = None, max\_loss: float = 0.35, zero\_aware: bool = False, cumulative\_returns: bool = True) -> pd.DataFrame}}
 One-stop helper that computes forward returns and then cleans and bins the factor data.
 
 This is the primary entry point for most Alphalens analyses.
@@ -135,7 +135,7 @@ A cleaned MultiIndex \texttt{DataFrame} suitable for Alphalens tear sheets and p
 
 \subsection{Quantization and bucketing}
 
-\subsubsection{\texttt{quantize\_factor(factor\_data, quantiles=5, bins=None, by\_group=False, no\_raise=False, zero\_aware=False)}}
+\subsubsection{\texttt{quantize\_factor(factor\_data: pd.DataFrame, quantiles: Optional[Union[int, Sequence[float]]] = 5, bins: Optional[Union[int, Sequence[float]]] = None, by\_group: bool = False, no\_raise: bool = False, zero\_aware: bool = False) -> pd.Series}}
 Assign factor values to quantile or value bins.
 
 \paragraph{Behavior}
@@ -232,7 +232,7 @@ This is used when forward-return horizons must respect trading days, weekends, a
 
 \subsection{Column detection and display helpers}
 
-\subsubsection{\texttt{get\_forward\_returns\_columns(columns, require\_exact\_day\_multiple=False)}}
+\subsubsection{\texttt{get\_forward\_returns\_columns(columns: pd.Index, require\_exact\_day\_multiple=False) -> pd.Index}}
 Identify which columns look like forward-return horizons.
 
 \paragraph{Behavior}
@@ -240,6 +240,7 @@ Identify which columns look like forward-return horizons.
   \item Recognizes \texttt{Timedelta}-style labels such as \texttt{1D}, \texttt{5D}, \texttt{30m}, \texttt{1D1h}.
   \item When \texttt{require\_exact\_day\_multiple=True}, only exact day multiples are kept.
   \item Emits a warning if non-day-multiple columns are skipped in that mode.
+  \item Expects \texttt{columns} to be a \texttt{pandas.Index} and returns a filtered \texttt{pandas.Index}.
 \end{itemize}
 
 \subsubsection{\texttt{print\_table(table, name=None, fmt=None)}}
@@ -258,6 +259,41 @@ Pretty-print a \texttt{Series} or \texttt{DataFrame}.
 Re-raise an exception while preserving the original stack trace and appending extra context to the message.
 
 This is used internally to make binning errors easier to diagnose.
+
+\subsection{Per-function dependency table}
+
+This table lists direct dependencies only (not transitive call chains).
+
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{4.0cm}}
+\toprule
+Function & Purpose & Direct deps in \texttt{utils.py} & Direct external deps \\
+\midrule
+\texttt{rethrow} & Re-raise an exception with an appended message while preserving traceback. & - & - \\
+\texttt{non\_unique\_bin\_edges\_error} & Decorator that rewrites non-unique-bin-edge errors with clearer guidance. & \texttt{rethrow} & - \\
+\texttt{quantize\_factor} & Assign factor values to quantile/bin buckets by date (optionally by group/zero-aware). & \texttt{non\_unique\_bin\_edges\_error} (decorator) & \texttt{pd.qcut}, \texttt{pd.cut}, \texttt{pd.concat}, \texttt{pd.Series} \\
+\texttt{infer\_trading\_calendar} & Infer a trading calendar (\texttt{CustomBusinessDay}) from factor and price indices. & - & \texttt{pd.date\_range}, \texttt{CustomBusinessDay} \\
+\texttt{compute\_forward\_returns} & Compute forward returns aligned to factor timestamps and infer/keep trading frequency. & \texttt{infer\_trading\_calendar}, \texttt{diff\_custom\_calendar\_timedeltas}, \texttt{timedelta\_to\_string} & \texttt{pd.MultiIndex.from\_product}, \texttt{pd.Timedelta}, \texttt{np.concatenate}, \texttt{np.nan}, \texttt{mode} \\
+\texttt{backshift\_returns\_series} & Shift a MultiIndex returns series backward by \texttt{N} observations on date level. & - & \texttt{pd.MultiIndex}, \texttt{pd.Series}, \texttt{np.array} \\
+\texttt{demean\_forward\_returns} & Demean forward returns by date or by provided groupers. & \texttt{get\_forward\_returns\_columns} & - \\
+\texttt{print\_table} & Pretty-print a \texttt{Series}/\texttt{DataFrame} with optional temporary float formatting. & - & \texttt{pd.DataFrame}, \texttt{pd.Series}, \texttt{pd.get\_option}, \texttt{pd.set\_option}, \texttt{display} \\
+\texttt{get\_clean\_factor} & Merge factor, forward returns, and group labels; then bin and enforce max-loss checks. & \texttt{quantize\_factor} & \texttt{pd.Series}, \texttt{np.isfinite} \\
+\texttt{get\_clean\_factor\_and\_forward\_returns} & End-to-end helper to compute forward returns and return clean factor data. & \texttt{compute\_forward\_returns}, \texttt{get\_clean\_factor} & - \\
+\texttt{rate\_of\_return} & Convert period return to an equivalent rate for a base period. & - & \texttt{pd.Timedelta} \\
+\texttt{std\_conversion} & Scale period std/std-error to an equivalent base-period value. & - & \texttt{pd.Timedelta}, \texttt{np.sqrt} \\
+\texttt{get\_forward\_returns\_columns} & Detect columns that match forward-return horizon naming conventions. & - & \texttt{re.compile}, \texttt{warnings.warn} \\
+\texttt{timedelta\_to\_string} & Convert a \texttt{Timedelta} to the string format used in forward-return column names. & - & - \\
+\texttt{timedelta\_strings\_to\_integers} & Convert timedelta strings like \texttt{['1D', '5D']} to integer day counts. & - & \texttt{pd.Timedelta} \\
+\texttt{add\_custom\_calendar\_timedelta} & Add a \texttt{Timedelta} using a trading-calendar-aware offset. & - & \texttt{pd.Timedelta}, \texttt{Day}, \texttt{BusinessDay}, \texttt{CustomBusinessDay} \\
+\texttt{make\_naive\_ts} & Convert a timestamp to timezone-naive form. & - & pandas timestamp tz methods \\
+\texttt{diff\_custom\_calendar\_timedeltas} & Compute elapsed \texttt{Timedelta} under a custom/business-day calendar. & \texttt{make\_naive\_ts} & \texttt{np.busday\_count}, \texttt{pd.date\_range}, \texttt{pd.Timedelta}, \texttt{BaseOffset}, \texttt{Day}, \texttt{BusinessDay} \\
+\texttt{ic\_autocor\_adj} & Compute IC autocorrelation diagnostics and Newey-West-adjusted t-stats. & - & \texttt{acorr\_ljungbox}, \texttt{sm.add\_constant}, \texttt{sm.OLS}, \texttt{np.ones}, \texttt{pd.DataFrame} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\normalsize
 
 \subsection{Practical usage}
 
@@ -456,7 +492,7 @@ If \texttt{demeaned=False}, the same formula is used, but the weights come direc
 \paragraph{Returns}
 A \texttt{DataFrame} of period returns, or asset-level weighted returns when \texttt{by\_asset=True}.
 
-\subsubsection{\texttt{factor\_alpha\_beta(factor\_data, returns=None, demeaned=True, group\_adjust=False, equal\_weight=False)}}
+\subsubsection{\texttt{factor\_alpha\_beta(factor\_data: pd.DataFrame, returns: Optional[Union[pd.DataFrame, pd.Series]]=None, demeaned: bool=True, group\_adjust: bool=False, equal\_weight: bool=False) -> pd.DataFrame}}
 Estimate alpha and beta for a factor portfolio using OLS regression.
 
 \paragraph{Behavior}
@@ -469,6 +505,23 @@ Estimate alpha and beta for a factor portfolio using OLS regression.
 
 \paragraph{Returns}
 A \texttt{DataFrame} containing at least annualized alpha and beta by forward-return horizon.
+
+\paragraph{How alpha and beta are calculated}
+For each forward-return horizon (for example \texttt{1D}, \texttt{5D}), the function runs:
+
+\[
+r_{\text{factor}}[t] = \alpha + \beta \cdot r_{\text{universe}}[t] + \varepsilon[t]
+\]
+
+\begin{itemize}
+  \item \(r_{\text{factor}}[t]\): factor portfolio return from \texttt{factor\_returns()}.
+  \item \(r_{\text{universe}}[t]\): cross-sectional mean universe return for the same horizon.
+  \item \(\beta\): OLS slope (sensitivity to universe return).
+  \item \(\alpha\): OLS intercept, then annualized as
+  \( (1 + \alpha)^{\texttt{Timedelta("252Days")} / \texttt{Timedelta(period)}} - 1 \).
+\end{itemize}
+
+The output currently stores rows labeled \texttt{Ann. alpha} and \texttt{beta} per horizon.
 
 \subsubsection{\texttt{cumulative\_returns(returns)}}
 Convert simple returns into cumulative returns.
@@ -503,6 +556,39 @@ Compute mean forward returns and standard errors by factor quantile.
 
 \paragraph{Returns}
 A pair: \((\text{mean\_ret}, \text{std\_error\_ret})\).
+
+\paragraph{Index shape by (\texttt{by\_date}, \texttt{by\_group})}
+For both outputs (\texttt{mean\_ret} and \texttt{std\_error\_ret}), columns are forward-return horizons (for example \texttt{1D}, \texttt{5D}, \texttt{10D}).
+
+\begin{itemize}
+  \item \texttt{by\_date=True}, \texttt{by\_group=False}: index is \texttt{(factor\_quantile, date)}.
+  \item \texttt{by\_date=True}, \texttt{by\_group=True}: index is \texttt{(factor\_quantile, date, group)}.
+  \item \texttt{by\_date=False}, \texttt{by\_group=False}: index is \texttt{(factor\_quantile)}.
+  \item \texttt{by\_date=False}, \texttt{by\_group=True}: index is \texttt{(factor\_quantile, group)}.
+\end{itemize}
+
+When \texttt{by\_date=False}, the function first computes date-level statistics and then averages over the date level.
+
+\paragraph{Numerical illustration}
+Assume \texttt{by\_date=False}, \texttt{by\_group=False}, and one horizon (\texttt{1D}).
+
+\begin{itemize}
+  \item Date-level quantile means after the first aggregation step:
+  \begin{itemize}
+    \item Q1: \texttt{[-0.010, -0.006]}
+    \item Q5: \texttt{[0.012, 0.008]}
+  \end{itemize}
+  \item Final mean by quantile (second aggregation across dates):
+  \begin{itemize}
+    \item Q1 mean: \texttt{(-0.010 + -0.006) / 2 = -0.008}
+    \item Q5 mean: \texttt{(0.012 + 0.008) / 2 = 0.010}
+  \end{itemize}
+  \item Standard error uses \texttt{std / sqrt(count)} on those date-level means:
+  \begin{itemize}
+    \item For both Q1 and Q5, sample std is about \texttt{0.002828} and \texttt{count=2}, so
+    \item \texttt{std\_error\_ret \textasciitilde{} 0.002828 / sqrt(2) = 0.002}.
+  \end{itemize}
+\end{itemize}
 
 \subsubsection{\texttt{compute\_mean\_returns\_spread(mean\_returns, upper\_quant, lower\_quant, std\_err=None)}}
 Compute the difference in mean returns between two quantiles.
@@ -690,6 +776,36 @@ A tuple: \((\text{returns}, \text{positions}, \text{benchmark})\).
   \item Most functions assume data has already been cleaned and aligned into the Alphalens MultiIndex format.
   \item Several functions use a trading-calendar frequency attached to the date index, so preserving index frequency is important for correct behavior.
 \end{itemize}
+
+\subsection{Per-function dependency table}
+
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.5cm}}
+\toprule
+Function & Purpose & Direct deps in \texttt{performance.py} & Direct deps in \texttt{utils} & Direct external deps \\
+\midrule
+\texttt{factor\_information\_coefficient} & Compute date-wise IC (Spearman/Pearson) between factor and forward returns. & - & \texttt{get\_forward\_returns\_columns}, \texttt{demean\_forward\_returns} & \texttt{stats.spearmanr}, \texttt{stats.pearsonr} \\
+\texttt{mean\_information\_coefficient} & Aggregate IC means by time and/or group. & \texttt{factor\_information\_coefficient} & - & \texttt{pd.Grouper} \\
+\texttt{factor\_weights} & Build normalized factor-based asset weights (optional demean/group adjust/equal-weight). & - & - & - \\
+\texttt{factor\_returns} & Compute factor-weighted forward returns per period. & \texttt{factor\_weights} & \texttt{get\_forward\_returns\_columns} & - \\
+\texttt{factor\_alpha\_beta} & Regress factor returns on universe mean returns to estimate alpha/beta. & \texttt{factor\_returns} & \texttt{get\_forward\_returns\_columns} & \texttt{add\_constant}, \texttt{OLS} \\
+\texttt{cumulative\_returns} & Convert simple returns series to cumulative returns. & - & - & \texttt{ep.cum\_returns} \\
+\texttt{positions} & Build position time series from weights and holding periods. & - & \texttt{add\_custom\_calendar\_timedelta} & \texttt{BDay}, \texttt{warnings.warn} \\
+\texttt{mean\_return\_by\_quantile} & Compute mean/std-error of forward returns by quantile/date/group. & - & \texttt{demean\_forward\_returns}, \texttt{get\_forward\_returns\_columns} & \texttt{np.sqrt} \\
+\texttt{compute\_mean\_returns\_spread} & Compute spread between upper and lower quantile mean returns. & - & - & \texttt{np.sqrt} \\
+\texttt{quantile\_turnover} & Measure membership turnover for a quantile over a lag period. & - & - & \texttt{pd.isna} \\
+\texttt{factor\_rank\_autocorrelation} & Compute autocorrelation of mean factor rank across dates. & - & - & - \\
+\texttt{common\_start\_returns} & Align returns around event dates into common-relative windows. & \texttt{cumulative\_returns} & - & - \\
+\texttt{average\_cumulative\_return\_by\_quantile} & Compute average cumulative event returns by quantile (optionally by group). & \texttt{common\_start\_returns} & - & \texttt{np.inf} \\
+\texttt{factor\_cumulative\_returns} & Simulate portfolio and return cumulative returns for a chosen period. & \texttt{factor\_returns}, \texttt{cumulative\_returns} & \texttt{get\_forward\_returns\_columns} & - \\
+\texttt{factor\_positions} & Simulate portfolio and return position matrix over time. & \texttt{factor\_weights}, \texttt{positions} & \texttt{get\_forward\_returns\_columns} & - \\
+\texttt{create\_pyfolio\_input} & Build returns/positions/benchmark outputs formatted for Pyfolio. & \texttt{factor\_cumulative\_returns}, \texttt{factor\_positions} & \texttt{get\_forward\_returns\_columns} & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+\normalsize
 
 \subsection{Practical usage}
 

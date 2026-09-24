@@ -162,7 +162,7 @@ A `DataFrame` of period returns, or asset-level weighted returns when `by_asset=
 
 ---
 
-### `factor_alpha_beta(factor_data, returns=None, demeaned=True, group_adjust=False, equal_weight=False)`
+### `factor_alpha_beta(factor_data: pd.DataFrame, returns: Optional[Union[pd.DataFrame, pd.Series]]=None, demeaned: bool=True, group_adjust: bool=False, equal_weight: bool=False) -> pd.DataFrame`
 Estimate alpha and beta for a factor portfolio using OLS regression.
 
 **Behavior**
@@ -175,6 +175,20 @@ Estimate alpha and beta for a factor portfolio using OLS regression.
 **Returns**
 
 A `DataFrame` containing at least annualized alpha and beta by forward-return horizon.
+
+**How alpha and beta are calculated**
+
+For each forward-return horizon (for example `1D`, `5D`), the function runs:
+
+`r_factor[t] = alpha + beta * r_universe[t] + eps[t]`
+
+- `r_factor[t]`: factor portfolio return from `factor_returns()`.
+- `r_universe[t]`: cross-sectional mean universe return for the same horizon.
+- `beta`: OLS slope (sensitivity to universe return).
+- `alpha`: OLS intercept, then annualized as
+  `(1 + alpha) ** (Timedelta("252Days") / Timedelta(period)) - 1`.
+
+The output currently stores rows labeled `Ann. alpha` and `beta` per horizon.
 
 ---
 
@@ -213,6 +227,31 @@ Compute mean forward returns and standard errors by factor quantile.
 **Returns**
 
 A pair: `(mean_ret, std_error_ret)`.
+
+**Index shape by (`by_date`, `by_group`)**
+
+For both outputs (`mean_ret` and `std_error_ret`), columns are forward-return horizons (for example `1D`, `5D`, `10D`).
+
+- `by_date=True`, `by_group=False` -> index is `(factor_quantile, date)`.
+- `by_date=True`, `by_group=True` -> index is `(factor_quantile, date, group)`.
+- `by_date=False`, `by_group=False` -> index is `(factor_quantile)`.
+- `by_date=False`, `by_group=True` -> index is `(factor_quantile, group)`.
+
+When `by_date=False`, the function first computes date-level statistics and then averages over the date level.
+
+**Numerical illustration**
+
+Assume `by_date=False`, `by_group=False`, and one horizon (`1D`).
+
+- Date-level quantile means after the first aggregation step:
+  - Q1: `[-0.010, -0.006]`
+  - Q5: `[0.012, 0.008]`
+- Final mean by quantile (second aggregation across dates):
+  - Q1 mean: `(-0.010 + -0.006) / 2 = -0.008`
+  - Q5 mean: `(0.012 + 0.008) / 2 = 0.010`
+- Standard error uses `std / sqrt(count)` on those date-level means:
+  - For both Q1 and Q5, sample std is about `0.002828` and `count=2`, so
+    `std_error_ret ~= 0.002828 / sqrt(2) = 0.002`.
 
 ---
 
@@ -402,6 +441,27 @@ A tuple: `(returns, positions, benchmark)`.
 - Relies heavily on `alphalens.utils` for forward-return column detection and return demeaning.
 - Most functions assume data has already been cleaned and aligned into the Alphalens MultiIndex format.
 - Several functions use a trading-calendar frequency attached to the date index, so preserving index frequency is important for correct behavior.
+
+## Per-function dependency table
+
+| Function | Purpose | Direct deps in `performance.py` | Direct deps in `utils` | Direct external deps |
+| --- | --- | --- | --- | --- |
+| `factor_information_coefficient` | Compute date-wise IC (Spearman/Pearson) between factor and forward returns. | - | `get_forward_returns_columns`, `demean_forward_returns` | `stats.spearmanr`, `stats.pearsonr` |
+| `mean_information_coefficient` | Aggregate IC means by time and/or group. | `factor_information_coefficient` | - | `pd.Grouper` |
+| `factor_weights` | Build normalized factor-based asset weights (optional demean/group adjust/equal-weight). | - | - | - |
+| `factor_returns` | Compute factor-weighted forward returns per period. | `factor_weights` | `get_forward_returns_columns` | - |
+| `factor_alpha_beta` | Regress factor returns on universe mean returns to estimate alpha/beta. | `factor_returns` | `get_forward_returns_columns` | `add_constant`, `OLS` |
+| `cumulative_returns` | Convert simple returns series to cumulative returns. | - | - | `ep.cum_returns` |
+| `positions` | Build position time series from weights and holding periods. | - | `add_custom_calendar_timedelta` | `BDay`, `warnings.warn` |
+| `mean_return_by_quantile` | Compute mean/std-error of forward returns by quantile/date/group. | - | `demean_forward_returns`, `get_forward_returns_columns` | `np.sqrt` |
+| `compute_mean_returns_spread` | Compute spread between upper and lower quantile mean returns. | - | - | `np.sqrt` |
+| `quantile_turnover` | Measure membership turnover for a quantile over a lag period. | - | - | `pd.isna` |
+| `factor_rank_autocorrelation` | Compute autocorrelation of mean factor rank across dates. | - | - | - |
+| `common_start_returns` | Align returns around event dates into common-relative windows. | `cumulative_returns` | - | - |
+| `average_cumulative_return_by_quantile` | Compute average cumulative event returns by quantile (optionally by group). | `common_start_returns` | - | `np.inf` |
+| `factor_cumulative_returns` | Simulate portfolio and return cumulative returns for a chosen period. | `factor_returns`, `cumulative_returns` | `get_forward_returns_columns` | - |
+| `factor_positions` | Simulate portfolio and return position matrix over time. | `factor_weights`, `positions` | `get_forward_returns_columns` | - |
+| `create_pyfolio_input` | Build returns/positions/benchmark outputs formatted for Pyfolio. | `factor_cumulative_returns`, `factor_positions` | `get_forward_returns_columns` | - |
 
 ## Practical usage
 
