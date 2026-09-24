@@ -136,3 +136,100 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
 
     return {'turnover': quantile_turnover,
             'factor_autocorr': factor_autocorr}
+
+def full_tear_sheet_wrapper(data: pd.DataFrame,
+                            factors: list[str],
+                            fwd_rtrn_cols: list[str],
+                            output_dir: str,
+                            turnover_period: int = 1,
+                            period_unit: str = 'D') -> dict[str, pd.DataFrame]:
+    """Wrapper for alphalens full tear sheet function.
+    Args:
+        data (pd.DataFrame): Factor data in the format expected by alphalens.
+        factors (list[str]): List of factor column names to analyze.
+        fwd_rtrn_cols (list[str]): List of forward return column names to analyze.
+        output_dir (str): Directory to save the tear sheets. Each factor will have its own subdirectory.
+    """
+    result = []
+
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir, exist_ok=True)
+
+    if 'date' not in data.columns or 'asset' not in data.columns:
+        raise ValueError("Data must contain 'date' and 'asset' columns.")
+
+    # information coefficient analysis
+    essential_cols = ['date', 'asset'] + fwd_rtrn_cols
+    if 'group' in data.columns:
+        essential_cols.append('group')
+
+    ic_spearman_list = []
+    ic_pearson_list = []
+    for f in factors:
+        df = data[essential_cols + [f]].copy()
+        df = df.rename(columns={f: 'factor'}).set_index(['date', 'asset'])
+
+        ic_tear_sheet = os.path.join(output_dir, f"ic_tear_sheet_{f}.png")
+        ic_result = alphalens.wrapper.information_analysis_wrapper(data=df,
+                                                                   group_adjust=True if 'group' in df.columns else False,
+                                                                   by_group=True if 'group' in df.columns else False,
+                                                                   tear_sheet_filepath=ic_tear_sheet)
+        ic_result['ic_spearman'].insert(0, 'factor', f)
+        ic_result['ic_pearson'].insert(0, 'factor', f)
+        ic_spearman_list.append(ic_result['ic_spearman'])
+        ic_pearson_list.append(ic_result['ic_pearson'])
+
+    result['ic_spearman'] = pd.concat(ic_spearman_list, axis=0)
+    result['ic_pearson'] = pd.concat(ic_pearson_list, axis=0)
+
+    # return analysis
+    fwd_rtrn_data = data[['date', 'asset'] + fwd_rtrn_cols].copy().set_index(['date', 'asset']).sort_index()
+    if 'group' in data.columns:
+        grp_by_series = data[['date', 'asset', 'group']].copy().set_index(['date', 'asset']).sort_index()
+    else:
+        grp_by_series = None
+
+    mean_return_by_q_list = []
+    std_err_by_q_list = []
+    turnover_list = []
+    factor_autocorr_list = []
+    for f in factors:
+        df = data[['date', 'asset', f]].copy()
+        df = df.rename(columns={f: 'factor'}).set_index(['date', 'asset'])
+
+        clean_data = alphalens.utils.get_clean_factor(factor=df,
+                                                      forward_returns=fwd_rtrn_data,
+                                                      groupby=grp_by_series,
+                                                      binning_by_group=True if 'group' in df.columns else False,
+                                                      quantiles=5,
+                                                      bins=None)
+
+        rtrn_tear_sheet = os.path.join(output_dir, f"rtrn_tear_sheet_{f}.png")
+        rtrn_result = alphalens.wrapper.return_analysis_wrapper(data=clean_data,
+                                                                long_short=True,
+                                                                group_neutral=True if 'group' in df.columns else False,
+                                                                by_group=True if 'group' in df.columns else False,
+                                                                tear_sheet_filepath=rtrn_tear_sheet)
+        rtrn_result['mean_return_by_q'].insert(0, 'factor', f)
+        rtrn_result['std_err_by_q'].insert(0, 'factor', f)
+        mean_return_by_q_list.append(rtrn_result['mean_return_by_q'])
+        std_err_by_q_list.append(rtrn_result['std_err_by_q'])
+
+        turnover_tear_sheet = os.path.join(output_dir, f"turnover_tear_sheet_{f}.png")
+        turnover_result = alphalens.wrapper.turnover_analysis_wrapper(data=clean_data,
+                                                                      turnover_period=turnover_period,
+                                                                      period_unit=period_unit,
+                                                                      tear_sheet_filepath=turnover_tear_sheet)
+        turnover = result['turnover'].reset_index(drop=False)
+        turnover.insert(0, 'factor', factor)
+        turnover_list.append(turnover)
+        factor_autocorr = result['factor_autocorr'].reset_index(drop=False)
+        factor_autocorr.insert(0, 'factor', factor)
+        factor_autocorr_list.append(factor_autocorr)
+
+    result['mean_return_by_q'] = pd.concat(mean_return_by_q_list, axis=0)
+    result['std_err_by_q'] = pd.concat(std_err_by_q_list, axis=0)
+    result['turnover'] = pd.concat(turnover_list, axis=0)
+    result['factor_autocorr'] = pd.concat(factor_autocorr_list, axis=0)
+
+    return result
