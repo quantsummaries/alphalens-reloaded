@@ -3,6 +3,7 @@
 # Wrapper of the main functionalities of factor analysis with customizations.
 
 import inspect
+import os
 
 import pandas as pd
 
@@ -150,7 +151,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         fwd_rtrn_cols (list[str]): List of forward return column names to analyze.
         output_dir (str): Directory to save the tear sheets. Each factor will have its own subdirectory.
     """
-    result = []
+    result = {}
 
     if not os.path.exists(output_dir):
         os.mkdir(output_dir, exist_ok=True)
@@ -220,11 +221,11 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                       turnover_period=turnover_period,
                                                                       period_unit=period_unit,
                                                                       tear_sheet_filepath=turnover_tear_sheet)
-        turnover = result['turnover'].reset_index(drop=False)
-        turnover.insert(0, 'factor', factor)
+        turnover = turnover_result['turnover'].reset_index(drop=False)
+        turnover.insert(0, 'factor', f)
         turnover_list.append(turnover)
-        factor_autocorr = result['factor_autocorr'].reset_index(drop=False)
-        factor_autocorr.insert(0, 'factor', factor)
+        factor_autocorr = turnover_result['factor_autocorr'].reset_index(drop=False)
+        factor_autocorr.insert(0, 'factor', f)
         factor_autocorr_list.append(factor_autocorr)
 
     result['mean_return_by_q'] = pd.concat(mean_return_by_q_list, axis=0)
