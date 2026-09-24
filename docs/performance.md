@@ -4,6 +4,34 @@ Performance-analysis utilities for factor research, including information coeffi
 
 This module is the main analytics layer used after factor data has been cleaned and aligned with `alphalens.utils.get_clean_factor_and_forward_returns()`.
 
+## Table of contents
+
+- [Data model used by this module](#data-model-used-by-this-module)
+- [Core analysis functions](#core-analysis-functions)
+  - [factor_information_coefficient](#factor_information_coefficient)
+  - [mean_information_coefficient](#mean_information_coefficient)
+- [Portfolio weighting and return simulation](#portfolio-weighting-and-return-simulation)
+  - [factor_weights](#factor_weights)
+  - [factor_returns](#factor_returns)
+  - [factor_alpha_beta](#factor_alpha_beta)
+  - [cumulative_returns](#cumulative_returns)
+  - [positions](#positions)
+- [Quantile and bucket analysis](#quantile-and-bucket-analysis)
+  - [mean_return_by_quantile](#mean_return_by_quantile)
+  - [compute_mean_returns_spread](#compute_mean_returns_spread)
+  - [quantile_turnover](#quantile_turnover)
+  - [factor_rank_autocorrelation](#factor_rank_autocorrelation)
+- [Event-study helpers](#event-study-helpers)
+  - [common_start_returns](#common_start_returns)
+  - [average_cumulative_return_by_quantile](#average_cumulative_return_by_quantile)
+- [Portfolio simulation outputs](#portfolio-simulation-outputs)
+  - [factor_cumulative_returns](#factor_cumulative_returns)
+  - [factor_positions](#factor_positions)
+  - [create_pyfolio_input](#create_pyfolio_input)
+- [Dependencies and implementation notes](#dependencies-and-implementation-notes)
+- [Per-function dependency table](#per-function-dependency-table)
+- [Practical usage](#practical-usage)
+
 ## Data model used by this module
 
 Most functions expect a MultiIndex `pandas` object indexed by:
@@ -22,7 +50,9 @@ Forward-return column names are detected using `alphalens.utils.get_forward_retu
 
 ## Core analysis functions
 
-### `factor_information_coefficient(factor_data, group_adjust=False, by_group=False, ic_type="spearman")`
+### `factor_information_coefficient`
+**Signature:** `factor_information_coefficient(factor_data, group_adjust=False, by_group=False, ic_type="spearman")`
+
 Compute the Information Coefficient (IC) between factor values and each forward-return horizon.
 
 **Behavior**
@@ -30,8 +60,8 @@ Compute the Information Coefficient (IC) between factor values and each forward-
 - Calculates IC period by period using either:
   - Spearman rank correlation (`ic_type="spearman"`, default), or
   - Pearson linear correlation (`ic_type="pearson"`).
-- Optionally demeans forward returns by group before computing IC.
-- Optionally computes IC separately for each group.
+- When `group_adjust=True`, forward returns are demeaned within group before IC computation.
+- When `by_group=True`, IC is computed and returned separately per group (group breakout only; no change to the IC formula).
 - Preserves the factor data frequency on the date index when not grouped by asset group.
 - Raises `ValueError` for unsupported `ic_type` values.
 
@@ -41,12 +71,14 @@ A `DataFrame` of IC values indexed by date, or by date and group when `by_group=
 
 ---
 
-### `mean_information_coefficient(factor_data, group_adjust=False, by_group=False, by_time=None)`
+### `mean_information_coefficient`
+**Signature:** `mean_information_coefficient(factor_data, group_adjust=False, by_group=False, by_time=None)`
+
 Compute the mean IC across the full sample or over a time window.
 
 **Behavior**
 
-- Delegates to `factor_information_coefficient()`.
+- Delegates to `factor_information_coefficient()` using its default IC type (Spearman).
 - Can aggregate by time period using a pandas time rule such as monthly or weekly windows.
 - Can aggregate by group when `by_group=True`.
 
@@ -56,7 +88,9 @@ A scalar-like `Series`/`DataFrame` of mean IC values depending on the requested 
 
 ## Portfolio weighting and return simulation
 
-### `factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=False)`
+### `factor_weights`
+**Signature:** `factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=False)`
+
 Compute asset weights from factor values.
 
 **Behavior**
@@ -66,13 +100,58 @@ Compute asset weights from factor values.
 - When `group_adjust=True`, weights are computed in a group-neutral way.
 - When `equal_weight=True`, assets are equal-weighted instead of factor-weighted.
 
+**Why `to_weights` is applied twice when `group_adjust=True`**
+
+- First pass (`groupby([date, group]).apply(to_weights, demeaned, equal_weight)`):
+  compute and normalize weights *within each group* for each date.
+- Second pass (`weights.groupby(level="date").apply(to_weights, False, False)`):
+  combine all groups on that date and rescale exposures without re-demeaning or
+  re-bucketing.
+- This two-step process ensures both:
+  - intra-group construction (including optional demeaning/equal-weight rules), and
+  - date-level normalization so total gross leverage is 1.
+- Without the second pass, concatenating already-normalized groups would typically
+  produce gross leverage close to the number of groups.
+
 **Returns**
 
 A `Series` of weights indexed by `(date, asset)`.
 
+**Worked example**
+
+Suppose one date contains three assets with these factor values:
+
+| asset | factor |
+| --- | ---: |
+| A | 2.0 |
+| B | 1.0 |
+| C | -1.0 |
+
+With the default `demeaned=True`, `group_adjust=False`, and
+`equal_weight=False`:
+
+1. Demean factor values by date.
+   - Mean factor = `(2.0 + 1.0 - 1.0) / 3 = 0.6667`
+   - Demeaned values = `A: 1.3333`, `B: 0.3333`, `C: -1.6667`
+2. Normalize by the sum of absolute values.
+   - Gross exposure = `|1.3333| + |0.3333| + |−1.6667| = 3.3333`
+   - Weights = `A: 0.40`, `B: 0.10`, `C: -0.50`
+
+These weights represent a dollar-neutral long-short portfolio: long positions
+(`A: 0.40`, `B: 0.10`) total `0.50` and short positions (`C: -0.50`) total
+`0.50` in absolute value.
+
+If `demeaned=False`, weights come directly from the raw (non-demeaned) factor
+values: the sum of absolute raw factors would be `|2.0| + |1.0| + |−1.0| = 4.0`,
+yielding weights `A: 0.50`, `B: 0.25`, `C: -0.25`. If `group_adjust=True`,
+weights are adjusted to be group-neutral. If `equal_weight=True`, assets are
+equal-weighted within long and short buckets instead of using factor magnitudes.
+
 ---
 
-### `factor_returns(factor_data, demeaned=True, group_adjust=False, equal_weight=False, by_asset=False)`
+### `factor_returns`
+**Signature:** `factor_returns(factor_data, demeaned=True, group_adjust=False, equal_weight=False, by_asset=False)`
+
 Compute period-wise returns for a factor-weighted portfolio.
 
 In this module, a **factor return** is the return of a simulated portfolio whose
@@ -132,7 +211,9 @@ A `DataFrame` of period returns, or asset-level weighted returns when `by_asset=
 
 ---
 
-### `factor_alpha_beta(factor_data, returns=None, demeaned=True, group_adjust=False, equal_weight=False)`
+### `factor_alpha_beta`
+**Signature:** `factor_alpha_beta(factor_data: pd.DataFrame, returns: Optional[Union[pd.DataFrame, pd.Series]]=None, demeaned: bool=True, group_adjust: bool=False, equal_weight: bool=False) -> pd.DataFrame`
+
 Estimate alpha and beta for a factor portfolio using OLS regression.
 
 **Behavior**
@@ -144,18 +225,36 @@ Estimate alpha and beta for a factor portfolio using OLS regression.
 
 **Returns**
 
-A `DataFrame` containing at least annualized alpha and beta by forward-return horizon.
+A `DataFrame` with row labels `Ann. alpha` and `beta`, and forward-return horizons as columns.
+
+**How alpha and beta are calculated**
+
+For each forward-return horizon (for example `1D`, `5D`), the function runs:
+
+`r_factor[t] = alpha + beta * r_universe[t] + eps[t]`
+
+- `r_factor[t]`: factor portfolio return from `factor_returns()`.
+- `r_universe[t]`: cross-sectional mean universe return for the same horizon.
+- `beta`: OLS slope (sensitivity to universe return).
+- `alpha`: OLS intercept, then annualized as
+  `(1 + alpha) ** (Timedelta("252Days") / Timedelta(period)) - 1`.
+
+The output currently stores rows labeled `Ann. alpha` and `beta` per horizon.
 
 ---
 
-### `cumulative_returns(returns)`
+### `cumulative_returns`
+**Signature:** `cumulative_returns(returns)`
+
 Convert simple returns into cumulative returns.
 
 This is a thin wrapper around `empyrical.cum_returns()` with a starting value of 1.
 
 ---
 
-### `positions(weights, period, freq=None)`
+### `positions`
+**Signature:** `positions(weights, period, freq=None)`
+
 Build a time series of portfolio positions from factor weights.
 
 **Behavior**
@@ -171,22 +270,56 @@ A `DataFrame` with timestamps on the index and assets on the columns.
 
 ## Quantile and bucket analysis
 
-### `mean_return_by_quantile(factor_data, by_date=False, by_group=False, demeaned=True, group_adjust=False)`
+### `mean_return_by_quantile`
+**Signature:** `mean_return_by_quantile(factor_data, by_date=False, by_group=False, demeaned=True, group_adjust=False)`
+
 Compute mean forward returns and standard errors by factor quantile.
 
 **Behavior**
 
 - Can compute results by date or across the full sample.
 - Can compute results by group.
-- Can demean by the whole universe or within each group.
+- Can demean by the whole universe (`demeaned=True`) or within each group (`group_adjust=True`).
+- If `group_adjust=True`, group-level demeaning takes precedence over `demeaned`.
+- Raises `ValueError` when required columns are missing:
+  - `group_adjust=True` requires a `group` column.
+  - `by_group=True` requires a `group` column.
+  - `factor_data` must contain `factor_quantile`.
 
 **Returns**
 
 A pair: `(mean_ret, std_error_ret)`.
 
+**Index shape by (`by_date`, `by_group`)**
+
+For both outputs (`mean_ret` and `std_error_ret`), columns are forward-return horizons (for example `1D`, `5D`, `10D`).
+
+- `by_date=True`, `by_group=False` -> index is `(factor_quantile, date)`.
+- `by_date=True`, `by_group=True` -> index is `(factor_quantile, date, group)`.
+- `by_date=False`, `by_group=False` -> index is `(factor_quantile)`.
+- `by_date=False`, `by_group=True` -> index is `(factor_quantile, group)`.
+
+When `by_date=False`, the function first computes date-level statistics and then averages over the date level.
+
+**Numerical illustration**
+
+Assume `by_date=False`, `by_group=False`, and one horizon (`1D`).
+
+- Date-level quantile means after the first aggregation step:
+  - Q1: `[-0.010, -0.006]`
+  - Q5: `[0.012, 0.008]`
+- Final mean by quantile (second aggregation across dates):
+  - Q1 mean: `(-0.010 + -0.006) / 2 = -0.008`
+  - Q5 mean: `(0.012 + 0.008) / 2 = 0.010`
+- Standard error uses `std / sqrt(count)` on those date-level means:
+  - For both Q1 and Q5, sample std is about `0.002828` and `count=2`, so
+    `std_error_ret ~= 0.002828 / sqrt(2) = 0.002`.
+
 ---
 
-### `compute_mean_returns_spread(mean_returns, upper_quant, lower_quant, std_err=None)`
+### `compute_mean_returns_spread`
+**Signature:** `compute_mean_returns_spread(mean_returns, upper_quant, lower_quant, std_err=None)`
+
 Compute the difference in mean returns between two quantiles.
 
 **Behavior**
@@ -200,7 +333,9 @@ A pair: `(mean_return_difference, joint_std_err)`.
 
 ---
 
-### `quantile_turnover(quantile_factor, quantile, period=1)`
+### `quantile_turnover`
+**Signature:** `quantile_turnover(quantile_factor, quantile, period=1)`
+
 Measure the proportion of names that leave a given quantile over time.
 
 **Behavior**
@@ -208,13 +343,47 @@ Measure the proportion of names that leave a given quantile over time.
 - Compares membership in the selected quantile against the prior period.
 - Preserves the date frequency of the input.
 
+**Worked example**
+
+Suppose we evaluate `quantile=5` with `period=1`, and the names in quantile 5 are:
+
+| date | names in quantile 5 |
+| --- | --- |
+| 2026-01-02 | `{A, B, C}` |
+| 2026-01-03 | `{B, C, D}` |
+| 2026-01-06 | `{C, D, E}` |
+
+For each date after the first, turnover is:
+
+`(# names that are new vs previous date) / (current quantile size)`
+
+- On `2026-01-03`, new names vs `2026-01-02` are `{D}`.
+  - Turnover = `1 / 3 = 0.3333`
+- On `2026-01-06`, new names vs `2026-01-03` are `{E}`.
+  - Turnover = `1 / 3 = 0.3333`
+
+The first date has no prior comparison point, so no turnover value is reported for it.
+
+**Companion example (`period=2`)**
+
+Using the same memberships, each date is compared to the set two dates earlier.
+
+- On `2026-01-06`, compare `{C, D, E}` to `2026-01-02` (`{A, B, C}`).
+  - New names are `{D, E}`.
+  - Turnover = `2 / 3 = 0.6667`
+
+This highlights that larger `period` values measure non-adjacent membership change.
+If intermediate dates are missing after frequency alignment (for example via `asfreq`), larger `period` comparisons can be skipped or shifted to different comparable dates.
+
 **Returns**
 
 A `Series` indexed by date.
 
 ---
 
-### `factor_rank_autocorrelation(factor_data, period=1)`
+### `factor_rank_autocorrelation`
+**Signature:** `factor_rank_autocorrelation(factor_data, period=1)`
+
 Measure the autocorrelation of factor ranks across periods.
 
 **Behavior**
@@ -222,13 +391,40 @@ Measure the autocorrelation of factor ranks across periods.
 - Ranks assets by their factor values within each date, then computes the correlation between each date’s rank vector and the rank vector period dates earlier.
 - Useful as a turnover/stability diagnostic.
 
+**Worked example (`period=1`)**
+
+Suppose the factor values for assets `A, B, C, D` are:
+
+| date | factor values (A, B, C, D) | rank vector (A, B, C, D) |
+| --- | --- | --- |
+| 2026-01-02 | `(1, 2, 3, 4)` | `(1, 2, 3, 4)` |
+| 2026-01-03 | `(4, 3, 2, 1)` | `(4, 3, 2, 1)` |
+| 2026-01-06 | `(1, 2, 3, 4)` | `(1, 2, 3, 4)` |
+
+With `period=1`, each date is correlated with the immediately prior date:
+
+- On `2026-01-03`: corr(`(4, 3, 2, 1)`, `(1, 2, 3, 4)`) = `-1.0`
+- On `2026-01-06`: corr(`(1, 2, 3, 4)`, `(4, 3, 2, 1)`) = `-1.0`
+
+The first date has no prior rank vector, so its value is `NaN`.
+
+**Companion example (`period=2`)**
+
+Using the same data with `period=2`, `2026-01-06` is compared to `2026-01-02`:
+
+- corr(`(1, 2, 3, 4)`, `(1, 2, 3, 4)`) = `1.0`
+
+So a larger `period` can reveal longer-horizon rank stability even when adjacent dates are unstable.
+
 **Returns**
 
 A `Series` of autocorrelation values indexed by date.
 
 ## Event-study helpers
 
-### `common_start_returns(factor, returns, before, after, cumulative=False, mean_by_date=False, demean_by=None)`
+### `common_start_returns`
+**Signature:** `common_start_returns(factor, returns, before, after, cumulative=False, mean_by_date=False, demean_by=None)`
+
 Align return windows around common event dates.
 
 **Behavior**
@@ -245,7 +441,9 @@ A `DataFrame` of aligned return windows.
 
 ---
 
-### `average_cumulative_return_by_quantile(factor_data, returns, periods_before=10, periods_after=15, demeaned=True, group_adjust=False, by_group=False)`
+### `average_cumulative_return_by_quantile`
+**Signature:** `average_cumulative_return_by_quantile(factor_data, returns, periods_before=10, periods_after=15, demeaned=True, group_adjust=False, by_group=False)`
+
 Compute average cumulative returns around factor events by quantile.
 
 **Behavior**
@@ -261,7 +459,9 @@ A MultiIndex `DataFrame` containing mean and standard deviation across the event
 
 ## Portfolio simulation outputs
 
-### `factor_cumulative_returns(factor_data, period, long_short=True, group_neutral=False, equal_weight=False, quantiles=None, groups=None)`
+### `factor_cumulative_returns`
+**Signature:** `factor_cumulative_returns(factor_data, period, long_short=True, group_neutral=False, equal_weight=False, quantiles=None, groups=None)`
+
 Simulate a factor portfolio and return cumulative performance.
 
 **Behavior**
@@ -279,7 +479,9 @@ A cumulative return `Series`.
 
 ---
 
-### `factor_positions(factor_data, period, long_short=True, group_neutral=False, equal_weight=False, quantiles=None, groups=None)`
+### `factor_positions`
+**Signature:** `factor_positions(factor_data, period, long_short=True, group_neutral=False, equal_weight=False, quantiles=None, groups=None)`
+
 Simulate a factor portfolio and return the time series of positions.
 
 **Behavior**
@@ -294,7 +496,9 @@ A `DataFrame` of asset positions over time.
 
 ---
 
-### `create_pyfolio_input(factor_data, period, capital=None, long_short=True, group_neutral=False, equal_weight=False, quantiles=None, groups=None, benchmark_period="1D")`
+### `create_pyfolio_input`
+**Signature:** `create_pyfolio_input(factor_data, period, capital=None, long_short=True, group_neutral=False, equal_weight=False, quantiles=None, groups=None, benchmark_period="1D")`
+
 Create returns, positions, and benchmark data in the format expected by Pyfolio.
 
 **Behavior**
@@ -316,6 +520,27 @@ A tuple: `(returns, positions, benchmark)`.
 - Most functions assume data has already been cleaned and aligned into the Alphalens MultiIndex format.
 - Several functions use a trading-calendar frequency attached to the date index, so preserving index frequency is important for correct behavior.
 
+## Per-function dependency table
+
+| Function | Purpose | Direct deps in `performance.py` | Direct deps in `utils` | Direct external deps |
+| --- | --- | --- | --- | --- |
+| `factor_information_coefficient` | Compute date-wise IC (Spearman/Pearson) between factor and forward returns. | - | `get_forward_returns_columns`, `demean_forward_returns` | `stats.spearmanr`, `stats.pearsonr` |
+| `mean_information_coefficient` | Aggregate IC means by time and/or group. | `factor_information_coefficient` | - | `pd.Grouper` |
+| `factor_weights` | Build normalized factor-based asset weights (optional demean/group adjust/equal-weight). | - | - | - |
+| `factor_returns` | Compute factor-weighted forward returns per period. | `factor_weights` | `get_forward_returns_columns` | - |
+| `factor_alpha_beta` | Regress factor returns on universe mean returns to estimate alpha/beta. | `factor_returns` | `get_forward_returns_columns` | `add_constant`, `OLS` |
+| `cumulative_returns` | Convert simple returns series to cumulative returns. | - | - | `ep.cum_returns` |
+| `positions` | Build position time series from weights and holding periods. | - | `add_custom_calendar_timedelta` | `BDay`, `warnings.warn` |
+| `mean_return_by_quantile` | Compute mean/std-error of forward returns by quantile/date/group. | - | `demean_forward_returns`, `get_forward_returns_columns` | `np.sqrt` |
+| `compute_mean_returns_spread` | Compute spread between upper and lower quantile mean returns. | - | - | `np.sqrt` |
+| `quantile_turnover` | Measure membership turnover for a quantile over a lag period. | - | - | `pd.isna` |
+| `factor_rank_autocorrelation` | Compute autocorrelation of mean factor rank across dates. | - | - | - |
+| `common_start_returns` | Align returns around event dates into common-relative windows. | `cumulative_returns` | - | - |
+| `average_cumulative_return_by_quantile` | Compute average cumulative event returns by quantile (optionally by group). | `common_start_returns` | - | `np.inf` |
+| `factor_cumulative_returns` | Simulate portfolio and return cumulative returns for a chosen period. | `factor_returns`, `cumulative_returns` | `get_forward_returns_columns` | - |
+| `factor_positions` | Simulate portfolio and return position matrix over time. | `factor_weights`, `positions` | `get_forward_returns_columns` | - |
+| `create_pyfolio_input` | Build returns/positions/benchmark outputs formatted for Pyfolio. | `factor_cumulative_returns`, `factor_positions` | `get_forward_returns_columns` | - |
+
 ## Practical usage
 
 Typical workflow:
@@ -326,4 +551,6 @@ Typical workflow:
 4. Feed the outputs into plotting or Pyfolio workflows.
 
 Example call: `factor_information_coefficient(factor_data)` or `create_pyfolio_input(factor_data, period="1D")`.
+
+
 

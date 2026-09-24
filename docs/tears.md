@@ -89,6 +89,49 @@ Tear sheet focused on Information Coefficient (IC) analysis.
 - Uses Spearman IC explicitly when computing and labeling IC statistics.
 - When `save_file` is set, saves all generated figures into one file (`*.pdf` multipage, otherwise stitched image).
 
+**Parameter flow call graph (`group_neutral`, `by_group`)**
+
+```text
+create_information_tear_sheet(factor_data, group_neutral, by_group, ...)
+|
++- for ic_type in ["spearman", "pearson"]:
+|  perf.factor_information_coefficient(
+|      factor_data,
+|      group_adjust=group_neutral,
+|      by_group=False,          # default in callee (not overridden here)
+|      ic_type=ic_type
+|  )
+|  -> plotting.plot_information_table(ic, ...)
+|
++- if by_group is False:
+|  perf.mean_information_coefficient(
+|      factor_data,
+|      group_adjust=group_neutral,
+|      by_group=False,
+|      by_time="ME"
+|  )
+|  -> plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ...)
+|
++- if by_group is True:
+   perf.mean_information_coefficient(
+       factor_data,
+       group_adjust=group_neutral,
+       by_group=True
+   )
+   -> plotting.plot_ic_by_group(mean_group_ic, ...)
+```
+
+**Low-level behavior in `performance.py`**
+
+- `group_neutral` is mapped to `group_adjust`.
+- In `factor_information_coefficient(...)`:
+  - `group_adjust=True` de-means forward returns by `[date, group]` before IC computation.
+  - `by_group=True` adds `group` to the grouping key, returning separate IC series per group.
+- In `mean_information_coefficient(...)`:
+  - `group_adjust` and `by_group` are forwarded to `factor_information_coefficient(...)`.
+  - Then aggregation is applied by `by_time` and/or `group` depending on flags.
+- Plotting helpers do not consume these flags directly; they only render the already-computed outputs.
+
 **Parameters**
 
 - `group_neutral` — Demean forward returns by group before computing IC.
@@ -255,4 +298,3 @@ create_full_tear_sheet(factor_data, long_short=True, group_neutral=False)
 - The `by_group` parameter enables side-by-side or panel analysis when asset groups are present.
 - For large datasets or many forward-return periods, tear sheets can take time to render; `create_summary_tear_sheet()` is faster for quick feedback.
 - All plotting occurs within the tear sheet functions; call `plt.show()` or allow the Jupyter kernel to display results automatically.
-

@@ -85,8 +85,9 @@ Display Information Coefficient summary statistics.
 
 - Computes IC mean, standard deviation, risk-adjusted IC (ICIR), and t-statistics.
 - Includes skewness and kurtosis.
+- Adds Ljung-Box/Newey-West diagnostics via `utils.ic_autocor_adj(ic_data, lag=1)`.
 - Labels the IC mean column with the selected `ic_type`.
-- If `as_figure=True` (default), renders the summary as a matplotlib table figure and returns that figure.
+- If `as_figure=True` (default), renders the summary as a matplotlib table figure and returns that figure (`return_df` is ignored in this branch).
 - If `as_figure=False`, either returns a `DataFrame` (`return_df=True`) or prints the table (`return_df=False`).
 
 **Returns**
@@ -126,13 +127,15 @@ A numpy array of matplotlib axes.
 
 ---
 
-### `plot_ic_hist(ic, ax=None)`
+### `plot_ic_hist(ic, ax=None, plot_kws=None)`
 Plot IC as a histogram with kernel density estimate.
 
 **Behavior**
 
 - Creates a 3-column grid of histograms, one per forward-return period.
-- Includes KDE overlay and a vertical line at the mean.
+- Includes a vertical line at the mean.
+- Uses default histogram settings (`bins=20`, `binrange=[-1, 1]`) unless overridden via `plot_kws`.
+- Enables KDE only when the series has non-zero variance; otherwise KDE is disabled.
 - Clamps x-axis to `[-1, 1]`.
 
 **Returns**
@@ -353,15 +356,14 @@ Typical workflow:
 
 1. Compute factor diagnostics with `alphalens.performance` functions.
 2. Call plotting functions with the results.
-3. All plotting functions are decorated with `@customize` to apply consistent styling.
-4. Optional: use `set_context=False` in any plotting call to skip automatic styling.
+3. Optional: apply consistent styling manually via the `customize` decorator/context helpers.
+4. `set_context=False` is only applicable when calling a function wrapped by `customize` (for example, tear-sheet functions in `alphalens.tears`).
 
 Example call: `plot_ic_ts(ic_data)` or `plot_quantile_returns_bar(mean_ret_by_q)`.
 
 ## Notes
 
-- All plotting functions accept an optional `ax` parameter for custom subplot layouts.
+- Most chart plotting functions accept an optional `ax` parameter for custom subplot layouts; table helpers and style-context helpers do not.
 - Return values vary: some functions print tables directly, others return `DataFrame`s or axes.
 - The `return_df=False` parameter on table functions controls printing vs. returning.
 - Most functions are designed for Jupyter notebooks but work in any matplotlib environment.
-

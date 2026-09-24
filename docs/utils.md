@@ -4,6 +4,40 @@ Utilities for preparing factor data, computing forward returns, binning factors 
 
 This module is the main data-preparation layer used throughout Alphalens. Most workflows start with `get_clean_factor_and_forward_returns()` and then feed the resulting MultiIndex DataFrame into the tear sheets and plotting functions.
 
+## Table of contents
+
+- [Data model used by this module](#data-model-used-by-this-module)
+- [Exceptions](#exceptions)
+- [Core workflow](#core-workflow)
+  - [compute_forward_returns](#compute_forward_returns)
+  - [get_clean_factor](#get_clean_factor)
+  - [get_clean_factor_and_forward_returns](#get_clean_factor_and_forward_returns)
+- [Quantization and bucketing](#quantization-and-bucketing)
+  - [quantize_factor](#quantize_factor)
+  - [non_unique_bin_edges_error](#non_unique_bin_edges_error)
+- [Return and performance helpers](#return-and-performance-helpers)
+  - [backshift_returns_series](#backshift_returns_series)
+  - [demean_forward_returns](#demean_forward_returns)
+  - [rate_of_return](#rate_of_return)
+  - [std_conversion](#std_conversion)
+- [Calendar and time utilities](#calendar-and-time-utilities)
+  - [infer_trading_calendar](#infer_trading_calendar)
+  - [timedelta_to_string](#timedelta_to_string)
+  - [timedelta_strings_to_integers](#timedelta_strings_to_integers)
+  - [add_custom_calendar_timedelta](#add_custom_calendar_timedelta)
+  - [make_naive_ts](#make_naive_ts)
+  - [diff_custom_calendar_timedeltas](#diff_custom_calendar_timedeltas)
+- [Column detection and display helpers](#column-detection-and-display-helpers)
+  - [get_forward_returns_columns](#get_forward_returns_columns)
+  - [print_table](#print_table)
+- [Error handling helper](#error-handling-helper)
+  - [rethrow](#rethrow)
+- [Practical usage](#practical-usage)
+- [Notes](#notes)
+- [Appendix](#appendix)
+  - [Per-function dependency table](#per-function-dependency-table)
+  - [Callers of `demean_forward_returns(...)`](#callers-of-demean_forward_returns)
+
 ## Data model used by this module
 
 Most functions operate on a `pandas` object indexed by:
@@ -23,7 +57,9 @@ Raised by `get_clean_factor()` when the share of dropped factor data exceeds `ma
 
 ## Core workflow
 
-### `compute_forward_returns(factor, prices, periods=(1, 5, 10), filter_zscore=None, cumulative_returns=True)`
+### `compute_forward_returns`
+**Signature:** `compute_forward_returns(factor: pd.Series, prices: pd.DataFrame, periods: Sequence[int]=(1, 5, 10), filter_zscore: Optional[float]=None, cumulative_returns=True) -> pd.DataFrame`
+
 Compute N-period forward returns for each asset in `factor`.
 
 **Input expectations**
@@ -46,7 +82,9 @@ A MultiIndex `DataFrame` with the same `(date, asset)` index as the input factor
 
 ---
 
-### `get_clean_factor(factor, forward_returns, groupby=None, binning_by_group=False, quantiles=5, bins=None, groupby_labels=None, max_loss=0.35, zero_aware=False)`
+### `get_clean_factor`
+**Signature:** `get_clean_factor(factor: pd.Series, forward_returns: pd.DataFrame, groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None, binning_by_group: bool = False, quantiles: Optional[Union[int, Sequence[float]]] = 5, bins: Optional[Union[int, Sequence[float]]] = None, groupby_labels: Optional[dict[Any, Any]] = None, max_loss: float = 0.35, zero_aware: bool = False) -> pd.DataFrame`
+
 Align a factor series with already-computed forward returns and assign factor quantiles or bins.
 
 Use this when you already have forward returns and do not need to recompute them.
@@ -70,7 +108,9 @@ A cleaned MultiIndex `DataFrame` containing:
 
 ---
 
-### `get_clean_factor_and_forward_returns(factor, prices, groupby=None, binning_by_group=False, quantiles=5, bins=None, periods=(1, 5, 10), filter_zscore=20, groupby_labels=None, max_loss=0.35, zero_aware=False, cumulative_returns=True)`
+### `get_clean_factor_and_forward_returns`
+**Signature:** `get_clean_factor_and_forward_returns(factor: pd.Series, prices: pd.DataFrame, groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None, binning_by_group: bool = False, quantiles: Optional[Union[int, Sequence[float]]] = 5, bins: Optional[Union[int, Sequence[float]]] = None, periods: Sequence[int] = (1, 5, 10), filter_zscore: Optional[float] = 20, groupby_labels: Optional[dict[Any, Any]] = None, max_loss: float = 0.35, zero_aware: bool = False, cumulative_returns: bool = True) -> pd.DataFrame`
+
 One-stop helper that computes forward returns and then cleans and bins the factor data.
 
 This is the primary entry point for most Alphalens analyses.
@@ -86,7 +126,9 @@ A cleaned MultiIndex `DataFrame` suitable for Alphalens tear sheets and plots.
 
 ## Quantization and bucketing
 
-### `quantize_factor(factor_data, quantiles=5, bins=None, by_group=False, no_raise=False, zero_aware=False)`
+### `quantize_factor`
+**Signature:** `quantize_factor(factor_data: pd.DataFrame, quantiles: Optional[Union[int, Sequence[float]]] = 5, bins: Optional[Union[int, Sequence[float]]] = None, by_group: bool = False, no_raise: bool = False, zero_aware: bool = False) -> pd.Series`
+
 Assign factor values to quantile or value bins.
 
 **Behavior**
@@ -102,21 +144,27 @@ A `Series` named `factor_quantile` indexed by `(date, asset)`.
 
 ---
 
-### `non_unique_bin_edges_error(func)`
+### `non_unique_bin_edges_error`
+**Signature:** `non_unique_bin_edges_error(func)`
+
 Decorator that adds a more helpful error message when `pandas` cannot create unique bin edges.
 
 This is used internally around `quantize_factor()` to explain common binning failures, especially when many identical factor values span multiple quantiles.
 
 ## Return and performance helpers
 
-### `backshift_returns_series(series, N)`
+### `backshift_returns_series`
+**Signature:** `backshift_returns_series(series, N)`
+
 Shift a MultiIndex returns series backward by `N` observations in the first level.
 
 This helper is useful for converting backward-looking returns into forward-looking returns.
 
 ---
 
-### `demean_forward_returns(factor_data, grouper=None)`
+### `demean_forward_returns`
+**Signature:** `demean_forward_returns(factor_data, grouper=None)`
+
 Demean forward returns by date or by a custom grouper.
 
 **Behavior**
@@ -127,21 +175,27 @@ Demean forward returns by date or by a custom grouper.
 
 ---
 
-### `rate_of_return(period_ret, base_period)`
+### `rate_of_return`
+**Signature:** `rate_of_return(period_ret, base_period)`
+
 Convert returns observed over one period length into an equivalent rate for `base_period`.
 
 This is useful for normalizing returns across different horizons.
 
 ---
 
-### `std_conversion(period_std, base_period)`
+### `std_conversion`
+**Signature:** `std_conversion(period_std, base_period)`
+
 Convert standard deviation or standard error from one period length to another.
 
 ---
 
 ## Calendar and time utilities
 
-### `infer_trading_calendar(factor_idx, prices_idx)`
+### `infer_trading_calendar`
+**Signature:** `infer_trading_calendar(factor_idx, prices_idx)`
+
 Infer a trading calendar from factor and price datetimes.
 
 **Behavior**
@@ -152,21 +206,27 @@ Infer a trading calendar from factor and price datetimes.
 
 ---
 
-### `timedelta_to_string(timedelta)`
+### `timedelta_to_string`
+**Signature:** `timedelta_to_string(timedelta)`
+
 Convert a `pd.Timedelta` into a compact string compatible with `pd.Timedelta(...)`.
 
 Example output formats include `1D`, `3h15m`, and `1D1h`.
 
 ---
 
-### `timedelta_strings_to_integers(sequence)`
+### `timedelta_strings_to_integers`
+**Signature:** `timedelta_strings_to_integers(sequence)`
+
 Convert a sequence of timedelta strings into integer day counts.
 
 Example: `['1D', '5D'] -> [1, 5]`.
 
 ---
 
-### `add_custom_calendar_timedelta(input, timedelta, freq)`
+### `add_custom_calendar_timedelta`
+**Signature:** `add_custom_calendar_timedelta(input, timedelta, freq)`
+
 Add a `Timedelta` to a timestamp or `DatetimeIndex` while respecting a custom trading calendar.
 
 **Accepted `freq` values**
@@ -177,7 +237,9 @@ Add a `Timedelta` to a timestamp or `DatetimeIndex` while respecting a custom tr
 
 ---
 
-### `make_naive_ts(t)`
+### `make_naive_ts`
+**Signature:** `make_naive_ts(t)`
+
 Return a timezone-naive timestamp.
 
 - If `t` is timezone-aware, it is converted to naive UTC-localized time.
@@ -185,7 +247,9 @@ Return a timezone-naive timestamp.
 
 ---
 
-### `diff_custom_calendar_timedeltas(start, end, freq)`
+### `diff_custom_calendar_timedeltas`
+**Signature:** `diff_custom_calendar_timedeltas(start, end, freq)`
+
 Compute the effective elapsed time between two timestamps under a custom calendar.
 
 This is used when forward-return horizons must respect trading days, weekends, and holidays.
@@ -197,7 +261,9 @@ This is used when forward-return horizons must respect trading days, weekends, a
 
 ## Column detection and display helpers
 
-### `get_forward_returns_columns(columns, require_exact_day_multiple=False)`
+### `get_forward_returns_columns`
+**Signature:** `get_forward_returns_columns(columns: pd.Index, require_exact_day_multiple=False) -> pd.Index`
+
 Identify which columns look like forward-return horizons.
 
 **Behavior**
@@ -205,10 +271,13 @@ Identify which columns look like forward-return horizons.
 - Recognizes `Timedelta`-style labels such as `1D`, `5D`, `30m`, `1D1h`.
 - When `require_exact_day_multiple=True`, only exact day multiples are kept.
 - Emits a warning if non-day-multiple columns are skipped in that mode.
+- Expects `columns` to be a `pandas.Index` and returns a filtered `pandas.Index`.
 
 ---
 
-### `print_table(table, name=None, fmt=None)`
+### `print_table`
+**Signature:** `print_table(table, name=None, fmt=None)`
+
 Pretty-print a `Series` or `DataFrame`.
 
 **Behavior**
@@ -219,7 +288,9 @@ Pretty-print a `Series` or `DataFrame`.
 
 ## Error handling helper
 
-### `rethrow(exception, additional_message)`
+### `rethrow`
+**Signature:** `rethrow(exception, additional_message)`
+
 Re-raise an exception while preserving the original stack trace and appending extra context to the message.
 
 This is used internally to make binning errors easier to diagnose.
@@ -243,5 +314,44 @@ Example call: `get_clean_factor_and_forward_returns(factor=..., prices=..., peri
 - Zero-aware binning is intended for factors centered around zero.
 - `filter_zscore` can introduce lookahead bias, so use it carefully.
 - Forward-return horizon labels are derived from the price calendar and may reflect custom business-day offsets.
+
+## Appendix
+
+### Per-function dependency table
+
+This table lists direct dependencies only (not transitive call chains).
+
+| Function | Purpose | Direct deps in `utils.py` | Direct external deps |
+| --- | --- | --- | --- |
+| `rethrow` | Re-raise an exception with an appended message while preserving traceback. | - | - |
+| `non_unique_bin_edges_error` | Decorator that rewrites non-unique-bin-edge errors with clearer guidance. | `rethrow` | - |
+| `quantize_factor` | Assign factor values to quantile/bin buckets by date (optionally by group/zero-aware). | `non_unique_bin_edges_error` (decorator) | `pd.qcut`, `pd.cut`, `pd.concat`, `pd.Series` |
+| `infer_trading_calendar` | Infer a trading calendar (`CustomBusinessDay`) from factor and price indices. | - | `pd.date_range`, `CustomBusinessDay` |
+| `compute_forward_returns` | Compute forward returns aligned to factor timestamps and infer/keep trading frequency. | `infer_trading_calendar`, `diff_custom_calendar_timedeltas`, `timedelta_to_string` | `pd.MultiIndex.from_product`, `pd.Timedelta`, `np.concatenate`, `np.nan`, `mode` |
+| `backshift_returns_series` | Shift a MultiIndex returns series backward by `N` observations on date level. | - | `pd.MultiIndex`, `pd.Series`, `np.array` |
+| `demean_forward_returns` | Demean forward returns by date or by provided groupers. | `get_forward_returns_columns` | - |
+| `print_table` | Pretty-print a `Series`/`DataFrame` with optional temporary float formatting. | - | `pd.DataFrame`, `pd.Series`, `pd.get_option`, `pd.set_option`, `display` |
+| `get_clean_factor` | Merge factor, forward returns, and group labels; then bin and enforce max-loss checks. | `quantize_factor` | `pd.Series`, `np.isfinite` |
+| `get_clean_factor_and_forward_returns` | End-to-end helper to compute forward returns and return clean factor data. | `compute_forward_returns`, `get_clean_factor` | - |
+| `rate_of_return` | Convert period return to an equivalent rate for a base period. | - | `pd.Timedelta` |
+| `std_conversion` | Scale period std/std-error to an equivalent base-period value. | - | `pd.Timedelta`, `np.sqrt` |
+| `get_forward_returns_columns` | Detect columns that match forward-return horizon naming conventions. | - | `re.compile`, `warnings.warn` |
+| `timedelta_to_string` | Convert a `Timedelta` to the string format used in forward-return column names. | - | - |
+| `timedelta_strings_to_integers` | Convert timedelta strings like `['1D', '5D']` to integer day counts. | - | `pd.Timedelta` |
+| `add_custom_calendar_timedelta` | Add a `Timedelta` using a trading-calendar-aware offset. | - | `pd.Timedelta`, `Day`, `BusinessDay`, `CustomBusinessDay` |
+| `make_naive_ts` | Convert a timestamp to timezone-naive form. | - | pandas timestamp tz methods |
+| `diff_custom_calendar_timedeltas` | Compute elapsed `Timedelta` under a custom/business-day calendar. | `make_naive_ts` | `np.busday_count`, `pd.date_range`, `pd.Timedelta`, `BaseOffset`, `Day`, `BusinessDay` |
+| `ic_autocor_adj` | Compute IC autocorrelation diagnostics and Newey-West-adjusted t-stats. | - | `acorr_ljungbox`, `sm.add_constant`, `sm.OLS`, `np.ones`, `pd.DataFrame` |
+
+### Callers of `demean_forward_returns(...)`
+
+This table lists all **direct** callers of `demean_forward_returns(...)` found in the repository.
+
+| Caller | File | How it uses `demean_forward_returns(...)` |
+| --- | --- | --- |
+| `factor_information_coefficient(...)` | `src/alphalens/performance.py` | When `group_adjust=True`, demeans forward returns using `grouper + ["group"]` before computing the IC. |
+| `mean_return_by_quantile(...)` | `src/alphalens/performance.py` | When `group_adjust=True`, demeans forward returns by date and group before computing quantile means. |
+| `mean_return_by_quantile(...)` | `src/alphalens/performance.py` | When `demeaned=True` and `group_adjust=False`, demeans forward returns by date across the full universe before computing quantile means. |
+
 
 

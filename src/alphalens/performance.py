@@ -16,6 +16,7 @@
 import pandas as pd
 import numpy as np
 import warnings
+from typing import Optional, Union
 
 import empyrical as ep
 from pandas.tseries.offsets import BDay
@@ -40,9 +41,13 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
         (optionally) the group the asset belongs to.
         - See full explanation in utils.get_clean_factor_and_forward_returns
     group_adjust : bool
-        Demean forward returns by group before computing IC.
+        Demean forward returns by group before computing IC, so that the result reflects factor skill beyond group-level
+        effects and ICs across groups can be compared. Defaults to False as forward returns are often residual returns,
+        which are already group-neutral.
     by_group : bool
-        If True, compute period wise IC separately for each group.
+        Whether to compute IC statistics separately for each group instead of only one pooled summary
+        across all assets. It does not change the IC computation method; it changes how results are broken out and
+        displayed. Defaults to False unless the factor data has the 'group' column.
     ic_type : str
         Type of information coefficient to compute ("spearman" or "pearson").
 
@@ -100,7 +105,7 @@ def mean_information_coefficient(
     Answers questions like:
     What is the mean IC for each month?
     What is the mean IC for each group for our whole timerange?
-    What is the mean IC for for each group, each week?
+    What is the mean IC for each group, each week?
 
     Parameters
     ----------
@@ -147,7 +152,7 @@ def factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=
     """
     Computes asset weights by factor values and dividing by the sum of their
     absolute value (achieving gross leverage of 1). Positive factor values will
-    results in positive weights and negative values in negative weights.
+    result in positive weights and negative values in negative weights.
 
     Parameters
     ----------
@@ -162,7 +167,7 @@ def factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=
         weights are computed by demeaning factor values and dividing by the sum
         of their absolute value (achieving gross leverage of 1). The sum of
         positive weights will be the same as the negative weights (absolute
-        value), suitable for a dollar neutral long-short portfolio
+        value), suitable for a dollar neutral long-short portfolio. Defaults to True.
     group_adjust : bool
         Should this computation happen on a group neutral portfolio? If True,
         compute group neutral weights: each group will weight the same and
@@ -251,7 +256,7 @@ def factor_returns(
         Control how to build factor weights
         -- see performance.factor_weights for a full explanation
     by_asset: bool, optional
-        If True, returns are reported separately for each esset.
+        If True, returns are reported separately for each asset.
 
     Returns
     -------
@@ -278,12 +283,12 @@ def factor_returns(
 
 
 def factor_alpha_beta(
-    factor_data,
-    returns=None,
-    demeaned=True,
-    group_adjust=False,
-    equal_weight=False,
-):
+    factor_data: pd.DataFrame,
+    returns: Optional[Union[pd.DataFrame, pd.Series]] = None,
+    demeaned: bool = True,
+    group_adjust: bool = False,
+    equal_weight: bool = False,
+) -> pd.DataFrame:
     """
     Compute the alpha (excess returns), alpha t-stat (alpha significance),
     and beta (market exposure) of a factor. A regression is run with
@@ -495,11 +500,14 @@ def mean_return_by_quantile(
     by_date : bool
         If True, compute quantile bucket returns separately for each date.
     by_group : bool
-        If True, compute quantile bucket returns separately for each group.
+        If True, compute quantile bucket returns separately for each group. Defaults to False unless the factor data
+        has the 'group' column.
     demeaned : bool
-        Compute demeaned mean returns (long short portfolio)
+        Compute demeaned mean returns across the entire universe per date (long short portfolio). Defaults to True.
     group_adjust : bool
-        Returns demeaning will occur on the group level.
+        Returns demeaning will occur on the group level. When this flag is True, forward return demeaning occurs, at
+        group level, regardless the value of 'demean' flag. Defaults to False unless the factor data has the 'group'
+        column.
 
     Returns
     -------
@@ -510,6 +518,8 @@ def mean_return_by_quantile(
     """
 
     if group_adjust:
+        if "group" not in factor_data.columns:
+            raise ValueError("group_adjust=True requires a 'group' column in factor_data")
         grouper = [factor_data.index.get_level_values("date")] + ["group"]
         factor_data = utils.demean_forward_returns(factor_data, grouper)
     elif demeaned:
@@ -517,9 +527,13 @@ def mean_return_by_quantile(
     else:
         factor_data = factor_data.copy()
 
+    if "factor_quantile" not in factor_data.columns:
+        raise ValueError("factor_data must contain a 'factor_quantile' column")
     grouper = ["factor_quantile", factor_data.index.get_level_values("date")]
 
     if by_group:
+        if "group" not in factor_data.columns:
+            raise ValueError("by_group=True requires a 'group' column in factor_data")
         grouper.append("group")
 
     group_stats = factor_data.groupby(grouper, observed=True)[
@@ -532,7 +546,7 @@ def mean_return_by_quantile(
         grouper = [mean_ret.index.get_level_values("factor_quantile")]
         if by_group:
             grouper.append(mean_ret.index.get_level_values("group"))
-        group_stats = mean_ret.groupby(grouper).agg(["mean", "std", "count"])
+        group_stats = mean_ret.groupby(grouper, observed=True).agg(["mean", "std", "count"])
         mean_ret = group_stats.T.xs("mean", level=1).T
 
     std_error_ret = group_stats.T.xs("std", level=1).T / np.sqrt(
