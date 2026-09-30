@@ -5,6 +5,11 @@
 import inspect
 import os
 
+import warnings
+
+# Suppress the specific warning from Alphalens
+warnings.filterwarnings("ignore", message="'freq' not set in factor_data index: assuming business day")
+
 import pandas as pd
 
 import alphalens
@@ -50,7 +55,7 @@ def return_analysis_wrapper(data: pd.DataFrame,
                                                               by_group=by_group,
                                                               return_df=True,
                                                               save_file=tear_sheet_filepath)
-        print(f"\nReturns tear sheet saved to {tear_sheet_filepath}\n")
+        print(f"\n*** Returns tear sheet saved to {tear_sheet_filepath}")
 
     return {'mean_return_by_q': mean_return_by_q,
             'std_err_by_q': std_err_by_q}
@@ -97,7 +102,7 @@ def information_analysis_wrapper(data: pd.DataFrame,
                                                                 by_group=by_group,
                                                                 return_df=True,
                                                                 save_file=tear_sheet_filepath)
-        print(f"\nInformation tear sheet saved to {tear_sheet_filepath}\n")
+        print(f"\n*** Information tear sheet saved to {tear_sheet_filepath}")
 
     return {'ic_spearman': ic_spearman.T,
             'ic_pearson': ic_pearson.T}
@@ -133,7 +138,7 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
                                                    turnover_periods=[f"{turnover_period}{period_unit}"],
                                                    return_df=True,
                                                    save_file=tear_sheet_filepath)
-        print(f"\nTurnover tear sheet saved to {tear_sheet_filepath}\n")
+        print(f"\n*** Turnover tear sheet saved to {tear_sheet_filepath}")
 
     return {'turnover': quantile_turnover,
             'factor_autocorr': factor_autocorr}
@@ -150,6 +155,10 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         factors (list[str]): List of factor column names to analyze.
         fwd_rtrn_cols (list[str]): List of forward return column names to analyze.
         output_dir (str): Directory to save the tear sheets. Each factor will have its own subdirectory.
+        turnover_period (int, optional): Number of periods for turnover analysis. Defaults to 1.
+        period_unit (str, optional): Unit of time for turnover analysis. Defaults to 'D'.
+    Returns:
+        dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
     result = {}
 
@@ -159,10 +168,12 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     if 'date' not in data.columns or 'asset' not in data.columns:
         raise ValueError("Data must contain 'date' and 'asset' columns.")
 
+    data = data.set_index(['date', 'asset']).sort_index()
+
     assert sorted(alphalens.utils.get_forward_returns_columns(data.columns)) == sorted(fwd_rtrn_cols), "Forward return columns in data do not match fwd_rtrn_cols."
 
     # information coefficient analysis
-    essential_cols = ['date', 'asset'] + fwd_rtrn_cols
+    essential_cols = fwd_rtrn_cols
     if 'group' in data.columns:
         essential_cols.append('group')
 
@@ -170,7 +181,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     ic_pearson_list = []
     for f in factors:
         df = data[essential_cols + [f]].copy()
-        df = df.rename(columns={f: 'factor'}).set_index(['date', 'asset'])
+        df = df.rename(columns={f: 'factor'})
 
         ic_tear_sheet = os.path.join(output_dir, f"ic_tear_sheet_{f}.png")
         ic_result = alphalens.wrapper.information_analysis_wrapper(data=df,
@@ -185,10 +196,10 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     result['ic_spearman'] = pd.concat(ic_spearman_list, axis=0)
     result['ic_pearson'] = pd.concat(ic_pearson_list, axis=0)
 
-    # return analysis
-    fwd_rtrn_data = data[['date', 'asset'] + fwd_rtrn_cols].copy().set_index(['date', 'asset']).sort_index()
+    # return & turnover analysis
+    fwd_rtrn_data = data[fwd_rtrn_cols].copy()
     if 'group' in data.columns:
-        grp_by_series = data[['date', 'asset', 'group']].copy().set_index(['date', 'asset']).sort_index()
+        grp_by_series = data['group']
     else:
         grp_by_series = None
 
@@ -197,8 +208,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     turnover_list = []
     factor_autocorr_list = []
     for f in factors:
-        df = data[['date', 'asset', f]].copy()
-        df = df.rename(columns={f: 'factor'}).set_index(['date', 'asset'])
+        df = data[[f]].copy()
+        df = df.rename(columns={f: 'factor'})
 
         clean_data = alphalens.utils.get_clean_factor(factor=df,
                                                       forward_returns=fwd_rtrn_data,
