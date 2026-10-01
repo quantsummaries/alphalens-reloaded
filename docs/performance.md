@@ -241,6 +241,20 @@ For each forward-return horizon (for example `1D`, `5D`), the function runs:
 
 The output currently stores rows labeled `Ann. alpha` and `beta` per horizon.
 
+**How alpha and beta are calculated**
+
+For each forward-return horizon (for example `1D`, `5D`), the function runs:
+
+`r_factor[t] = alpha + beta * r_universe[t] + eps[t]`
+
+- `r_factor[t]`: factor portfolio return from `factor_returns()`.
+- `r_universe[t]`: cross-sectional mean universe return for the same horizon.
+- `beta`: OLS slope (sensitivity to universe return).
+- `alpha`: OLS intercept, then annualized as
+  `(1 + alpha) ** (Timedelta("252Days") / Timedelta(period)) - 1`.
+
+The output currently stores rows labeled `Ann. alpha` and `beta` per horizon.
+
 ---
 
 ### `cumulative_returns`

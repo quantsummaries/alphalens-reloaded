@@ -352,6 +352,3 @@ This table lists all **direct** callers of `demean_forward_returns(...)` found i
 | `factor_information_coefficient(...)` | `src/alphalens/performance.py` | When `group_adjust=True`, demeans forward returns using `grouper + ["group"]` before computing the IC. |
 | `mean_return_by_quantile(...)` | `src/alphalens/performance.py` | When `group_adjust=True`, demeans forward returns by date and group before computing quantile means. |
 | `mean_return_by_quantile(...)` | `src/alphalens/performance.py` | When `demeaned=True` and `group_adjust=False`, demeans forward returns by date across the full universe before computing quantile means. |
-
-
-
