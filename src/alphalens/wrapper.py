@@ -171,7 +171,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         long_short (bool, optional): Whether to perform long-short analysis. When True, returns are demeaned across
             the full universe so the tear sheet evaluates a long/short factor portfolio rather than a raw long-only one.
             This affects the calculation of return-based statistics, and usually the labeling/presentation too.
-            Defaults to True.
+            Additionally, long_short -> demeaned in factor_weights(...) -> changes whether factor values are demeaned
+            before normalization. Defaults to True.
         group_neutral (bool, optional): Demean forward returns by group before computing IC, so that the result reflects factor
             skill beyond group-level effects and ICs across groups can be compared. Defaults to False as forward
             returns are often residual returns, which are already group-neutral. Additionally,
