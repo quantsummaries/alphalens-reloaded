@@ -182,6 +182,16 @@ Convert returns observed over one period length into an equivalent rate for `bas
 
 This is useful for normalizing returns across different horizons.
 
+**How it is used in this codebase**
+
+- `src/alphalens/tears.py:create_summary_tear_sheet(...)`
+- `src/alphalens/tears.py:create_returns_tear_sheet(...)`
+- `src/alphalens/tears.py:create_event_study_tear_sheet(...)` (when `rate_of_ret=True`)
+
+In those tear-sheet workflows, `rate_of_return` is passed to `DataFrame.apply(..., axis=0)` so each forward-return horizon column (for example `1D`, `5D`, `10D`) is converted into an equivalent base-period rate.
+
+The transformed outputs are then used by downstream spread calculations and plotting helpers (return tables, quantile bar plots, and violin plots), allowing horizon-to-horizon comparisons on a common period basis.
+
 ---
 
 ### `std_conversion`

@@ -164,7 +164,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             period_unit: str = 'D') -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
-        data (pd.DataFrame): Factor data in the format expected by alphalens.
+        data (pd.DataFrame): Factor data in the format expected by alphalens, with 'date' and 'asset' in the columns.
         factors (list[str]): List of factor column names to analyze.
         fwd_rtrn_cols (list[str]): List of forward return column names to analyze.
         output_dir (str): Directory to save the tear sheets. Each factor will have its own subdirectory.
