@@ -135,9 +135,6 @@ def information_analysis_wrapper(data: pd.DataFrame,
             )
     return {f"ic_{ic_type}": summary.T for ic_type, summary in summaries.items()}
 
-    return {'ic_spearman': ic_spearman.T,
-            'ic_pearson': ic_pearson.T}
-
 def turnover_analysis_wrapper(data: pd.DataFrame,
                               turnover_period: int,
                               period_unit: str,
