@@ -70,7 +70,7 @@ def return_analysis_wrapper(data: pd.DataFrame,
             data, factor_returns, long_short, group_neutral
         )
         mean_quant_ret, _ = alphalens.performance.mean_return_by_quantile(
-            data, by_group=by_group, demeaned=long_short, group_adjust=group_neutral
+            data, by_group=False, demeaned=long_short, group_adjust=group_neutral
         )
         mean_quant_bydate, _ = alphalens.performance.mean_return_by_quantile(
             data, by_date=True, by_group=False,
@@ -89,9 +89,6 @@ def return_analysis_wrapper(data: pd.DataFrame,
         alphalens.plotting.plot_returns_table(
             alpha_beta, mean_quant_rateret, spread, tables_as_figures=tables_as_figures
         )
-
-    return {'mean_return_by_q': mean_return_by_q,
-            'std_err_by_q': std_err_by_q}
 
 def information_analysis_wrapper(data: pd.DataFrame,
                                  group_neutral: bool = False,
@@ -214,7 +211,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             displayed. Defaults to False.
         turnover_period (int, optional): Number of periods for turnover analysis. Defaults to 1.
         period_unit (str, optional): Unit of time for turnover analysis. Defaults to 'D'.
-        tables_as_figures (bool, optional): Render tables as figures when True (default); otherwise display text.
+        tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
