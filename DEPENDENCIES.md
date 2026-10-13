@@ -12,7 +12,6 @@ The graph follows the checked-in source on branch `yzeng` (HEAD `7c375a3`)
 and may need updating when functions are added or refactored.
 
 ## Table of Contents
-
 - [Function dependency layers](#function-dependency-layers)
   - [Level 0 — foundational functions and values](#level-0--foundational-functions-and-values)
   - [Level 1 — shared operations and small composites](#level-1--shared-operations-and-small-composites)
@@ -25,7 +24,6 @@ and may need updating when functions are added or refactored.
 - [Key observations](#key-observations)
 
 ## Function dependency layers
-
 Levels indicate the direction of dependency: higher-level functions rely on
 lower-level functions. Functions within a level are grouped by purpose rather
 than guaranteed to be entirely independent.
@@ -161,8 +159,9 @@ save-to-file paths and IC-type selection.
    `wrapper.turnover_analysis_wrapper`. Iterates over a list of factor
    columns and aggregates the per-factor results into one combined table.
 
-## Decorator / dynamic edges
+[⬆ 回到目录](#table-of-contents)
 
+## Decorator / dynamic edges
 Two functions do not appear as explicit `Call` nodes but shape the call
 graph at runtime:
 
@@ -178,8 +177,9 @@ graph at runtime:
   defined but the three workflow wrappers currently call their targets
   directly rather than going through it.
 
-## Module dependency overview
+[⬆ 回到目录](#table-of-contents)
 
+## Module dependency overview
 ```text
 alphalens.extra
     └── hit_rate
@@ -221,8 +221,9 @@ alphalens.wrapper
         factor columns and aggregates results
 ```
 
-## Key observations
+[⬆ 回到目录](#table-of-contents)
 
+## Key observations
 - `utils.get_forward_returns_columns` is the single most depended-upon
   function in the package: it is called by `demean_forward_returns`,
   `factor_information_coefficient`, `mean_return_by_quantile`,
@@ -243,3 +244,5 @@ alphalens.wrapper
   analytics; it only re-exports existing public API with convenience.
 - `extra.hit_rate` is a small, standalone metric that reuses
   `get_forward_returns_columns`; it is not part of any tear-sheet flow.
+
+[⬆ 回到目录](#table-of-contents)

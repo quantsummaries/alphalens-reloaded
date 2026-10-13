@@ -1,62 +1,6 @@
 # Alphalens Documentation
 
-## Review Addendum
-
-_Originally written at commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`;
-last re-verified at HEAD `7c375a3` on 2026-10-09 (9 commits later, branch `yzeng`)._
-
-### Scope reviewed
-
-- `src/alphalens/performance.py`
-- `src/alphalens/plotting.py`
-- `src/alphalens/tears.py`
-- `src/alphalens/wrapper.py`
-- `src/alphalens/__init__.py`
-- related tests under `tests/`
-
-### Findings (ordered by severity)
-
-Status as of 2026-10-09 re-verification:
-
-1. **Medium (still open)**: `return_df` is effectively ignored in `create_information_tear_sheet(...)` because `plot_information_table(...)` is always called with `as_figure=True`, so the function returns a figure handle rather than a DataFrame.
-   - Ref: `src/alphalens/tears.py:420` — `plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)`.
-2. **Medium (still open)**: `create_turnover_tear_sheet(...)` accepts `return_df` and forwards it to `plot_turnover_table(...)`, but the call result is discarded (not returned to the caller).
-   - Ref: `src/alphalens/tears.py:558` — `plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)`.
-3. **Low / testing gap (partially improved, still open)**: `tests/test_wrapper.py` now contains script-style helpers (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) but the only entry point is still `if __name__ == "__main__":`. There are still no `test_*` functions, so `pytest tests/test_wrapper.py` collects 0 items.
-   - Ref: `tests/test_wrapper.py` (7.2 KB).
-
-### API / behavior changes captured
-
-- `performance.factor_information_coefficient(...)` now supports `ic_type` (`"spearman"` or `"pearson"`).
-- `plotting.plot_information_table(...)` now supports `as_figure` and `ic_type` and can return a matplotlib figure.
-- Table display helpers explicitly return `None` when not returning DataFrames.
-- `tears.create_returns_tear_sheet(...)` supports `return_df` and `save_file` and can save all generated return plots into a single output file.
-- `tears.create_information_tear_sheet(...)` and `tears.create_turnover_tear_sheet(...)` now expose `return_df` / `save_file` parameters; `create_information_tear_sheet(...)` also forwards `ic_type` through to `plot_information_table(...)`.
-- New top-level wrapper module exposed as `alphalens.wrapper`.
-
-### Documentation updates completed
-
-The following docs were updated to reflect current implementation:
-
-- `docs/performance.md`
-- `docs/plotting.md`
-- `docs/tears.md`
-- `docs/utils.md`
-- `docs/wrapper.md`
-- `docs/addl.md` — dedicated note on how `long_short` / `group_neutral` / `by_group` propagate through the codebase (user-facing flags mapped to lower-level `demeaned` / `group_adjust`).
-- `docs/pdoc/alphalens/*.html` — API reference regenerated with `pdoc 0.11.6` on 2026-10-09 (`index.html`, `performance.html`, `plotting.html`, `tears.html`, `utils.html`, `wrapper.html`, plus new `extra.html`). Regenerate with:
-  ```powershell
-  .venv\Scripts\python.exe -m pdoc --html --force --output-dir docs\pdoc alphalens
-  ```
-
-### Follow-up recommendations
-
-- Align `create_information_tear_sheet(...)` return behavior with its `return_df` parameter intent (currently hard-codes `as_figure=True`).
-- Return table outputs from `create_turnover_tear_sheet(...)` when `return_df=True` (currently discards the call result).
-- Promote the existing script-style helpers in `tests/test_wrapper.py` (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) into real `test_*` functions covering wrapper outputs and save-file behavior.
-
 ## Table of Contents
-
 - [0 Review Addendum](#review-addendum)
 - [1 Overview](#overview)
 - [2 alphalens.utils](#alphalensutils)
@@ -171,8 +115,64 @@ The following docs were updated to reflect current implementation:
     - [6.3.3 `turnover_analysis_wrapper()`](#turnover_analysis_wrapperdata-turnover_period-period_unit-tear_sheet_filepath)
   - 6.4 Notes
 
-## Overview
 
+## Review Addendum
+_Originally written at commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`;
+last re-verified at HEAD `7c375a3` on 2026-10-09 (9 commits later, branch `yzeng`)._
+
+### Scope reviewed
+
+- `src/alphalens/performance.py`
+- `src/alphalens/plotting.py`
+- `src/alphalens/tears.py`
+- `src/alphalens/wrapper.py`
+- `src/alphalens/__init__.py`
+- related tests under `tests/`
+
+### Findings (ordered by severity)
+
+Status as of 2026-10-09 re-verification:
+
+1. **Medium (still open)**: `return_df` is effectively ignored in `create_information_tear_sheet(...)` because `plot_information_table(...)` is always called with `as_figure=True`, so the function returns a figure handle rather than a DataFrame.
+   - Ref: `src/alphalens/tears.py:420` — `plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)`.
+2. **Medium (still open)**: `create_turnover_tear_sheet(...)` accepts `return_df` and forwards it to `plot_turnover_table(...)`, but the call result is discarded (not returned to the caller).
+   - Ref: `src/alphalens/tears.py:558` — `plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)`.
+3. **Low / testing gap (partially improved, still open)**: `tests/test_wrapper.py` now contains script-style helpers (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) but the only entry point is still `if __name__ == "__main__":`. There are still no `test_*` functions, so `pytest tests/test_wrapper.py` collects 0 items.
+   - Ref: `tests/test_wrapper.py` (7.2 KB).
+
+### API / behavior changes captured
+
+- `performance.factor_information_coefficient(...)` now supports `ic_type` (`"spearman"` or `"pearson"`).
+- `plotting.plot_information_table(...)` now supports `as_figure` and `ic_type` and can return a matplotlib figure.
+- Table display helpers explicitly return `None` when not returning DataFrames.
+- `tears.create_returns_tear_sheet(...)` supports `return_df` and `save_file` and can save all generated return plots into a single output file.
+- `tears.create_information_tear_sheet(...)` and `tears.create_turnover_tear_sheet(...)` now expose `return_df` / `save_file` parameters; `create_information_tear_sheet(...)` also forwards `ic_type` through to `plot_information_table(...)`.
+- New top-level wrapper module exposed as `alphalens.wrapper`.
+
+### Documentation updates completed
+
+The following docs were updated to reflect current implementation:
+
+- `docs/performance.md`
+- `docs/plotting.md`
+- `docs/tears.md`
+- `docs/utils.md`
+- `docs/wrapper.md`
+- `docs/addl.md` — dedicated note on how `long_short` / `group_neutral` / `by_group` propagate through the codebase (user-facing flags mapped to lower-level `demeaned` / `group_adjust`).
+- `docs/pdoc/alphalens/*.html` — API reference regenerated with `pdoc 0.11.6` on 2026-10-09 (`index.html`, `performance.html`, `plotting.html`, `tears.html`, `utils.html`, `wrapper.html`, plus new `extra.html`). Regenerate with:
+  ```powershell
+  .venv\Scripts\python.exe -m pdoc --html --force --output-dir docs\pdoc alphalens
+  ```
+
+### Follow-up recommendations
+
+- Align `create_information_tear_sheet(...)` return behavior with its `return_df` parameter intent (currently hard-codes `as_figure=True`).
+- Return table outputs from `create_turnover_tear_sheet(...)` when `return_df=True` (currently discards the call result).
+- Promote the existing script-style helpers in `tests/test_wrapper.py` (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) into real `test_*` functions covering wrapper outputs and save-file behavior.
+
+[⬆ 回到目录](#table-of-contents)
+
+## Overview
 Alphalens is organized as a pipeline of five core modules:
 
 - `alphalens.utils` prepares factor data and computes forward returns.
@@ -190,8 +190,9 @@ The usual workflow is:
 
 All modules typically operate on a MultiIndex `pandas` object indexed by `(date, asset)`.
 
-## alphalens.utils
+[⬆ 回到目录](#table-of-contents)
 
+## alphalens.utils
 Utilities for preparing factor data, computing forward returns, binning factors into quantiles/bins, and working with custom trading calendars.
 
 This module is the main data-preparation layer used throughout Alphalens. Most workflows start with `get_clean_factor_and_forward_returns()` and then feed the resulting MultiIndex `DataFrame` into the tear sheets and plotting functions.
@@ -423,8 +424,9 @@ Example call: `get_clean_factor_and_forward_returns(factor=..., prices=..., peri
 - `filter_zscore` can introduce lookahead bias, so use it carefully.
 - Forward-return horizon labels are derived from the price calendar and may reflect custom business-day offsets.
 
-## alphalens.performance
+[⬆ 回到目录](#table-of-contents)
 
+## alphalens.performance
 Performance-analysis utilities for factor research, including information coefficient calculations, factor-weighted portfolio simulation, quantile analysis, event-study helpers, and Pyfolio-ready outputs.
 
 This module is the main analytics layer used after factor data has been cleaned and aligned with `alphalens.utils.get_clean_factor_and_forward_returns()`.
@@ -739,8 +741,9 @@ Typical workflow:
 
 Example call: `factor_information_coefficient(factor_data)` or `create_pyfolio_input(factor_data, period="1D")`.
 
-## alphalens.plotting
+[⬆ 回到目录](#table-of-contents)
 
+## alphalens.plotting
 Visualization utilities for factor research, including plots for Information Coefficient analysis, factor returns, quantile performance, and other diagnostic charts. The module provides publication-quality visualizations with sane defaults for the Alphalens workflow.
 
 This module visualizes the outputs from `alphalens.performance` and the cleaned factor data from `alphalens.utils`.
@@ -1092,8 +1095,9 @@ Example call: `plot_ic_ts(ic_data)` or `plot_quantile_returns_bar(mean_ret_by_q)
 - The `return_df=False` parameter on table functions controls printing vs. returning.
 - Most functions are designed for Jupyter notebooks but work in any matplotlib environment.
 
-## alphalens.tears
+[⬆ 回到目录](#table-of-contents)
 
+## alphalens.tears
 Tear sheet generation for comprehensive factor analysis. A tear sheet is a multi-plot report that visualizes factor performance from multiple perspectives, including returns analysis, information coefficient statistics, turnover metrics, and event studies.
 
 This module orchestrates the workflows of `alphalens.performance` and `alphalens.plotting` to produce production-quality analysis reports suitable for presentation and decision-making.
@@ -1333,8 +1337,9 @@ create_full_tear_sheet(factor_data, long_short=True, group_neutral=False)
 - For large datasets or many forward-return periods, tear sheets can take time to render; `create_summary_tear_sheet()` is faster for quick feedback.
 - All plotting occurs within the tear sheet functions; call `plt.show()` or allow the Jupyter kernel to display results automatically.
 
-## alphalens.wrapper
+[⬆ 回到目录](#table-of-contents)
 
+## alphalens.wrapper
 High-level helpers that bundle common analysis flows and optional tear-sheet export.
 
 ### Input data expectation
@@ -1370,3 +1375,4 @@ Computes quantile turnover and factor-rank autocorrelation for the requested hor
 - Wrapper functions are exposed at package level as `alphalens.wrapper`.
 - The current `tests/test_wrapper.py` file is script-style and does not yet contain pytest unit tests.
 
+[⬆ 回到目录](#table-of-contents)

@@ -6,6 +6,25 @@ All paths below are relative to the repo root `alphalens-reloaded/`.
 Companion docs: `CODE_OVERVIEW.md` (module-by-module writeup + known findings),
 `docs/pdoc/alphalens/*.html` (pdoc-generated API reference).
 
+## Table of Contents
+
+- [0. Layout at a glance](#0-layout-at-a-glance)
+  - [Source modules (`src/alphalens/`, by size)](#source-modules-src-alphalens-by-size)
+  - [Tests (`tests/`)](#tests-tests)
+  - [Official example notebooks (`docs/source/notebooks/`)](#official-example-notebooks-docs-source-notebooks)
+- [1. Setup and orientation](#1-setup-and-orientation)
+- [2. Lock in the data model (do this before any module)](#2-lock-in-the-data-model-do-this-before-any-module)
+- [3. Run the overview notebook end-to-end FIRST](#3-run-the-overview-notebook-end-to-end-first)
+- [4. `alphalens.utils` — data preparation](#4-alphalensutils-data-preparation)
+- [5. `alphalens.performance` — analytics core](#5-alphalensperformance-analytics-core)
+- [6. `alphalens.plotting` — visualization](#6-alphalensplotting-visualization)
+- [7. `alphalens.tears` — assembled reports](#7-alphalensteears-assembled-reports)
+- [8. `alphalens.wrapper` — high-level shortcuts](#8-alphalenswrapper-high-level-shortcuts)
+- [9. `alphalens.extra` — small helpers](#9-alphalensextra-small-helpers)
+- [10. Cross-repo integration](#10-cross-repo-integration)
+- [11. Known quirks / pitfalls to watch for](#11-known-quirks-pitfalls-to-watch-for)
+- [Suggested order](#suggested-order)
+
 ## 0. Layout at a glance
 
 ### Source modules (`src/alphalens/`, by size)
@@ -35,9 +54,11 @@ Public API (`__init__.py`): `from alphalens import utils, performance, plotting,
 ### Official example notebooks (`docs/source/notebooks/`)
 
 - [x] `overview.ipynb` — the canonical end-to-end walkthrough.
-- [ ] `pyfolio_integration.ipynb` — how factor data flows into pyfolio.
+- [x] `pyfolio_integration.ipynb` — how factor data flows into pyfolio.
 - [ ] `event_study.ipynb` — event-study variant.
 - [ ] `intraday_factor.ipynb` — intraday / sub-daily factors.
+
+[⬆ 回到目录](#table-of-contents)
 
 ## 1. Setup and orientation
 
@@ -49,6 +70,8 @@ Public API (`__init__.py`): `from alphalens import utils, performance, plotting,
       under `docs/pdoc/alphalens/index.html`).
 - [x] Read `CODE_OVERVIEW.md` §Overview and §alphalens.wrapper for the pipeline
       shape before opening any source file.
+
+[⬆ 回到目录](#table-of-contents)
 
 ## 2. Lock in the data model (do this before any module)
 
@@ -69,6 +92,8 @@ Everything downstream consumes it.
       `tests/test_utils.py` (e.g. the `factor_data` fixture) and print
       `.head()`, `.index.names`, `.columns` to confirm.
 
+[⬆ 回到目录](#table-of-contents)
+
 ## 3. Run the overview notebook end-to-end FIRST
 
 Before reading any implementation, see the whole pipeline run on real data.
@@ -81,6 +106,8 @@ Before reading any implementation, see the whole pipeline run on real data.
 - [x] Note where `wrapper.return_analysis_wrapper` /
       `information_analysis_wrapper` / `turnover_analysis_wrapper` are used
       vs. calling `tears.create_*_tear_sheet` directly.
+
+[⬆ 回到目录](#table-of-contents)
 
 ## 4. `alphalens.utils` — data preparation
 
@@ -97,6 +124,8 @@ Before reading any implementation, see the whole pipeline run on real data.
       `add_custom_calendar_timedelta`, `make_naive_ts`, …) — you do not need
       to memorize them; just know they exist.
 - [ ] Cross-read `tests/test_utils.py` for concrete input/output shapes.
+
+[⬆ 回到目录](#table-of-contents)
 
 ## 5. `alphalens.performance` — analytics core
 
@@ -121,6 +150,8 @@ Read in this order; each group builds on the previous one.
 - [ ] Cross-read `tests/test_performance.py` (52 KB — the densest, most
       instructive test file in the repo).
 
+[⬆ 回到目录](#table-of-contents)
+
 ## 6. `alphalens.plotting` — visualization
 
 - [ ] Read `customize`, `plotting_context`, `axes_style` — the seaborn
@@ -140,6 +171,8 @@ Read in this order; each group builds on the previous one.
 - [ ] Note the color conventions (`DECIMAL_TO_BPS = 10000`, reversed coolwarm,
       colorblind palette) — they are consistent across all plots.
 
+[⬆ 回到目录](#table-of-contents)
+
 ## 7. `alphalens.tears` — assembled reports
 
 - [ ] Read `GridFigure` (helper class for subplot layout).
@@ -155,6 +188,8 @@ Read in this order; each group builds on the previous one.
       two open findings in `CODE_OVERVIEW.md` (info/turnover tear sheets do not
       honor `return_df` the way their signatures suggest).
 
+[⬆ 回到目录](#table-of-contents)
+
 ## 8. `alphalens.wrapper` — high-level shortcuts
 
 - [ ] Read `ic_autocor_adj` and `call_with_matching_args` (utility helpers).
@@ -166,10 +201,14 @@ Read in this order; each group builds on the previous one.
       `tears.create_*_tear_sheet` — identify the value-add (typically:
       autocorrelation-adjusted diagnostics + automatic save-to-file).
 
+[⬆ 回到目录](#table-of-contents)
+
 ## 9. `alphalens.extra` — small helpers
 
 - [ ] Read `src/alphalens/extra.py` (2.4 KB — quick).
 - [ ] Read `tests/test_extra.py` to see the contract.
+
+[⬆ 回到目录](#table-of-contents)
 
 ## 10. Cross-repo integration
 
@@ -178,6 +217,8 @@ Read in this order; each group builds on the previous one.
       consumes its `(returns, positions, benchmark)` tuple.
 - [ ] Note how `alphalens` delegates statistics to `empyrical-reloaded`
       (grep `import empyrical` / `from empyrical`).
+
+[⬆ 回到目录](#table-of-contents)
 
 ## 11. Known quirks / pitfalls to watch for
 
@@ -192,6 +233,8 @@ From `CODE_OVERVIEW.md` (re-verified 2026-10-09 at HEAD `7c375a3`):
 - [ ] `filter_zscore` in `utils.get_clean_factor_and_forward_returns` can
       introduce lookahead bias — understand when it is safe to use.
 
+[⬆ 回到目录](#table-of-contents)
+
 ## Suggested order
 
 1. Setup + green tests (§1).
@@ -202,3 +245,5 @@ From `CODE_OVERVIEW.md` (re-verified 2026-10-09 at HEAD `7c375a3`):
 5. Skim `wrapper.py` and `extra.py` (§8–§9).
 6. Cross-repo traces (§10).
 7. Leave the known quirks (§11) as an open checklist.
+
+[⬆ 回到目录](#table-of-contents)
