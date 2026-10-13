@@ -1,5 +1,7 @@
 # Alphalens Documentation
 
+> **Version**: branch `yzeng` at HEAD `a51dd45` (2026-10-13, the `tables_as_figures` refactor). Prior revision: HEAD `7c375a3` (2026-10-09).
+
 ## Table of Contents
 - [0 Review Addendum](#review-addendum)
 - [1 Overview](#overview)
@@ -63,9 +65,9 @@
     - [4.1.2 `plotting_context()`](#plotting_contextcontextnotebook-font_scale15-rcnone)
     - [4.1.3 `axes_style()`](#axes_stylestyledarkgrid-rcnone)
   - 4.2 Data table displays
-    - [4.2.1 `plot_returns_table()`](#plot_returns_tablealpha_beta-mean_ret_quantile-mean_ret_spread_quantile-return_dffalse)
-    - [4.2.2 `plot_turnover_table()`](#plot_turnover_tableautocorrelation_data-quantile_turnover-return_dffalse)
-    - [4.2.3 `plot_information_table()`](#plot_information_tableic_data-return_dffalse)
+    - [4.2.1 `plot_returns_table()`](#plot_returns_tablealpha_beta-mean_ret_quantile-mean_ret_spread_quantile-tables_as_figurestrue-axnone)
+    - [4.2.2 `plot_turnover_table()`](#plot_turnover_tableautocorrelation_data-quantile_turnover-tables_as_figurestrue-axnone)
+    - [4.2.3 `plot_information_table()`](#plot_information_tableic_data-tables_as_figurestrue-ic_typespearman)
     - [4.2.4 `plot_quantile_statistics_table()`](#plot_quantile_statistics_tablefactor_data-return_dffalse)
   - 4.3 Information Coefficient visualization
     - [4.3.1 `plot_ic_ts()`](#plot_ic_tsic-axnone)
@@ -93,11 +95,11 @@
   - 5.1 Helper class
     - [5.1.1 `GridFigure`](#gridfigure)
   - 5.2 Tear sheet generators
-    - [5.2.1 `create_summary_tear_sheet()`](#create_summary_tear_sheetfactor_data-long_shorttrue-group_neutralfalse)
-    - [5.2.2 `create_returns_tear_sheet()`](#create_returns_tear_sheetfactor_data-long_shorttrue-group_neutralfalse-by_groupfalse)
-    - [5.2.3 `create_information_tear_sheet()`](#create_information_tear_sheetfactor_data-group_neutralfalse-by_groupfalse)
-    - [5.2.4 `create_turnover_tear_sheet()`](#create_turnover_tear_sheetfactor_data-turnover_periodsnone)
-    - [5.2.5 `create_full_tear_sheet()`](#create_full_tear_sheetfactor_data-long_shorttrue-group_neutralfalse-by_groupfalse)
+    - [5.2.1 `create_summary_tear_sheet()`](#create_summary_tear_sheetfactor_data-long_shorttrue-group_neutralfalse-tables_as_figurestrue)
+    - [5.2.2 `create_returns_tear_sheet()`](#create_returns_tear_sheetfactor_data-long_shorttrue-group_neutralfalse-by_groupfalse-tables_as_figurestrue-save_filenone)
+    - [5.2.3 `create_information_tear_sheet()`](#create_information_tear_sheetfactor_data-group_neutralfalse-by_groupfalse-tables_as_figurestrue-save_filenone)
+    - [5.2.4 `create_turnover_tear_sheet()`](#create_turnover_tear_sheetfactor_data-turnover_periodsnone-tables_as_figurestrue-save_filenone)
+    - [5.2.5 `create_full_tear_sheet()`](#create_full_tear_sheetfactor_data-long_shorttrue-group_neutralfalse-by_groupfalse-tables_as_figurestrue)
     - [5.2.6 `create_event_returns_tear_sheet()`](#create_event_returns_tear_sheetfactor_data-returns-avgretplot5-15-long_shorttrue-group_neutralfalse-std_bartrue-by_groupfalse)
     - [5.2.7 `create_event_study_tear_sheet()`](#create_event_study_tear_sheetfactor_data-returns-avgretplot5-15-rate_of_rettrue-n_bars50)
   - 5.3 Data model
@@ -110,15 +112,21 @@
     - [6.2.1 `ic_autocor_adj()`](#ic_autocor_adjdaily_ic-lag5)
     - [6.2.2 `call_with_matching_args()`](#call_with_matching_argsfunc-args-kwargs)
   - 6.3 Workflow wrappers
-    - [6.3.1 `return_analysis_wrapper()`](#return_analysis_wrapperdata-tear_sheet_filepath)
-    - [6.3.2 `information_analysis_wrapper()`](#information_analysis_wrapperdata-tear_sheet_filepath)
-    - [6.3.3 `turnover_analysis_wrapper()`](#turnover_analysis_wrapperdata-turnover_period-period_unit-tear_sheet_filepath)
+    - [6.3.1 `return_analysis_wrapper()`](#return_analysis_wrapperdata-tables_as_figurestrue-tear_sheet_filepathnone)
+    - [6.3.2 `information_analysis_wrapper()`](#information_analysis_wrapperdata-tables_as_figurestrue-tear_sheet_filepathnone)
+    - [6.3.3 `turnover_analysis_wrapper()`](#turnover_analysis_wrapperdata-turnover_period-period_unit-tables_as_figurestrue-tear_sheet_filepathnone)
   - 6.4 Notes
 
 
 ## Review Addendum
 _Originally written at commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`;
-last re-verified at HEAD `7c375a3` on 2026-10-09 (9 commits later, branch `yzeng`)._
+re-verified at HEAD `7c375a3` on 2026-10-09; last updated at HEAD `a51dd45`
+on 2026-10-13 (branch `yzeng`)._
+
+> **Version**: `a51dd45` (2026-10-13, branch `yzeng`). The `tables_as_figures`
+> refactor (commit range `7c375a3..a51dd45`) replaced the `return_df` /
+> `as_figure` flags in the table-display helpers and tear sheets; this doc is
+> written against that refactor.
 
 ### Scope reviewed
 
@@ -131,23 +139,27 @@ last re-verified at HEAD `7c375a3` on 2026-10-09 (9 commits later, branch `yzeng
 
 ### Findings (ordered by severity)
 
-Status as of 2026-10-09 re-verification:
+Status as of 2026-10-13 re-verification at HEAD `a51dd45`:
 
-1. **Medium (still open)**: `return_df` is effectively ignored in `create_information_tear_sheet(...)` because `plot_information_table(...)` is always called with `as_figure=True`, so the function returns a figure handle rather than a DataFrame.
-   - Ref: `src/alphalens/tears.py:420` — `plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)`.
-2. **Medium (still open)**: `create_turnover_tear_sheet(...)` accepts `return_df` and forwards it to `plot_turnover_table(...)`, but the call result is discarded (not returned to the caller).
-   - Ref: `src/alphalens/tears.py:558` — `plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)`.
-3. **Low / testing gap (partially improved, still open)**: `tests/test_wrapper.py` now contains script-style helpers (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) but the only entry point is still `if __name__ == "__main__":`. There are still no `test_*` functions, so `pytest tests/test_wrapper.py` collects 0 items.
-   - Ref: `tests/test_wrapper.py` (7.2 KB).
+1. **Medium (resolved in `a51dd45`)**: `create_information_tear_sheet(...)` previously ignored `return_df` because `plot_information_table(...)` was hard-wired with `as_figure=True`. The `tables_as_figures` refactor merged those two flags and **always returns the summary DataFrame(s)**; `create_information_tear_sheet(...)` now returns `{ic_type: summary_df}` for both `"spearman"` and `"pearson"`.
+   - Resolved by: `src/alphalens/plotting.py` (`plot_information_table`) and `src/alphalens/tears.py` (`create_information_tear_sheet`).
+2. **Medium (resolved in `a51dd45`)**: `create_turnover_tear_sheet(...)` previously discarded the `plot_turnover_table(...)` result. It now captures and returns `(turnover_table, auto_corr)` via `plot_turnover_table(..., tables_as_figures=...)`.
+   - Resolved by: `src/alphalens/tears.py` (`create_turnover_tear_sheet`).
+3. **Low / testing gap (partially improved, still open)**: a new `tests/test_information_display.py` (265 lines) covers the table-display / `tables_as_figures` behavior. However, `tests/test_wrapper.py` is still script-style — it only has `if __name__ == "__main__":` with helper functions and no `test_*` functions, so `pytest tests/test_wrapper.py` still collects 0 items.
+   - Ref: `tests/test_wrapper.py` (7.2 KB), `tests/test_information_display.py` (new).
 
-### API / behavior changes captured
+### API / behavior changes captured (HEAD `a51dd45`)
 
-- `performance.factor_information_coefficient(...)` now supports `ic_type` (`"spearman"` or `"pearson"`).
-- `plotting.plot_information_table(...)` now supports `as_figure` and `ic_type` and can return a matplotlib figure.
-- Table display helpers explicitly return `None` when not returning DataFrames.
-- `tears.create_returns_tear_sheet(...)` supports `return_df` and `save_file` and can save all generated return plots into a single output file.
-- `tears.create_information_tear_sheet(...)` and `tears.create_turnover_tear_sheet(...)` now expose `return_df` / `save_file` parameters; `create_information_tear_sheet(...)` also forwards `ic_type` through to `plot_information_table(...)`.
-- New top-level wrapper module exposed as `alphalens.wrapper`.
+- `plotting.plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, tables_as_figures=True, ax=None)` — `return_df` → `tables_as_figures`; added `ax`; **always returns** the `returns_table` DataFrame.
+- `plotting.plot_turnover_table(autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None)` — `return_df` → `tables_as_figures`; added `ax`; **always returns** `(turnover_table, auto_corr)`.
+- `plotting.plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman")` — dropped `return_df` / `as_figure` / `ax`; **always returns** `ic_summary_table`.
+- `plotting._plot_summary_table(summary, title, ax=None)` — **new** internal helper that renders any summary DataFrame as a matplotlib table; shared by `plot_returns_table` and `plot_turnover_table`.
+- `tears.create_*_tear_sheet(...)` — all replaced `return_df` with `tables_as_figures`; **each now returns the underlying summary DataFrames** (returns table for returns; `{spearman, pearson}` dict for information; `(turnover_table, auto_corr)` for turnover; `create_full_tear_sheet` forwards the flag to the sub-tear-sheets).
+- Figure lifecycle: tear sheets snapshot `plt.get_fignums()` on entry and only close **newly created** figures in a `finally` block (previously `plt.close("all")`), so pre-existing caller figures are preserved.
+- `wrapper.return_analysis_wrapper` / `information_analysis_wrapper` / `turnover_analysis_wrapper` / `full_tear_sheet_wrapper` — each gained `tables_as_figures: bool = True`; wrappers now render the summary tables directly even when no `tear_sheet_filepath` is given (previously they only rendered while saving).
+- `information_analysis_wrapper` now returns `{f"ic_{ic_type}": summary.T}` and forwards `by_group` into `factor_information_coefficient`.
+- `performance.factor_information_coefficient(...)` supports `ic_type` (`"spearman"` | `"pearson"`).
+- New test module `tests/test_information_display.py`.
 
 ### Documentation updates completed
 
@@ -159,16 +171,15 @@ The following docs were updated to reflect current implementation:
 - `docs/utils.md`
 - `docs/wrapper.md`
 - `docs/addl.md` — dedicated note on how `long_short` / `group_neutral` / `by_group` propagate through the codebase (user-facing flags mapped to lower-level `demeaned` / `group_adjust`).
-- `docs/pdoc/alphalens/*.html` — API reference regenerated with `pdoc 0.11.6` on 2026-10-09 (`index.html`, `performance.html`, `plotting.html`, `tears.html`, `utils.html`, `wrapper.html`, plus new `extra.html`). Regenerate with:
+- `docs/pdoc/alphalens/*.html` — API reference regenerated with `pdoc 0.11.6` on 2026-10-09 (`index.html`, `performance.html`, `plotting.html`, `tears.html`, `utils.html`, `wrapper.html`, plus `extra.html`). Regenerate with:
   ```powershell
   .venv\Scripts\python.exe -m pdoc --html --force --output-dir docs\pdoc alphalens
   ```
 
 ### Follow-up recommendations
 
-- Align `create_information_tear_sheet(...)` return behavior with its `return_df` parameter intent (currently hard-codes `as_figure=True`).
-- Return table outputs from `create_turnover_tear_sheet(...)` when `return_df=True` (currently discards the call result).
 - Promote the existing script-style helpers in `tests/test_wrapper.py` (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) into real `test_*` functions covering wrapper outputs and save-file behavior.
+- Confirm the `tables_as_figures=False` path renders text tables correctly end-to-end across all tear sheets (the new `test_information_display.py` covers `plot_information_table`; returns / turnover text paths are not yet unit-tested).
 
 [⬆ 回到目录](#table-of-contents)
 
@@ -789,7 +800,7 @@ A seaborn axes style object suitable for use in `with` statements.
 
 ### Data table displays
 
-#### `plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, return_df=False)`
+#### `plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, tables_as_figures=True, ax=None)`
 
 Display a summary table of factor portfolio returns, alpha, beta, and quantile statistics.
 
@@ -797,13 +808,13 @@ Display a summary table of factor portfolio returns, alpha, beta, and quantile s
 
 - Combines alpha/beta results with quantile return statistics.
 - Converts decimal returns to basis points.
-- Prints a formatted table or returns as a `DataFrame`.
+- `tables_as_figures=True` (default) renders the table via `_plot_summary_table(...)` on `ax` (or a new figure); otherwise prints the table with `utils.print_table(...)`.
 
 ##### Returns
 
-Pretty-printed table or a `DataFrame` when `return_df=True`.
+Always the `returns_table` `DataFrame`.
 
-#### `plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False)`
+#### `plot_turnover_table(autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None)`
 
 Display quantile turnover and factor rank autocorrelation statistics.
 
@@ -811,13 +822,13 @@ Display quantile turnover and factor rank autocorrelation statistics.
 
 - Shows mean turnover for each quantile by period.
 - Shows mean factor rank autocorrelation.
-- Prints formatted tables or returns as `DataFrame`s.
+- `tables_as_figures=True` renders via `_plot_summary_table(...)`; otherwise prints the two tables.
 
 ##### Returns
 
-Printed tables or a pair of `DataFrame`s when `return_df=True`.
+Always a `(turnover_table, auto_corr)` tuple of `DataFrame`s.
 
-#### `plot_information_table(ic_data, return_df=False)`
+#### `plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman")`
 
 Display Information Coefficient summary statistics.
 
@@ -825,11 +836,12 @@ Display Information Coefficient summary statistics.
 
 - Computes IC mean, standard deviation, risk-adjusted IC, and t-statistics.
 - Includes skewness and kurtosis.
-- Prints a summary table or returns as a `DataFrame`.
+- `tables_as_figures=True` renders an inline matplotlib table; otherwise prints the summary.
+- `ic_type` (`"spearman"` | `"pearson"`) labels the IC columns.
 
 ##### Returns
 
-Pretty-printed table or a `DataFrame` when `return_df=True`.
+Always the `ic_summary_table` `DataFrame`.
 
 #### `plot_quantile_statistics_table(factor_data, return_df=False)`
 
@@ -843,7 +855,7 @@ Display factor value statistics by quantile.
 
 ##### Returns
 
-Pretty-printed table or a `DataFrame` when `return_df=True`.
+Pretty-printed table or a `DataFrame` when `return_df=True` (unchanged — still the legacy `return_df` flag).
 
 ### Information Coefficient visualization
 
@@ -1092,7 +1104,7 @@ Example call: `plot_ic_ts(ic_data)` or `plot_quantile_returns_bar(mean_ret_by_q)
 
 - All plotting functions accept an optional `ax` parameter for custom subplot layouts.
 - Return values vary: some functions print tables directly, others return `DataFrame`s or axes.
-- The `return_df=False` parameter on table functions controls printing vs. returning.
+- The three summary-table functions (`plot_returns_table`, `plot_turnover_table`, `plot_information_table`) always return their `DataFrame`s; `tables_as_figures` only controls how they are displayed. `plot_quantile_statistics_table` is the legacy `return_df`-based holdout.
 - Most functions are designed for Jupyter notebooks but work in any matplotlib environment.
 
 [⬆ 回到目录](#table-of-contents)
@@ -1124,7 +1136,7 @@ Utility class for managing matplotlib grid-based subplot layouts with automatic 
 
 All tear sheet functions are decorated with `@plotting.customize` to apply consistent styling automatically. The `set_context=False` parameter can be passed to any tear sheet to skip the decorator.
 
-#### `create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)`
+#### `create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False, tables_as_figures=True)`
 
 Generate a compact tear sheet with key returns, information, and turnover statistics.
 
@@ -1136,12 +1148,13 @@ Generate a compact tear sheet with key returns, information, and turnover statis
 - Computes and displays IC summary statistics.
 - Analyzes turnover and factor rank autocorrelation.
 - All metrics respect the `long_short` and `group_neutral` flags.
+- `tables_as_figures=True` reserves an extra grid row for the summary table; otherwise the tables print as text.
 
 ##### Returns
 
 Displays a matplotlib figure with the complete summary.
 
-#### `create_returns_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False)`
+#### `create_returns_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None)`
 
 Detailed tear sheet focused on returns analysis by factor quantile.
 
@@ -1154,40 +1167,46 @@ Detailed tear sheet focused on returns analysis by factor quantile.
 - If `'1D'` returns are available, plots cumulative portfolio returns and quantile-level cumulative returns.
 - Displays top-minus-bottom quantile return spread over time with optional error bands.
 - When `by_group=True`, creates separate bar charts for each asset group.
+- `save_file` writes the assembled figures to a single `.pdf` or stitched `.png`.
+- Figure lifecycle: snapshots `plt.get_fignums()` on entry and closes only newly created figures, so pre-existing caller figures survive.
 
 ##### Parameters
 
 - `long_short` --- Enable long-short demeaning for dollar-neutral analysis.
 - `group_neutral` --- Normalize weights and returns across groups.
 - `by_group` --- Create separate visualizations per group.
+- `tables_as_figures` --- Render the summary table as a figure (default) or text.
+- `save_file` --- If provided, save the tear sheet (`str` or `None`).
 
 ##### Returns
 
-Displays one or more matplotlib figures.
+The returns summary `DataFrame` (`rtrns_tbl`).
 
-#### `create_information_tear_sheet(factor_data, group_neutral=False, by_group=False)`
+#### `create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None)`
 
 Tear sheet focused on Information Coefficient (IC) analysis.
 
 ##### Behavior
 
-- Displays IC summary statistics (mean, std, risk-adjusted IC, t-stat, p-value, skewness, kurtosis).
+- Displays IC summary statistics (mean, std, risk-adjusted IC, t-stat, p-value, skewness, kurtosis) for both `"spearman"` and `"pearson"`.
 - Plots IC time series with 22-day rolling average for each forward-return period.
 - Plots IC histograms with KDE.
 - Plots IC Q-Q plots against normal distribution.
 - When `by_group=False` (default), creates a heatmap of monthly mean IC.
-- When `by_group=True`, shows mean IC separately for each group.
+- When `by_group=True`, shows mean IC separately for each group (time-series charts use the pooled per-date IC).
 
 ##### Parameters
 
 - `group_neutral` --- Demean forward returns by group before computing IC.
 - `by_group` --- Separate analysis by asset group.
+- `tables_as_figures` --- Render IC summary tables as figures (default) or text.
+- `save_file` --- If provided, save the tear sheet.
 
 ##### Returns
 
-Displays matplotlib figure(s).
+A dict `{ic_type: summary_df}` for `ic_type` in `["spearman", "pearson"]`.
 
-#### `create_turnover_tear_sheet(factor_data, turnover_periods=None)`
+#### `create_turnover_tear_sheet(factor_data, turnover_periods=None, tables_as_figures=True, save_file=None)`
 
 Tear sheet analyzing factor turnover and rank stability.
 
@@ -1198,16 +1217,19 @@ Tear sheet analyzing factor turnover and rank stability.
 - Plots time series of top and bottom quantile turnover for each period.
 - Plots factor rank autocorrelation over time for each period.
 - Automatically extracts day-multiple forward-return periods if `turnover_periods` is not provided.
+- `save_file` writes via `gf.fig.savefig(...)` for image formats or `PdfPages` for PDF.
 
 ##### Parameters
 
 - `turnover_periods` --- Custom periods for turnover analysis. If not provided, uses exact day multiples from `factor_data`.
+- `tables_as_figures` --- Render turnover summary tables as figures (default) or text.
+- `save_file` --- If provided, save the tear sheet.
 
 ##### Returns
 
-Displays matplotlib figure with turnover and autocorrelation plots.
+A `(turnover_table, auto_corr)` tuple of `DataFrame`s.
 
-#### `create_full_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False)`
+#### `create_full_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True)`
 
 Comprehensive tear sheet combining all analysis perspectives.
 
@@ -1217,10 +1239,12 @@ Comprehensive tear sheet combining all analysis perspectives.
 - Calls `create_returns_tear_sheet()` with all parameters passed through.
 - Calls `create_information_tear_sheet()` with appropriate flags.
 - Calls `create_turnover_tear_sheet()` with defaults.
+- `tables_as_figures` is forwarded to all three sub-tear-sheets.
 - All component tear sheets skip automatic styling via `set_context=False` to apply consistent styling once.
 
 ##### Parameters
 
+- `tables_as_figures` --- Render summary tables as figures (default) or text.
 - `long_short` --- Enable long-short demeaning.
 - `group_neutral` --- Enable group-neutral normalization.
 - `by_group` --- Separate analysis per group.
@@ -1358,21 +1382,24 @@ Calls `func` after filtering keyword arguments to names accepted by the callable
 
 ### Workflow wrappers
 
-#### `return_analysis_wrapper(data, tear_sheet_filepath)`
+All wrappers accept `tables_as_figures: bool = True` (render summary tables as figures vs. text) and return `dict[str, pd.DataFrame]`.
 
-Returns mean return by quantile and standard-error tables, and optionally saves a returns tear sheet.
+#### `return_analysis_wrapper(data, tables_as_figures=True, tear_sheet_filepath=None)`
 
-#### `information_analysis_wrapper(data, tear_sheet_filepath)`
+Returns `{'mean_return_by_q', 'std_err_by_q'}` tables, and renders/saves a returns tear sheet.
 
-Computes Spearman and Pearson IC summaries (with autocorrelation-adjusted diagnostics) and optionally saves an information tear sheet.
+#### `information_analysis_wrapper(data, tables_as_figures=True, tear_sheet_filepath=None)`
 
-#### `turnover_analysis_wrapper(data, turnover_period, period_unit, tear_sheet_filepath)`
+Returns `{f"ic_{ic_type}": summary.T}` for Spearman and Pearson IC summaries (with autocorrelation-adjusted diagnostics) and optionally saves an information tear sheet.
 
-Computes quantile turnover and factor-rank autocorrelation for the requested horizon and optionally saves a turnover tear sheet.
+#### `turnover_analysis_wrapper(data, turnover_period, period_unit, tables_as_figures=True, tear_sheet_filepath=None)`
+
+Returns `{'turnover', 'factor_autocorr'}` for the requested horizon and optionally saves a turnover tear sheet.
 
 ### Notes
 
 - Wrapper functions are exposed at package level as `alphalens.wrapper`.
-- The current `tests/test_wrapper.py` file is script-style and does not yet contain pytest unit tests.
+- Wrappers render the summary tables directly even when `tear_sheet_filepath` is `None` (previously they only rendered while saving).
+- The current `tests/test_wrapper.py` file is script-style and does not yet contain pytest unit tests; the new `tests/test_information_display.py` covers the table-display path.
 
 [⬆ 回到目录](#table-of-contents)

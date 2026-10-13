@@ -86,7 +86,7 @@ Tear sheet focused on Information Coefficient (IC) analysis.
 - Plots IC Q-Q plots against normal distribution.
 - When `by_group=False` (default), creates a heatmap of monthly mean IC.
 - When `by_group=True`, shows mean IC separately for each group.
-- Uses Spearman IC explicitly when computing and labeling IC statistics.
+- Computes and labels both Spearman and Pearson IC statistics in the information summary tables.
 - When `save_file` is set, saves all generated figures into one file (`*.pdf` multipage, otherwise stitched image).
 
 **Parameter flow call graph (`group_neutral`, `by_group`)**

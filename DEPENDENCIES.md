@@ -1,5 +1,7 @@
 # Alphalens Function Dependencies
 
+> **Version**: branch `yzeng` at HEAD `a51dd45` (2026-10-13, the `tables_as_figures` refactor). Prior revision: HEAD `7c375a3` (2026-10-09).
+
 This document maps the in-package function calls in `src/alphalens`. It is
 intended as a navigation aid for reviewing implementation changes: a change to
 a lower-level function may affect every caller listed beneath it.
@@ -8,8 +10,9 @@ Dependencies below are direct calls between Alphalens functions. Calls into
 NumPy, pandas, SciPy, statsmodels, matplotlib, seaborn, PIL, and empyrical
 are not listed. Decorators (`customize`, `non_unique_bin_edges_error`) wrap
 their decorated functions dynamically; those edges are called out separately.
-The graph follows the checked-in source on branch `yzeng` (HEAD `7c375a3`)
-and may need updating when functions are added or refactored.
+The graph follows the checked-in source on branch `yzeng` at HEAD `a51dd45`
+(2026-10-13, the `tables_as_figures` refactor; previous revision was HEAD
+`7c375a3`) and may need updating when functions are added or refactored.
 
 ## Table of Contents
 - [Function dependency layers](#function-dependency-layers)
@@ -46,7 +49,8 @@ These functions do not call another Alphalens function directly.
    `plot_ic_by_group`, `plot_ic_hist`, `plot_ic_qq`, `plot_ic_ts`,
    `plot_monthly_ic_heatmap`, `plot_quantile_average_cumulative_return`,
    `plot_quantile_returns_bar`, `plot_quantile_returns_violin`,
-   `plot_top_bottom_quantile_turnover`.
+   `plot_top_bottom_quantile_turnover`, `_plot_summary_table` (new internal
+   helper in `a51dd45`, renders any summary DataFrame as a matplotlib table).
 4. `alphalens.wrapper`: `call_with_matching_args` (filters kwargs by
    signature, then invokes the passed callable dynamically).
 
@@ -63,9 +67,15 @@ These functions do not call another Alphalens function directly.
    dynamically invokes whichever plotting function it wraps).
 7. `plotting.plot_information_table` → `ic_autocor_adj`, `print_table`.
 8. `plotting.plot_quantile_statistics_table` → `print_table`.
-9. `plotting.plot_returns_table` → `print_table`.
-10. `plotting.plot_turnover_table` → `print_table`.
+9. `plotting.plot_returns_table` → `_plot_summary_table`, `print_table`.
+10. `plotting.plot_turnover_table` → `_plot_summary_table`, `print_table`.
 11. `extra.hit_rate` → `get_forward_returns_columns`.
+
+> Note: `_plot_summary_table` is defined in `plotting.py` itself, so it is not
+> captured by the AST caller-map's import-based alias resolution; the
+> `plot_returns_table → _plot_summary_table` and
+> `plot_turnover_table → _plot_summary_table` edges above are added from the
+> `a51dd45` source directly. `_plot_summary_table` has no in-package callees.
 
 ### Level 2 — core analytics primitives
 
@@ -138,26 +148,34 @@ These functions do not call another Alphalens function directly.
 
 These are the fork-specific convenience functions. They call public API
 functions through the `alphalens.*` namespace and additionally thread
-save-to-file paths and IC-type selection.
+`tables_as_figures`, save-to-file paths, and IC-type selection. Since
+`a51dd45`, all wrappers accept `tables_as_figures: bool = True` and render
+their summary tables directly even when no `tear_sheet_filepath` is set
+(previously they only rendered while saving).
 
 1. `wrapper.return_analysis_wrapper` →
-   `performance.mean_return_by_quantile`,
+   `performance.mean_return_by_quantile`, `performance.factor_alpha_beta`,
+   `performance.compute_mean_returns_spread`, `utils.rate_of_return`,
+   `plotting.plot_returns_table` (directly when no save path),
    `tears.create_returns_tear_sheet` (when `tear_sheet_filepath` is set).
 2. `wrapper.information_analysis_wrapper` →
-   `performance.factor_information_coefficient` (called twice, once with
-   `ic_type="spearman"` and once with `"pearson"`),
-   `plotting.plot_information_table` (called twice, matching),
-   `tears.create_information_tear_sheet` (when save path is set).
+   `performance.factor_information_coefficient` (looped over
+   `["spearman", "pearson"]`),
+   `plotting.plot_information_table` (matching, per `ic_type`),
+   `tears.create_information_tear_sheet` (when save path is set). Returns
+   `{f"ic_{ic_type}": summary.T}`.
 3. `wrapper.turnover_analysis_wrapper` →
    `performance.quantile_turnover`,
    `performance.factor_rank_autocorrelation`,
+   `plotting.plot_turnover_table` (directly when no save path),
    `tears.create_turnover_tear_sheet` (when save path is set).
 4. `wrapper.full_tear_sheet_wrapper` →
    `utils.get_forward_returns_columns`, `utils.get_clean_factor`,
    `wrapper.information_analysis_wrapper`,
    `wrapper.return_analysis_wrapper`,
    `wrapper.turnover_analysis_wrapper`. Iterates over a list of factor
-   columns and aggregates the per-factor results into one combined table.
+   columns, forwards `tables_as_figures`, and aggregates the per-factor
+   results into one combined table.
 
 [⬆ 回到目录](#table-of-contents)
 
@@ -204,8 +222,8 @@ alphalens.plotting
     │       axes_style
     ├── table renderers: plot_returns_table, plot_turnover_table,
     │       plot_information_table, plot_quantile_statistics_table
-    │       (all funnel through utils.print_table and
-    │       utils.ic_autocor_adj)
+    │       (the three summary tables funnel through utils.print_table,
+    │       utils.ic_autocor_adj, and the new _plot_summary_table helper)
     └── diagnostic plots: IC, quantile returns, cumulative returns,
             turnover, event windows
 
@@ -239,8 +257,9 @@ alphalens.wrapper
   `performance.*` stats with `plotting.*` renders. No tear sheet performs
   its own numeric work.
 - `wrapper` is the fork-specific add-on. It exists to (a) run both
-  Spearman and Pearson IC in one shot, (b) auto-save tear sheets to PDF,
-  and (c) loop over multiple factor columns. It does not introduce new
+  Spearman and Pearson IC in one shot, (b) render or auto-save tear sheets
+  (`tables_as_figures` controls figure-vs-text table display), and
+  (c) loop over multiple factor columns. It does not introduce new
   analytics; it only re-exports existing public API with convenience.
 - `extra.hit_rate` is a small, standalone metric that reuses
   `get_forward_returns_columns`; it is not part of any tear-sheet flow.

@@ -1,28 +1,33 @@
 # Alphalens Reloaded — Learning Roadmap
 
+> **Version**: branch `yzeng` at HEAD `a51dd45` (2026-10-13, the `tables_as_figures` refactor). Prior revision: HEAD `7c375a3` (2026-10-09).
+
 Entry-points and recommended reading order for learning this codebase.
 All paths below are relative to the repo root `alphalens-reloaded/`.
 
 Companion docs: `CODE_OVERVIEW.md` (module-by-module writeup + known findings),
 `docs/pdoc/alphalens/*.html` (pdoc-generated API reference).
 
+> the `tables_as_figures` refactor). Prior revision covered HEAD `7c375a3`
+> (2026-10-09).
+
 ## Table of Contents
 
 - [0. Layout at a glance](#0-layout-at-a-glance)
-  - [Source modules (`src/alphalens/`, by size)](#source-modules-src-alphalens-by-size)
+  - [Source modules (`src/alphalens/`, by size)](#source-modules-srcalphalens-by-size)
   - [Tests (`tests/`)](#tests-tests)
-  - [Official example notebooks (`docs/source/notebooks/`)](#official-example-notebooks-docs-source-notebooks)
+  - [Official example notebooks (`docs/source/notebooks/`)](#official-example-notebooks-docssourcenotebooks)
 - [1. Setup and orientation](#1-setup-and-orientation)
 - [2. Lock in the data model (do this before any module)](#2-lock-in-the-data-model-do-this-before-any-module)
 - [3. Run the overview notebook end-to-end FIRST](#3-run-the-overview-notebook-end-to-end-first)
-- [4. `alphalens.utils` — data preparation](#4-alphalensutils-data-preparation)
-- [5. `alphalens.performance` — analytics core](#5-alphalensperformance-analytics-core)
-- [6. `alphalens.plotting` — visualization](#6-alphalensplotting-visualization)
-- [7. `alphalens.tears` — assembled reports](#7-alphalensteears-assembled-reports)
-- [8. `alphalens.wrapper` — high-level shortcuts](#8-alphalenswrapper-high-level-shortcuts)
-- [9. `alphalens.extra` — small helpers](#9-alphalensextra-small-helpers)
+- [4. `alphalens.utils` — data preparation](#4-alphalensutils--data-preparation)
+- [5. `alphalens.performance` — analytics core](#5-alphalensperformance--analytics-core)
+- [6. `alphalens.plotting` — visualization](#6-alphalensplotting--visualization)
+- [7. `alphalens.tears` — assembled reports](#7-alphalenstears--assembled-reports)
+- [8. `alphalens.wrapper` — high-level shortcuts](#8-alphalenswrapper--high-level-shortcuts)
+- [9. `alphalens.extra` — small helpers](#9-alphalensextra--small-helpers)
 - [10. Cross-repo integration](#10-cross-repo-integration)
-- [11. Known quirks / pitfalls to watch for](#11-known-quirks-pitfalls-to-watch-for)
+- [11. Known quirks / pitfalls to watch for](#11-known-quirks--pitfalls-to-watch-for)
 - [Suggested order](#suggested-order)
 
 ## 0. Layout at a glance
@@ -56,7 +61,7 @@ Public API (`__init__.py`): `from alphalens import utils, performance, plotting,
 - [x] `overview.ipynb` — the canonical end-to-end walkthrough.
 - [x] `pyfolio_integration.ipynb` — how factor data flows into pyfolio.
 - [ ] `event_study.ipynb` — event-study variant.
-- [ ] `intraday_factor.ipynb` — intraday / sub-daily factors.
+- [x] `intraday_factor.ipynb` — intraday / sub-daily factors.
 
 [⬆ 回到目录](#table-of-contents)
 
@@ -118,12 +123,12 @@ Before reading any implementation, see the whole pipeline run on real data.
       inference, period alignment.
 - [x] Read `quantize_factor(...)` — quantile vs. bin, `by_group`,
       `zero_aware`, `no_raise`.
-- [ ] Read `MaxLossExceededError` and `NonMatchingTimezoneError` — the two
+- [x] Read `MaxLossExceededError` and `NonMatchingTimezoneError` — the two
       exceptions users actually hit.
-- [ ] Skim the calendar/time helpers (`infer_trading_calendar`,
+- [x] Skim the calendar/time helpers (`infer_trading_calendar`,
       `add_custom_calendar_timedelta`, `make_naive_ts`, …) — you do not need
       to memorize them; just know they exist.
-- [ ] Cross-read `tests/test_utils.py` for concrete input/output shapes.
+- [x] Cross-read `tests/test_utils.py` for concrete input/output shapes.
 
 [⬆ 回到目录](#table-of-contents)
 
@@ -144,10 +149,10 @@ Read in this order; each group builds on the previous one.
       `factor_rank_autocorrelation`.
 - [ ] **Event studies**: `common_start_returns`,
       `average_cumulative_return_by_quantile`.
-- [ ] **Pyfolio bridge**: `create_pyfolio_input` — what tuple it returns
+- [x] **Pyfolio bridge**: `create_pyfolio_input` — what tuple it returns
       `(returns, positions, benchmark)` and why this is the integration point
       with `pyfolio-reloaded`.
-- [ ] Cross-read `tests/test_performance.py` (52 KB — the densest, most
+- [x] Cross-read `tests/test_performance.py` (52 KB — the densest, most
       instructive test file in the repo).
 
 [⬆ 回到目录](#table-of-contents)
@@ -159,7 +164,9 @@ Read in this order; each group builds on the previous one.
 - [ ] Group plots by purpose (matches `CODE_OVERVIEW.md` §4):
   - [ ] Table displays: `plot_returns_table`, `plot_turnover_table`,
         `plot_information_table`, `plot_quantile_statistics_table`
-        (note the `return_df` / `as_figure` contract).
+        (note the `tables_as_figures` contract: the three summary tables
+        always return their DataFrames; `plot_quantile_statistics_table`
+        is the legacy `return_df` holdout).
   - [ ] IC plots: `plot_ic_ts`, `plot_ic_hist`, `plot_ic_qq`,
         `plot_ic_by_group`, `plot_monthly_ic_heatmap`.
   - [ ] Returns: `plot_quantile_returns_bar`, `plot_quantile_returns_violin`,
@@ -184,20 +191,21 @@ Read in this order; each group builds on the previous one.
   - [ ] `create_full_tear_sheet` — the above chained together.
   - [ ] `create_event_returns_tear_sheet` / `create_event_study_tear_sheet`
         — event-study variants.
-- [ ] Pay attention to `return_df` / `save_file` parameters. Re-read the
-      two open findings in `CODE_OVERVIEW.md` (info/turnover tear sheets do not
-      honor `return_df` the way their signatures suggest).
+- [ ] Pay attention to `tables_as_figures` / `save_file` parameters. Since
+      the `a51dd45` refactor, the three `plot_*_table` helpers and all tear
+      sheets always return their summary DataFrames (`tables_as_figures` only
+      controls figure-vs-text display).
 
 [⬆ 回到目录](#table-of-contents)
 
 ## 8. `alphalens.wrapper` — high-level shortcuts
 
-- [ ] Read `ic_autocor_adj` and `call_with_matching_args` (utility helpers).
-- [ ] Read the three workflow wrappers:
-  - [ ] `return_analysis_wrapper(data, tear_sheet_filepath)`
-  - [ ] `information_analysis_wrapper(data, tear_sheet_filepath)`
-  - [ ] `turnover_analysis_wrapper(data, turnover_period, period_unit, tear_sheet_filepath)`
-- [ ] Compare what each wrapper does vs. the equivalent direct call through
+- [x] Read `ic_autocor_adj` and `call_with_matching_args` (utility helpers).
+- [x] Read the three workflow wrappers (each now takes `tables_as_figures: bool = True` and renders its summary tables even without a save path):
+  - [x] `return_analysis_wrapper(data, tables_as_figures=True, tear_sheet_filepath=None)`
+  - [x] `information_analysis_wrapper(data, tables_as_figures=True, tear_sheet_filepath=None)` — returns `{f"ic_{ic_type}": ...}`
+  - [x] `turnover_analysis_wrapper(data, turnover_period, period_unit, tables_as_figures=True, tear_sheet_filepath=None)`
+- [x] Compare what each wrapper does vs. the equivalent direct call through
       `tears.create_*_tear_sheet` — identify the value-add (typically:
       autocorrelation-adjusted diagnostics + automatic save-to-file).
 
@@ -222,16 +230,16 @@ Read in this order; each group builds on the previous one.
 
 ## 11. Known quirks / pitfalls to watch for
 
-From `CODE_OVERVIEW.md` (re-verified 2026-10-09 at HEAD `7c375a3`):
+From `CODE_OVERVIEW.md` (re-verified 2026-10-13 at HEAD `a51dd45`; the
+`tables_as_figures` refactor resolved the two `return_df` quirks below):
 
-- [ ] `create_information_tear_sheet(..., return_df=True)` still returns a
-      figure because `as_figure=True` is hard-coded downstream.
-- [ ] `create_turnover_tear_sheet(..., return_df=True)` discards the table
-      returned by `plot_turnover_table`.
 - [ ] `tests/test_wrapper.py` is script-style — run it directly, not via
-      pytest, until it gets real `test_*` functions.
+      pytest, until it gets real `test_*` functions (a new
+      `tests/test_information_display.py` now covers the table-display path).
 - [ ] `filter_zscore` in `utils.get_clean_factor_and_forward_returns` can
       introduce lookahead bias — understand when it is safe to use.
+- [ ] `factor_alpha_beta` docstring still advertises a t-stat(alpha) row that
+      the function body does not produce (it emits `Ann. alpha` and `beta`).
 
 [⬆ 回到目录](#table-of-contents)
 

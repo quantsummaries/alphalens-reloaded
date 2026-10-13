@@ -20,6 +20,7 @@ This module is the main data-preparation layer used throughout Alphalens. Most w
   - [demean_forward_returns](#demean_forward_returns)
   - [rate_of_return](#rate_of_return)
   - [std_conversion](#std_conversion)
+  - [ic_autocor_adj](#ic_autocor_adj)
 - [Calendar and time utilities](#calendar-and-time-utilities)
   - [infer_trading_calendar](#infer_trading_calendar)
   - [timedelta_to_string](#timedelta_to_string)
@@ -198,6 +199,24 @@ The transformed outputs are then used by downstream spread calculations and plot
 **Signature:** `std_conversion(period_std, base_period)`
 
 Convert standard deviation or standard error from one period length to another.
+
+---
+
+### `ic_autocor_adj`
+**Signature:** `ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -> pd.DataFrame`
+
+Compute IC autocorrelation diagnostics and Newey-West-adjusted t-statistics for daily IC series.
+
+**Behavior**
+
+- Works column-wise on a DataFrame of daily IC values.
+- Computes the lagged autocorrelation, Ljung-Box p-value, Newey-West t-stat, and Newey-West p-value for each horizon.
+- Returns a transposed summary table with diagnostics as rows and horizons as columns.
+- Used by `alphalens.plotting.plot_information_table()` to add lag-1 diagnostics to IC summary tables.
+
+**Returns**
+
+A `DataFrame` of IC autocorrelation diagnostics rounded to three decimals.
 
 ---
 

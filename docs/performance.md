@@ -78,7 +78,7 @@ Compute the mean IC across the full sample or over a time window.
 
 **Behavior**
 
-- Delegates to `factor_information_coefficient()` using its default IC type (Spearman).
+- Delegates to `factor_information_coefficient()` using its default IC type (Spearman); call the lower-level helper directly if you need Pearson IC.
 - Can aggregate by time period using a pandas time rule such as monthly or weekly windows.
 - Can aggregate by group when `by_group=True`.
 

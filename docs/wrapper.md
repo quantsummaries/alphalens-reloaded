@@ -74,7 +74,7 @@ Run IC analysis under both Spearman and Pearson definitions and optionally save 
 
 - Computes daily IC via `performance.factor_information_coefficient(..., ic_type="spearman")`.
 - Computes daily IC via `performance.factor_information_coefficient(..., ic_type="pearson")`.
-- Summarizes each IC table via `plotting.plot_information_table(..., tables_as_figures=tables_as_figures)`.
+- Summarizes each IC table via `plotting.plot_information_table(..., tables_as_figures=tables_as_figures)`, which also adds lag-1 autocorrelation diagnostics and Newey-West-adjusted statistics.
 - IC autocorrelation-adjusted diagnostics are added inside `plotting.plot_information_table(...)`, which calls `utils.ic_autocor_adj(ic_data, lag=1)` before returning the summary table.
 - Optionally saves an information tear sheet when filepath is provided.
 
@@ -85,7 +85,7 @@ A dictionary with:
 - `ic_spearman`
 - `ic_pearson`
 
-Each value is a `DataFrame` containing summary statistics and lag-1 autocorrelation diagnostics.
+Each value is a `DataFrame` containing summary statistics plus lag-1 autocorrelation diagnostics.
 
 ---
 

@@ -179,6 +179,20 @@ This is useful for normalizing returns across different horizons.
 \subsubsection{\texttt{std\_conversion(period\_std, base\_period)}}
 Convert standard deviation or standard error from one period length to another.
 
+\subsubsection{\texttt{ic\_autocor\_adj(daily\_ic: pd.DataFrame, lag: int = 5) -> pd.DataFrame}}
+Compute IC autocorrelation diagnostics and Newey-West-adjusted t-statistics for daily IC series.
+
+\paragraph{Behavior}
+\begin{itemize}
+  \item Works column-wise on a DataFrame of daily IC values.
+  \item Computes the lagged autocorrelation, Ljung-Box p-value, Newey-West t-stat, and Newey-West p-value for each horizon.
+  \item Returns a transposed summary table with diagnostics as rows and horizons as columns.
+  \item Used by \texttt{plot\_information\_table()} to add lag-1 diagnostics to IC summary tables.
+\end{itemize}
+
+\paragraph{Returns}
+A \texttt{DataFrame} of IC autocorrelation diagnostics rounded to three decimals.
+
 \subsection{Calendar and time utilities}
 
 \subsubsection{\texttt{infer\_trading\_calendar(factor\_idx, prices\_idx)}}
@@ -345,15 +359,16 @@ Forward-return column names are detected using \texttt{alphalens.utils.get\_forw
 
 \subsection{Core analysis functions}
 
-\subsubsection{\texttt{factor\_information\_coefficient(factor\_data, group\_adjust=False, by\_group=False)}}
-Compute the Spearman rank correlation between factor values and each forward-return horizon.
+\subsubsection{\texttt{factor\_information\_coefficient(factor\_data, group\_adjust=False, by\_group=False, ic\_type="spearman")}}
+Compute the Information Coefficient (IC) between factor values and each forward-return horizon using either Spearman rank or Pearson correlation.
 
 \paragraph{Behavior}
 \begin{itemize}
-  \item Calculates the Information Coefficient (IC) period by period.
+  \item Calculates the IC period by period using either Spearman rank correlation (default) or Pearson correlation.
   \item Optionally demeans forward returns by group before computing IC.
   \item Optionally computes IC separately for each group.
   \item Preserves the factor data frequency on the date index when not grouped by asset group.
+  \item Raises an error for unsupported \texttt{ic\_type} values.
 \end{itemize}
 
 \paragraph{Returns}
@@ -364,7 +379,7 @@ Compute the mean IC across the full sample or over a time window.
 
 \paragraph{Behavior}
 \begin{itemize}
-  \item Delegates to \texttt{factor\_information\_coefficient()}.
+  \item Delegates to \texttt{factor\_information\_coefficient()} using its default IC type (Spearman); call the lower-level helper directly if you need Pearson IC.
   \item Can aggregate by time period using a pandas time rule such as monthly or weekly windows.
   \item Can aggregate by group when \texttt{by\_group=True}.
 \end{itemize}
@@ -865,40 +880,41 @@ A seaborn axes style object suitable for use in \texttt{with} statements.
 
 \subsection{Data table displays}
 
-\subsubsection{\texttt{plot\_returns\_table(alpha\_beta, mean\_ret\_quantile, mean\_ret\_spread\_quantile, return\_df=False)}}
-Display a summary table of factor portfolio returns, alpha, beta, and quantile statistics.
+\subsubsection{\texttt{plot\_returns\_table(alpha\_beta, mean\_ret\_quantile, mean\_ret\_spread\_quantile, tables\_as\_figures=True, ax=None)}}
+Summarize portfolio alpha/beta and quantile returns in basis points.
 
 \paragraph{Behavior}
 \begin{itemize}
   \item Combines alpha/beta results with quantile return statistics.
   \item Converts decimal returns to basis points.
-  \item Prints a formatted table or returns as a \texttt{DataFrame}.
+  \item Renders the table as a figure when \texttt{tables\_as\_figures=True}; otherwise prints text.
 \end{itemize}
 
 \paragraph{Returns}
-Pretty-printed table or a \texttt{DataFrame} when \texttt{return\_df=True}.
+A summary \texttt{DataFrame}.
 
-\subsubsection{\texttt{plot\_turnover\_table(autocorrelation\_data, quantile\_turnover, return\_df=False)}}
-Display quantile turnover and factor rank autocorrelation statistics.
+\subsubsection{\texttt{plot\_turnover\_table(autocorrelation\_data, quantile\_turnover, tables\_as\_figures=True, ax=None)}}
+Summarize mean quantile turnover and factor rank autocorrelation.
 
 \paragraph{Behavior}
 \begin{itemize}
   \item Shows mean turnover for each quantile by period.
   \item Shows mean factor rank autocorrelation.
-  \item Prints formatted tables or returns as \texttt{DataFrame}s.
+  \item Renders the table as a figure when \texttt{tables\_as\_figures=True}; otherwise prints text tables.
 \end{itemize}
 
 \paragraph{Returns}
-Printed tables or a pair of \texttt{DataFrame}s when \texttt{return\_df=True}.
+Two summary \texttt{DataFrame}s: turnover and autocorrelation.
 
-\subsubsection{\texttt{plot\_information\_table(ic\_data, return\_df=False)}}
+\subsubsection{\texttt{plot\_information\_table(ic\_data, tables\_as\_figures=True, ic\_type="spearman")}}
 Display Information Coefficient summary statistics.
 
 \paragraph{Behavior}
 \begin{itemize}
   \item Computes IC mean, standard deviation, risk-adjusted IC, and t-statistics.
-  \item Includes skewness and kurtosis.
-  \item Prints a summary table or returns as a \texttt{DataFrame}.
+  \item Labels the mean row as \texttt{IC Mean (spearman)} or \texttt{IC Mean (pearson)} depending on \texttt{ic\_type}.
+  \item Includes skewness, kurtosis, and lag-1 autocorrelation diagnostics from \texttt{utils.ic\_autocor\_adj(ic\_data, lag=1)}.
+  \item Renders table figures or prints text tables depending on \texttt{tables\_as\_figures}.
 \end{itemize}
 
 \paragraph{Returns}
@@ -1189,7 +1205,7 @@ Utility class for managing matplotlib grid-based subplot layouts with automatic 
 
 All tear sheet functions are decorated with \texttt{@plotting.customize} to apply consistent styling automatically. The \texttt{set\_context=False} parameter can be passed to any tear sheet to skip the decorator.
 
-\subsubsection{\texttt{create\_summary\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False)}}
+\subsubsection{\texttt{create\_summary\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, tables\_as\_figures=True)}}
 Generate a compact tear sheet with key returns, information, and turnover statistics.
 
 \paragraph{Behavior}
@@ -1205,7 +1221,7 @@ Generate a compact tear sheet with key returns, information, and turnover statis
 \paragraph{Returns}
 Displays a matplotlib figure with the complete summary.
 
-\subsubsection{\texttt{create\_returns\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, by\_group=False)}}
+\subsubsection{\texttt{create\_returns\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, by\_group=False, tables\_as\_figures=True, save\_file=None)}}
 Detailed tear sheet focused on returns analysis by factor quantile.
 
 \paragraph{Behavior}
@@ -1217,6 +1233,7 @@ Detailed tear sheet focused on returns analysis by factor quantile.
   \item If \texttt{'1D'} returns are available, plots cumulative portfolio returns and quantile-level cumulative returns.
   \item Displays top-minus-bottom quantile return spread over time with optional error bands.
   \item When \texttt{by\_group=True}, creates separate bar charts for each asset group.
+  \item When \texttt{save\_file} is set, writes all generated figures into one PDF or image file.
 \end{itemize}
 
 \paragraph{Parameters}
@@ -1224,34 +1241,39 @@ Detailed tear sheet focused on returns analysis by factor quantile.
   \item \texttt{long\_short} --- Enable long-short demeaning for dollar-neutral analysis.
   \item \texttt{group\_neutral} --- Normalize weights and returns across groups.
   \item \texttt{by\_group} --- Create separate visualizations per group.
+  \item \texttt{tables\_as\_figures} --- Render summary tables in the tear sheet when \texttt{True} (default); otherwise display text tables and omit table figures.
+  \item \texttt{save\_file} --- Output path for saving all generated plots.
 \end{itemize}
 
 \paragraph{Returns}
-Displays one or more matplotlib figures.
+Always returns the returns summary \texttt{DataFrame}, independently of table display.
 
-\subsubsection{\texttt{create\_information\_tear\_sheet(factor\_data, group\_neutral=False, by\_group=False)}}
+\subsubsection{\texttt{create\_information\_tear\_sheet(factor\_data, group\_neutral=False, by\_group=False, tables\_as\_figures=True, save\_file=None)}}
 Tear sheet focused on Information Coefficient (IC) analysis.
 
 \paragraph{Behavior}
 \begin{itemize}
-  \item Displays IC summary statistics (mean, std, risk-adjusted IC, t-stat, p-value, skewness, kurtosis).
+  \item Displays both Spearman and Pearson IC summary statistics (mean, std, risk-adjusted IC, t-stat, p-value, skewness, kurtosis).
   \item Plots IC time series with 22-day rolling average for each forward-return period.
   \item Plots IC histograms with KDE.
   \item Plots IC Q-Q plots against normal distribution.
   \item When \texttt{by\_group=False} (default), creates a heatmap of monthly mean IC.
   \item When \texttt{by\_group=True}, shows mean IC separately for each group.
+  \item When \texttt{save\_file} is set, saves all generated figures into one file (\texttt{*.pdf} multipage, otherwise stitched image).
 \end{itemize}
 
 \paragraph{Parameters}
 \begin{itemize}
   \item \texttt{group\_neutral} --- Demean forward returns by group before computing IC.
   \item \texttt{by\_group} --- Separate analysis by asset group.
+  \item \texttt{tables\_as\_figures} --- Render summary tables in the tear sheet when \texttt{True} (default); otherwise display text tables and omit table figures.
+  \item \texttt{save\_file} --- Output path for saving generated plots.
 \end{itemize}
 
 \paragraph{Returns}
-Displays matplotlib figure(s).
+Always returns a dictionary of summary DataFrames keyed by \texttt{"spearman"} and \texttt{"pearson"}, independently of table display.
 
-\subsubsection{\texttt{create\_turnover\_tear\_sheet(factor\_data, turnover\_periods=None)}}
+\subsubsection{\texttt{create\_turnover\_tear\_sheet(factor\_data, turnover\_periods=None, tables\_as\_figures=True, save\_file=None)}}
 Tear sheet analyzing factor turnover and rank stability.
 
 \paragraph{Behavior}
@@ -1261,17 +1283,20 @@ Tear sheet analyzing factor turnover and rank stability.
   \item Plots time series of top and bottom quantile turnover for each period.
   \item Plots factor rank autocorrelation over time for each period.
   \item Automatically extracts day-multiple forward-return periods if \texttt{turnover\_periods} is not provided.
+  \item Supports \texttt{save\_file} output (\texttt{*.pdf} or image via matplotlib save).
 \end{itemize}
 
 \paragraph{Parameters}
 \begin{itemize}
   \item \texttt{turnover\_periods} --- Custom periods for turnover analysis. If not provided, uses exact day multiples from \texttt{factor\_data}.
+  \item \texttt{tables\_as\_figures} --- Render summary tables in the tear sheet when \texttt{True} (default); otherwise display text tables and omit table figures.
+  \item \texttt{save\_file} --- Output path for saving generated plots.
 \end{itemize}
 
 \paragraph{Returns}
-Displays matplotlib figure with turnover and autocorrelation plots.
+Always returns \texttt{(turnover\_table, auto\_corr)} summary DataFrames, independently of table display.
 
-\subsubsection{\texttt{create\_full\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, by\_group=False)}}
+\subsubsection{\texttt{create\_full\_tear\_sheet(factor\_data, long\_short=True, group\_neutral=False, by\_group=False, turnover\_period=1, period\_unit="D", tables\_as\_figures=True)}}
 Comprehensive tear sheet combining all analysis perspectives.
 
 \paragraph{Behavior}
@@ -1288,6 +1313,9 @@ Comprehensive tear sheet combining all analysis perspectives.
   \item \texttt{long\_short} --- Enable long-short demeaning.
   \item \texttt{group\_neutral} --- Enable group-neutral normalization.
   \item \texttt{by\_group} --- Separate analysis per group.
+  \item \texttt{turnover\_period} --- Number of periods for turnover analysis.
+  \item \texttt{period\_unit} --- Unit of time for turnover analysis.
+  \item \texttt{tables\_as\_figures} --- Render summary tables in the tear sheet when \texttt{True} (default); otherwise display text tables and omit table figures.
 \end{itemize}
 
 \paragraph{Returns}
