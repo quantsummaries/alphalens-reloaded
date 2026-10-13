@@ -84,7 +84,7 @@ def return_analysis_wrapper(data: pd.DataFrame,
             alphalens.utils.rate_of_return, axis=0, base_period=base_period
         )
         spread, _ = alphalens.performance.compute_mean_returns_spread(
-            mean_quant_bydate, date["factor_quantile"].max(), data["factor_quantile"].min()
+            mean_quant_bydate, data["factor_quantile"].max(), data["factor_quantile"].min()
         )
         alphalens.plotting.plot_returns_table(
             alpha_beta, mean_quant_rateret, spread, tables_as_figures=tables_as_figures
