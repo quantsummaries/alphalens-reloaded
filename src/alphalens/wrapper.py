@@ -27,7 +27,7 @@ def return_analysis_wrapper(data: pd.DataFrame,
                             long_short: bool = True,
                             group_neutral: bool = False,
                             by_group: bool = False,
-                            return_df: bool = False,
+                            tables_as_figures: bool = True,
                             tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens return analysis functions.
 
@@ -42,7 +42,7 @@ def return_analysis_wrapper(data: pd.DataFrame,
             group_neutral -> group_adjust in factor_weights(...) -> changes whether weights are built/normalized in a
             group-neutral way. Defaults to False.
         by_group (bool): If True, display graphs separately for each group.
-        return_df (bool): Suppress the returns analysis table text when True.
+        tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
@@ -61,9 +61,34 @@ def return_analysis_wrapper(data: pd.DataFrame,
                                                               long_short=long_short,
                                                               group_neutral=group_neutral,
                                                               by_group=by_group,
-                                                              return_df=return_df,
+                                                              tables_as_figures=tables_as_figures,
                                                               save_file=tear_sheet_filepath)
         print(f"\n*** Returns tear sheet saved to {tear_sheet_filepath}")
+    else:
+        factor_returns = alphalens.performance.factor_returns(data, long_short, group_neutral)
+        alpha_beta = alphalens.performance.factor_alpha_beta(
+            data, factor_returns, long_short, group_neutral
+        )
+        mean_quant_ret, _ = alphalens.performance.mean_return_by_quantile(
+            data, by_group=by_group, demeaned=long_short, group_adjust=group_neutral
+        )
+        mean_quant_bydate, _ = alphalens.performance.mean_return_by_quantile(
+            data, by_date=True, by_group=False,
+            demeaned=long_short, group_adjust=group_neutral,
+        )
+        base_period = mean_quant_ret.columns[0]
+        mean_quant_rateret = mean_quant_ret.apply(
+            alphalens.utils.rate_of_return, axis=0, base_period=base_period
+        )
+        mean_quant_bydate = mean_quant_bydate.apply(
+            alphalens.utils.rate_of_return, axis=0, base_period=base_period
+        )
+        spread, _ = alphalens.performance.compute_mean_returns_spread(
+            mean_quant_bydate, date["factor_quantile"].max(), data["factor_quantile"].min()
+        )
+        alphalens.plotting.plot_returns_table(
+            alpha_beta, mean_quant_rateret, spread, tables_as_figures=tables_as_figures
+        )
 
     return {'mean_return_by_q': mean_return_by_q,
             'std_err_by_q': std_err_by_q}
@@ -71,9 +96,8 @@ def return_analysis_wrapper(data: pd.DataFrame,
 def information_analysis_wrapper(data: pd.DataFrame,
                                  group_neutral: bool = False,
                                  by_group: bool = False,
-                                 return_df: bool = False,
-                                 tear_sheet_filepath: str = None,
-                                 as_figure: bool = True) -> dict[str, pd.DataFrame]:
+                                 tables_as_figures: bool = True,
+                                 tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens information analysis functions.
 
     Args:
@@ -84,41 +108,32 @@ def information_analysis_wrapper(data: pd.DataFrame,
         by_group (bool): Whether to compute IC statistics separately for each group instead of only one pooled summary
             across all assets. It does not change the IC computation method; it changes how results are broken out and
             displayed. Defaults to False.
-        return_df (bool): Suppress the returns analysis table text when True. Defaults to False.
+        tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
-        as_figure (bool): Whether to render the information table as a figure. Defaults to True.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
     """
 
-    # spearman correlation
-    daily_ic_spearman = alphalens.performance.factor_information_coefficient(factor_data=data,
-                                                                             group_adjust=group_neutral,
-                                                                             by_group=by_group,
-                                                                             ic_type='spearman')
-    ic_spearman = alphalens.plotting.plot_information_table(daily_ic_spearman.dropna(),
-                                                            return_df=return_df,
-                                                            as_figure=as_figure,
-                                                            ic_type='spearman')
-
-    # pearson correlation
-    daily_ic_pearson = alphalens.performance.factor_information_coefficient(factor_data=data,
-                                                                            group_adjust=group_neutral,
-                                                                            by_group=by_group,
-                                                                            ic_type='pearson')
-    ic_pearson = alphalens.plotting.plot_information_table(daily_ic_pearson.dropna(),
-                                                           return_df=return_df,
-                                                           as_figure=as_figure,
-                                                           ic_type='pearson')
-
-    # tear sheet
     if tear_sheet_filepath:
-        ic_tble = alphalens.tears.create_information_tear_sheet(factor_data=data,
-                                                                group_neutral=group_neutral,
-                                                                by_group=by_group,
-                                                                return_df=True,
-                                                                save_file=tear_sheet_filepath)
+        summaries = alphalens.tears.create_information_tear_sheet(
+            factor_data=data,
+            group_neutral=group_neutral,
+            by_group=by_group,
+            tables_as_figures=tables_as_figures,
+            save_file=tear_sheet_filepath,
+        )
         print(f"\n*** Information tear sheet saved to {tear_sheet_filepath}")
+    else:
+        summaries = {}
+        for ic_type in ["spearman", "pearson"]:
+            daily_ic = alphalens.performance.factor_information_coefficient(
+                factor_data=data, group_adjust=group_neutral,
+                by_group=by_group, ic_type=ic_type,
+            )
+            summaries[ic_type] = alphalens.plotting.plot_information_table(
+                daily_ic.dropna(), tables_as_figures=tables_as_figures, ic_type=ic_type,
+            )
+    return {f"ic_{ic_type}": summary.T for ic_type, summary in summaries.items()}
 
     return {'ic_spearman': ic_spearman.T,
             'ic_pearson': ic_pearson.T}
@@ -126,15 +141,15 @@ def information_analysis_wrapper(data: pd.DataFrame,
 def turnover_analysis_wrapper(data: pd.DataFrame,
                               turnover_period: int,
                               period_unit: str,
-                              return_df: bool = False,
-                              tear_sheet_filepath: str = None,
-                              as_figure: bool = False) -> dict[str, pd.DataFrame]:
+                              tables_as_figures: bool = True,
+                              tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens turnover analysis functions.
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
         turnover_period (int): Number of periods for turnover analysis.
         period_unit (str): Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks, 'M' for months).
+        tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing turnover data frames.
@@ -154,10 +169,16 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
     if tear_sheet_filepath:
         alphalens.tears.create_turnover_tear_sheet(factor_data=data,
                                                    turnover_periods=[f"{turnover_period}{period_unit}"],
-                                                   return_df=return_df,
-                                                   save_file=tear_sheet_filepath,
-                                                   as_figure=as_figure)
+                                                   tables_as_figures=tables_as_figures,
+                                                   save_file=tear_sheet_filepath)
         print(f"\n*** Turnover tear sheet saved to {tear_sheet_filepath}")
+
+    else:
+        alphalens.plotting.plot_turnover_table(
+            pd.DataFrame({turnover_period: factor_autocorr}),
+            {turnover_period: quantile_turnover},
+            tables_as_figures=tables_as_figures,
+        )
 
     return {'turnover': quantile_turnover,
             'factor_autocorr': factor_autocorr}
@@ -171,8 +192,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             by_group: bool = False,
                             turnover_period: int = 1,
                             period_unit: str = 'D',
-                            return_df: bool = False,
-                            as_figure: bool = False) -> dict[str, pd.DataFrame]:
+                            tables_as_figures: bool = True) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens, with 'date' and 'asset' in the columns.
@@ -194,6 +214,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             displayed. Defaults to False.
         turnover_period (int, optional): Number of periods for turnover analysis. Defaults to 1.
         period_unit (str, optional): Unit of time for turnover analysis. Defaults to 'D'.
+        tables_as_figures (bool, optional): Render tables as figures when True (default); otherwise display text.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
@@ -224,7 +245,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         ic_result = alphalens.wrapper.information_analysis_wrapper(data=df,
                                                                    group_neutral=group_neutral,
                                                                    by_group=by_group,
-                                                                   return_df=return_df,
+                                                                   tables_as_figures=tables_as_figures,
                                                                    tear_sheet_filepath=ic_tear_sheet)
         ic_result['ic_spearman'].insert(0, 'factor', f)
         ic_result['ic_pearson'].insert(0, 'factor', f)
@@ -261,7 +282,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                 long_short=long_short,
                                                                 group_neutral=group_neutral,
                                                                 by_group=by_group,
-                                                                return_df=return_df,
+                                                                tables_as_figures=tables_as_figures,
                                                                 tear_sheet_filepath=rtrn_tear_sheet)
         rtrn_result['mean_return_by_q'].insert(0, 'factor', f)
         rtrn_result['std_err_by_q'].insert(0, 'factor', f)
@@ -272,9 +293,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         turnover_result = alphalens.wrapper.turnover_analysis_wrapper(data=clean_data,
                                                                       turnover_period=turnover_period,
                                                                       period_unit=period_unit,
-                                                                      return_df=return_df,
-                                                                      tear_sheet_filepath=turnover_tear_sheet,
-                                                                      as_figure=as_figure)
+                                                                      tables_as_figures=tables_as_figures,
+                                                                      tear_sheet_filepath=turnover_tear_sheet)
         turnover = turnover_result['turnover'].reset_index(drop=False)
         turnover.insert(0, 'factor', f)
         turnover_list.append(turnover)

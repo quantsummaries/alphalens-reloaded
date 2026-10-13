@@ -88,7 +88,7 @@ Everything downstream consumes it.
 - [x] Forward-return columns are detected by
       `utils.get_forward_returns(...)` — read that function to understand the
       naming convention.
-- [ ] Sanity-check: reproduce the `factor_data` MultiIndex shape from
+- [x] Sanity-check: reproduce the `factor_data` MultiIndex shape from
       `tests/test_utils.py` (e.g. the `factor_data` fixture) and print
       `.head()`, `.index.names`, `.columns` to confirm.
 

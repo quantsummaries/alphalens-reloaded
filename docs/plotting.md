@@ -46,53 +46,23 @@ A seaborn axes style object suitable for use in `with` statements.
 
 ## Data table displays
 
-### `plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, return_df=False)`
-Display a summary table of factor portfolio returns, alpha, beta, and quantile statistics.
+### `plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, tables_as_figures=True, ax=None)`
+Summarize portfolio alpha/beta and quantile returns in basis points.
 
-**Behavior**
+### `plot_turnover_table(autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None)`
+Summarize mean quantile turnover and factor rank autocorrelation.
 
-- Combines alpha/beta results with quantile return statistics.
-- Converts decimal returns to basis points.
-- Returns a `DataFrame` when `return_df=True`.
-- Otherwise prints a formatted table and returns `None`.
+### `plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman")`
+Summarize IC mean, standard deviation, ICIR, t-statistics, skewness, kurtosis, and Ljung-Box/Newey-West diagnostics.
 
-**Returns**
+All three helpers use one display flag:
 
-`DataFrame` when `return_df=True`; otherwise `None`.
+- `tables_as_figures=True` (default): render table figures and suppress text tables.
+- `tables_as_figures=False`: display text tables and create no table figures.
 
----
+Returns and turnover can render on a supplied `ax`. Return values are independent of display: returns and information always return a summary `DataFrame`; turnover always returns `(turnover_table, auto_corr)`.
 
-### `plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False)`
-Display quantile turnover and factor rank autocorrelation statistics.
-
-**Behavior**
-
-- Shows mean turnover for each quantile by period.
-- Shows mean factor rank autocorrelation.
-- Returns a tuple `(turnover_table, auto_corr)` when `return_df=True`.
-- Otherwise prints formatted tables and returns `None`.
-
-**Returns**
-
-Tuple of `DataFrame`s when `return_df=True`; otherwise `None`.
-
----
-
-### `plot_information_table(ic_data, return_df=False, as_figure=True, ic_type="spearman")`
-Display Information Coefficient summary statistics.
-
-**Behavior**
-
-- Computes IC mean, standard deviation, risk-adjusted IC (ICIR), and t-statistics.
-- Includes skewness and kurtosis.
-- Adds Ljung-Box/Newey-West diagnostics via `utils.ic_autocor_adj(ic_data, lag=1)`.
-- Labels the IC mean column with the selected `ic_type`.
-- If `as_figure=True` (default), renders the summary as a matplotlib table figure and returns that figure (`return_df` is ignored in this branch).
-- If `as_figure=False`, either returns a `DataFrame` (`return_df=True`) or prints the table (`return_df=False`).
-
-**Returns**
-
-`matplotlib.figure.Figure` when `as_figure=True`; otherwise a `DataFrame` when `return_df=True`, else `None`.
+This replaces the former `return_df` and `as_figure` arguments for these three helpers.
 
 ---
 

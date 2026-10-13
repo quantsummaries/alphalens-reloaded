@@ -62,7 +62,7 @@ class GridFigure(object):
 
 
 @plotting.customize
-def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False):
+def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False, tables_as_figures=True):
     """
     Creates a small summary tear sheet with returns, information, and turnover
     analysis.
@@ -128,12 +128,15 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)
     periods = list(map(lambda p: pd.Timedelta(p).days, periods))
 
     fr_cols = len(periods)
-    vertical_sections = 2 + fr_cols * 3
+    vertical_sections = 2 + fr_cols * 3 + int(tables_as_figures)
     gf = GridFigure(rows=vertical_sections, cols=1)
 
     plotting.plot_quantile_statistics_table(factor_data)
 
-    plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant)
+    plotting.plot_returns_table(
+        alpha_beta, mean_quant_rateret, mean_ret_spread_quant,
+        tables_as_figures=tables_as_figures, ax=gf.next_row() if tables_as_figures else None,
+    )
 
     plotting.plot_quantile_returns_bar(
         mean_quant_rateret,
@@ -144,7 +147,7 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)
 
     # Information Analysis
     ic = perf.factor_information_coefficient(factor_data)
-    plotting.plot_information_table(ic)
+    plotting.plot_information_table(ic, tables_as_figures=tables_as_figures)
 
     # Turnover Analysis
     quantile_factor = factor_data["factor_quantile"]
@@ -165,7 +168,7 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)
         axis=1,
     )
 
-    plotting.plot_turnover_table(autocorrelation, quantile_turnover)
+    plotting.plot_turnover_table(autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures)
 
     plt.show()
     gf.close()
@@ -173,7 +176,7 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)
 
 @plotting.customize
 def create_returns_tear_sheet(
-    factor_data, long_short=True, group_neutral=False, by_group=False, return_df: bool = False, save_file=None
+    factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None
 ):
     """
     Creates a tear sheet for returns analysis of a factor.
@@ -198,197 +201,211 @@ def create_returns_tear_sheet(
         plots
     by_group : bool
         If True, display graphs separately for each group.
-    return_df : bool
-        If True, the function will return the data frame containing the returns analysis results.
+    tables_as_figures : bool
+        If True (default), render summary tables in the tear sheet; otherwise display text.
+        Summary DataFrames are returned in either mode.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     """
 
-    factor_returns = perf.factor_returns(factor_data, long_short, group_neutral)
-
-    mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
-        factor_data,
-        by_group=False,
-        demeaned=long_short,
-        group_adjust=group_neutral,
-    )
-
-    mean_quant_rateret = mean_quant_ret.apply(
-        utils.rate_of_return, axis=0, base_period=mean_quant_ret.columns[0]
-    )
-
-    mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
-        factor_data,
-        by_date=True,
-        by_group=False,
-        demeaned=long_short,
-        group_adjust=group_neutral,
-    )
-
-    mean_quant_rateret_bydate = mean_quant_ret_bydate.apply(
-        utils.rate_of_return,
-        axis=0,
-        base_period=mean_quant_ret_bydate.columns[0],
-    )
-
-    compstd_quant_daily = std_quant_daily.apply(
-        utils.std_conversion, axis=0, base_period=std_quant_daily.columns[0]
-    )
-
-    alpha_beta = perf.factor_alpha_beta(
-        factor_data, factor_returns, long_short, group_neutral
-    )
-
-    mean_ret_spread_quant, std_spread_quant = perf.compute_mean_returns_spread(
-        mean_quant_rateret_bydate,
-        factor_data["factor_quantile"].max(),
-        factor_data["factor_quantile"].min(),
-        std_err=compstd_quant_daily,
-    )
-
-    fr_cols = len(factor_returns.columns)
-    vertical_sections = 2 + fr_cols * 3
-    gf = GridFigure(rows=vertical_sections, cols=1)
-
-    rtrns_tbl = plotting.plot_returns_table(alpha_beta, mean_quant_rateret, mean_ret_spread_quant, return_df=return_df)
-
-    plotting.plot_quantile_returns_bar(
-        mean_quant_rateret,
-        by_group=False,
-        ylim_percentiles=None,
-        ax=gf.next_row(),
-    )
-
-    plotting.plot_quantile_returns_violin(
-        mean_quant_rateret_bydate, ylim_percentiles=(1, 99), ax=gf.next_row()
-    )
-
-    trading_calendar = factor_data.index.levels[0].freq
-    if trading_calendar is None:
-        trading_calendar = pd.tseries.offsets.BDay()
-        warnings.warn(
-            "'freq' not set in factor_data index: assuming business day",
-            UserWarning,
-        )
-
-    # Compute cumulative returns from daily simple returns, if '1D'
-    # returns are provided.
-    if "1D" in factor_returns:
-        title = (
-            "Factor Weighted "
-            + ("Group Neutral " if group_neutral else "")
-            + ("Long/Short " if long_short else "")
-            + "Portfolio Cumulative Return (1D Period)"
-        )
-
-        plotting.plot_cumulative_returns(
-            factor_returns["1D"], period="1D", title=title, ax=gf.next_row()
-        )
-
-        plotting.plot_cumulative_returns_by_quantile(
-            mean_quant_ret_bydate["1D"], period="1D", ax=gf.next_row()
-        )
-
-    ax_mean_quantile_returns_spread_ts = [gf.next_row() for x in range(fr_cols)]
-    plotting.plot_mean_quantile_returns_spread_time_series(
-        mean_ret_spread_quant,
-        std_err=std_spread_quant,
-        bandwidth=0.5,
-        ax=ax_mean_quantile_returns_spread_ts,
-    )
-
+    existing_figures = set(plt.get_fignums())
+    gf = None
     group_gf = None
+    completed = False
+    try:
+        factor_returns = perf.factor_returns(factor_data, long_short, group_neutral)
 
-    if by_group:
-        (
-            mean_return_quantile_group,
-            mean_return_quantile_group_std_err,
-        ) = perf.mean_return_by_quantile(
+        mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
             factor_data,
-            by_date=False,
-            by_group=True,
+            by_group=False,
             demeaned=long_short,
             group_adjust=group_neutral,
         )
 
-        mean_quant_rateret_group = mean_return_quantile_group.apply(
+        mean_quant_rateret = mean_quant_ret.apply(
+            utils.rate_of_return, axis=0, base_period=mean_quant_ret.columns[0]
+        )
+
+        mean_quant_ret_bydate, std_quant_daily = perf.mean_return_by_quantile(
+            factor_data,
+            by_date=True,
+            by_group=False,
+            demeaned=long_short,
+            group_adjust=group_neutral,
+        )
+
+        mean_quant_rateret_bydate = mean_quant_ret_bydate.apply(
             utils.rate_of_return,
             axis=0,
-            base_period=mean_return_quantile_group.columns[0],
+            base_period=mean_quant_ret_bydate.columns[0],
         )
 
-        num_groups = len(
-            mean_quant_rateret_group.index.get_level_values("group").unique()
+        compstd_quant_daily = std_quant_daily.apply(
+            utils.std_conversion, axis=0, base_period=std_quant_daily.columns[0]
         )
 
-        vertical_sections = 1 + (((num_groups - 1) // 2) + 1)
-        group_gf = GridFigure(rows=vertical_sections, cols=2)
+        alpha_beta = perf.factor_alpha_beta(
+            factor_data, factor_returns, long_short, group_neutral
+        )
 
-        ax_quantile_returns_bar_by_group = [
-            group_gf.next_cell() for _ in range(num_groups)
-        ]
+        mean_ret_spread_quant, std_spread_quant = perf.compute_mean_returns_spread(
+            mean_quant_rateret_bydate,
+            factor_data["factor_quantile"].max(),
+            factor_data["factor_quantile"].min(),
+            std_err=compstd_quant_daily,
+        )
+
+        fr_cols = len(factor_returns.columns)
+        vertical_sections = 2 + fr_cols * 3 + int(tables_as_figures)
+        gf = GridFigure(rows=vertical_sections, cols=1)
+
+        rtrns_tbl = plotting.plot_returns_table(
+            alpha_beta, mean_quant_rateret, mean_ret_spread_quant,
+            tables_as_figures=tables_as_figures,
+            ax=gf.next_row() if tables_as_figures else None,
+        )
+
         plotting.plot_quantile_returns_bar(
-            mean_quant_rateret_group,
-            by_group=True,
-            ylim_percentiles=(5, 95),
-            ax=ax_quantile_returns_bar_by_group,
+            mean_quant_rateret,
+            by_group=False,
+            ylim_percentiles=None,
+            ax=gf.next_row(),
         )
 
-    if save_file is not None:
-        if save_file.endswith(".pdf"):
-            with PdfPages(save_file) as pdf:
-                for fig_num in plt.get_fignums():
-                    fig = plt.figure(fig_num)
-                    # skip empty figure 1
-                    if fig.get_axes():
-                        pdf.savefig(fig, bbox_inches="tight")
-        else:
-            # Collect non-empty figures
-            valid_figs = [
-                plt.figure(num) for num in plt.get_fignums()
-                if plt.figure(num).get_axes()
+        plotting.plot_quantile_returns_violin(
+            mean_quant_rateret_bydate, ylim_percentiles=(1, 99), ax=gf.next_row()
+        )
+
+        trading_calendar = factor_data.index.levels[0].freq
+        if trading_calendar is None:
+            trading_calendar = pd.tseries.offsets.BDay()
+            warnings.warn(
+                "'freq' not set in factor_data index: assuming business day",
+                UserWarning,
+            )
+
+        # Compute cumulative returns from daily simple returns, if '1D'
+        # returns are provided.
+        if "1D" in factor_returns:
+            title = (
+                "Factor Weighted "
+                + ("Group Neutral " if group_neutral else "")
+                + ("Long/Short " if long_short else "")
+                + "Portfolio Cumulative Return (1D Period)"
+            )
+
+            plotting.plot_cumulative_returns(
+                factor_returns["1D"], period="1D", title=title, ax=gf.next_row()
+            )
+
+            plotting.plot_cumulative_returns_by_quantile(
+                mean_quant_ret_bydate["1D"], period="1D", ax=gf.next_row()
+            )
+
+        ax_mean_quantile_returns_spread_ts = [gf.next_row() for x in range(fr_cols)]
+        plotting.plot_mean_quantile_returns_spread_time_series(
+            mean_ret_spread_quant,
+            std_err=std_spread_quant,
+            bandwidth=0.5,
+            ax=ax_mean_quantile_returns_spread_ts,
+        )
+
+        if by_group:
+            (
+                mean_return_quantile_group,
+                mean_return_quantile_group_std_err,
+            ) = perf.mean_return_by_quantile(
+                factor_data,
+                by_date=False,
+                by_group=True,
+                demeaned=long_short,
+                group_adjust=group_neutral,
+            )
+
+            mean_quant_rateret_group = mean_return_quantile_group.apply(
+                utils.rate_of_return,
+                axis=0,
+                base_period=mean_return_quantile_group.columns[0],
+            )
+
+            num_groups = len(
+                mean_quant_rateret_group.index.get_level_values("group").unique()
+            )
+
+            vertical_sections = 1 + (((num_groups - 1) // 2) + 1)
+            group_gf = GridFigure(rows=vertical_sections, cols=2)
+
+            ax_quantile_returns_bar_by_group = [
+                group_gf.next_cell() for _ in range(num_groups)
             ]
+            plotting.plot_quantile_returns_bar(
+                mean_quant_rateret_group,
+                by_group=True,
+                ylim_percentiles=(5, 95),
+                ax=ax_quantile_returns_bar_by_group,
+            )
 
-            pil_images = []
-            for fig in valid_figs:
-                # Save figure to in-memory bytes with tight boundaries
-                buf = io.BytesIO()
-                fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
-                buf.seek(0)
-                pil_images.append(Image.open(buf))
+        if save_file is not None:
+            if save_file.endswith(".pdf"):
+                with PdfPages(save_file) as pdf:
+                    for fig_num in plt.get_fignums():
+                        if fig_num in existing_figures:
+                            continue
+                        fig = plt.figure(fig_num)
+                        # skip empty figure 1
+                        if fig.get_axes():
+                            pdf.savefig(fig, bbox_inches="tight")
+            else:
+                # Collect non-empty figures
+                valid_figs = [
+                    plt.figure(num) for num in plt.get_fignums()
+                    if num not in existing_figures and plt.figure(num).get_axes()
+                ]
 
-            if pil_images:
-                # Determine maximum canvas width needed
-                max_width = max(img.width for img in pil_images)
-                total_height = sum(img.height for img in pil_images)
+                pil_images = []
+                for fig in valid_figs:
+                    # Save figure to in-memory bytes with tight boundaries
+                    buf = io.BytesIO()
+                    fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
+                    buf.seek(0)
+                    pil_images.append(Image.open(buf))
 
-                # Create a clean white background canvas
-                combined_image = Image.new("RGB", (max_width, total_height), (255, 255, 255))
+                if pil_images:
+                    # Determine maximum canvas width needed
+                    max_width = max(img.width for img in pil_images)
+                    total_height = sum(img.height for img in pil_images)
 
-                # Paste each image centered horizontally
-                y_offset = 0
-                for img in pil_images:
-                    # Center-align narrower figures (like the table)
-                    x_offset = (max_width - img.width) // 2
-                    combined_image.paste(img, (x_offset, y_offset))
-                    y_offset += img.height
+                    # Create a clean white background canvas
+                    combined_image = Image.new("RGB", (max_width, total_height), (255, 255, 255))
 
-                # Save final stitched PNG
-                combined_image.save(save_file)
+                    # Paste each image centered horizontally
+                    y_offset = 0
+                    for img in pil_images:
+                        # Center-align narrower figures (like the table)
+                        x_offset = (max_width - img.width) // 2
+                        combined_image.paste(img, (x_offset, y_offset))
+                        y_offset += img.height
 
-        plt.close("all")
-    else:
-        plt.show()
+                    # Save final stitched PNG
+                    combined_image.save(save_file)
 
-    if group_gf is not None:
-        group_gf.close()
-    gf.close()
+        else:
+            plt.show()
 
-    return rtrns_tbl
+        completed = True
+        return rtrns_tbl
+    finally:
+        if save_file is not None or not completed:
+            for num in set(plt.get_fignums()) - existing_figures:
+                plt.close(num)
+        if gf is not None:
+            gf.close()
+        if group_gf is not None:
+            group_gf.close()
 
 
 @plotting.customize
-def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, return_df: bool= False, save_file=None):
+def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None):
     """
     Creates a tear sheet for information analysis of a factor.
 
@@ -411,98 +428,119 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
         If True, display graphs separately for each group.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
-    return_df : bool
-        If True, the function will return the information table as a DataFrame.
+    tables_as_figures : bool
+        If True (default), render summary tables in the tear sheet; otherwise display text.
+        Return a dictionary of Spearman and Pearson summary DataFrames in either mode.
     """
-    for ic_type in ["spearman", "pearson"]:
-        ic = perf.factor_information_coefficient(factor_data, group_neutral, ic_type=ic_type)
-        ic = ic.dropna()
-        ic_tbl = plotting.plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)
+    existing_figures = set(plt.get_fignums())
+    gf = None
+    completed = False
+    summaries = {}
+    try:
+        for ic_type in ["spearman", "pearson"]:
+            ic = perf.factor_information_coefficient(
+                factor_data, group_neutral, by_group=by_group, ic_type=ic_type
+            )
+            ic = ic.dropna()
+            summaries[ic_type] = plotting.plot_information_table(ic, tables_as_figures=tables_as_figures, ic_type=ic_type)
 
-    columns_wide = 2
-    fr_cols = len(ic.columns)
-    rows_when_wide = ((fr_cols - 1) // columns_wide) + 1
-    vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
-    gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+        if by_group:
+            # Time-series charts need one IC per date rather than a date/group index.
+            ic = perf.factor_information_coefficient(
+                factor_data, group_neutral, ic_type="pearson"
+            ).dropna()
 
-    ax_ic_ts = [gf.next_row() for _ in range(fr_cols)]
-    plotting.plot_ic_ts(ic, ax=ax_ic_ts)
+        columns_wide = 2
+        fr_cols = len(ic.columns)
+        rows_when_wide = ((fr_cols - 1) // columns_wide) + 1
+        vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
+        gf = GridFigure(rows=vertical_sections, cols=columns_wide)
 
-    ax_ic_hqq = [gf.next_cell() for _ in range(fr_cols * 2)]
-    plotting.plot_ic_hist(ic, ax=ax_ic_hqq[::2])
-    plotting.plot_ic_qq(ic, ax=ax_ic_hqq[1::2])
+        ax_ic_ts = [gf.next_row() for _ in range(fr_cols)]
+        plotting.plot_ic_ts(ic, ax=ax_ic_ts)
 
-    if not by_group:
+        ax_ic_hqq = [gf.next_cell() for _ in range(fr_cols * 2)]
+        plotting.plot_ic_hist(ic, ax=ax_ic_hqq[::2])
+        plotting.plot_ic_qq(ic, ax=ax_ic_hqq[1::2])
 
-        mean_monthly_ic = perf.mean_information_coefficient(
-            factor_data,
-            group_adjust=group_neutral,
-            by_group=False,
-            by_time="ME",
-        )
-        ax_monthly_ic_heatmap = [gf.next_cell() for x in range(fr_cols)]
-        plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ax=ax_monthly_ic_heatmap)
+        if not by_group:
 
-    if by_group:
-        mean_group_ic = perf.mean_information_coefficient(
-            factor_data, group_adjust=group_neutral, by_group=True
-        )
+            mean_monthly_ic = perf.mean_information_coefficient(
+                factor_data,
+                group_adjust=group_neutral,
+                by_group=False,
+                by_time="ME",
+            )
+            ax_monthly_ic_heatmap = [gf.next_cell() for x in range(fr_cols)]
+            plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ax=ax_monthly_ic_heatmap)
 
-        plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row())
+        if by_group:
+            mean_group_ic = perf.mean_information_coefficient(
+                factor_data, group_adjust=group_neutral, by_group=True
+            )
 
-    if save_file is not None:
-        if save_file.endswith(".pdf"):
-            with PdfPages(save_file) as pdf:
-                for fig_num in plt.get_fignums():
-                    fig = plt.figure(fig_num)
-                    # skip empty figure 1
-                    if fig.get_axes():
-                        pdf.savefig(fig, bbox_inches="tight")
+            plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row())
+
+        if save_file is not None:
+            if save_file.endswith(".pdf"):
+                with PdfPages(save_file) as pdf:
+                    for fig_num in plt.get_fignums():
+                        if fig_num in existing_figures:
+                            continue
+                        fig = plt.figure(fig_num)
+                        # skip empty figure 1
+                        if fig.get_axes():
+                            pdf.savefig(fig, bbox_inches="tight")
+            else:
+                # Collect non-empty figures
+                valid_figs = [
+                    plt.figure(num) for num in plt.get_fignums()
+                    if num not in existing_figures and plt.figure(num).get_axes()
+                ]
+
+                pil_images = []
+                for fig in valid_figs:
+                    # Save figure to in-memory bytes with tight boundaries
+                    buf = io.BytesIO()
+                    fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
+                    buf.seek(0)
+                    pil_images.append(Image.open(buf))
+
+                if pil_images:
+                    # Determine maximum canvas width needed
+                    max_width = max(img.width for img in pil_images)
+                    total_height = sum(img.height for img in pil_images)
+
+                    # Create a clean white background canvas
+                    combined_image = Image.new("RGB", (max_width, total_height), (255, 255, 255))
+
+                    # Paste each image centered horizontally
+                    y_offset = 0
+                    for img in pil_images:
+                        # Center-align narrower figures (like the table)
+                        x_offset = (max_width - img.width) // 2
+                        combined_image.paste(img, (x_offset, y_offset))
+                        y_offset += img.height
+
+                    # Save final stitched PNG
+                    combined_image.save(save_file)
+
         else:
-            # Collect non-empty figures
-            valid_figs = [
-                plt.figure(num) for num in plt.get_fignums()
-                if plt.figure(num).get_axes()
-            ]
+            plt.show()
 
-            pil_images = []
-            for fig in valid_figs:
-                # Save figure to in-memory bytes with tight boundaries
-                buf = io.BytesIO()
-                fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
-                buf.seek(0)
-                pil_images.append(Image.open(buf))
-
-            if pil_images:
-                # Determine maximum canvas width needed
-                max_width = max(img.width for img in pil_images)
-                total_height = sum(img.height for img in pil_images)
-
-                # Create a clean white background canvas
-                combined_image = Image.new("RGB", (max_width, total_height), (255, 255, 255))
-
-                # Paste each image centered horizontally
-                y_offset = 0
-                for img in pil_images:
-                    # Center-align narrower figures (like the table)
-                    x_offset = (max_width - img.width) // 2
-                    combined_image.paste(img, (x_offset, y_offset))
-                    y_offset += img.height
-
-                # Save final stitched PNG
-                combined_image.save(save_file)
-
-        plt.close("all")
-    else:
-        plt.show()
-    gf.close()
-
-    return ic_tbl
+        completed = True
+        return summaries
+    finally:
+        if save_file is not None or not completed:
+            for num in set(plt.get_fignums()) - existing_figures:
+                plt.close(num)
+        if gf is not None:
+            gf.close()
 
 
 @plotting.customize
 def create_turnover_tear_sheet(
-        factor_data, turnover_periods=None, return_df=False, save_file=None, as_figure=False):
+        factor_data, turnover_periods=None, tables_as_figures=True, save_file=None):
     """
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -525,87 +563,99 @@ def create_turnover_tear_sheet(
         If specified, the tear sheet will be saved to this file. If the file
         extension is ".pdf", the tear sheet will be saved as a PDF. Otherwise,
         it will be saved as an image file.
-    as_figure : bool, optional
-        Include the turnover summary table above the charts, including in
-        saved images and PDFs. Defaults to False (display the table as text).
-        When True, the table is rendered regardless of ``return_df``.
+    tables_as_figures : bool
+        If True (default), render summary tables in the tear sheet; otherwise display text.
+        Both summary DataFrames are returned in either mode.
     """
 
-    if turnover_periods is None:
-        input_periods = utils.get_forward_returns_columns(
-            factor_data.columns, require_exact_day_multiple=True
-        ).to_numpy()
-        turnover_periods = utils.timedelta_strings_to_integers(input_periods)
-    else:
-        turnover_periods = utils.timedelta_strings_to_integers(turnover_periods)
+    existing_figures = set(plt.get_fignums())
+    gf = None
+    completed = False
+    try:
+        if turnover_periods is None:
+            input_periods = utils.get_forward_returns_columns(
+                factor_data.columns, require_exact_day_multiple=True
+            ).to_numpy()
+            turnover_periods = utils.timedelta_strings_to_integers(input_periods)
+        else:
+            turnover_periods = utils.timedelta_strings_to_integers(turnover_periods)
 
-    quantile_factor = factor_data["factor_quantile"]
+        quantile_factor = factor_data["factor_quantile"]
 
-    quantile_turnover = {
-        p: pd.concat(
+        quantile_turnover = {
+            p: pd.concat(
+                [
+                    perf.quantile_turnover(quantile_factor, q, p)
+                    for q in quantile_factor.sort_values().unique().tolist()
+                ],
+                axis=1,
+            )
+            for p in turnover_periods
+        }
+
+        autocorrelation = pd.concat(
             [
-                perf.quantile_turnover(quantile_factor, q, p)
-                for q in quantile_factor.sort_values().unique().tolist()
+                perf.factor_rank_autocorrelation(factor_data, period)
+                for period in turnover_periods
             ],
             axis=1,
         )
-        for p in turnover_periods
-    }
 
-    autocorrelation = pd.concat(
-        [
-            perf.factor_rank_autocorrelation(factor_data, period)
-            for period in turnover_periods
-        ],
-        axis=1,
-    )
+        if not tables_as_figures:
+            summaries = plotting.plot_turnover_table(autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures)
 
-    if not as_figure:
-        plotting.plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df, as_figure=as_figure)
+        fr_cols = len(turnover_periods)
+        columns_wide = 1
+        rows_when_wide = ((fr_cols - 1) // 1) + 1
+        vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
+        if tables_as_figures:
+            vertical_sections += 1
+        gf = GridFigure(rows=vertical_sections, cols=columns_wide)
 
-    fr_cols = len(turnover_periods)
-    columns_wide = 1
-    rows_when_wide = ((fr_cols - 1) // 1) + 1
-    vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
-    if as_figure:
-        vertical_sections += 1
-    gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+        if tables_as_figures:
+            summaries = plotting.plot_turnover_table(
+                autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures, ax=gf.next_row()
+            )
 
-    if as_figure:
-        plotting.plot_turnover_table(
-            autocorrelation, quantile_turnover, return_df=return_df, as_figure=as_figure, ax=gf.next_row()
-        )
+        for period in turnover_periods:
+            if quantile_turnover[period].isnull().all().all():
+                continue
+            plotting.plot_top_bottom_quantile_turnover(
+                quantile_turnover[period], period=period, ax=gf.next_row()
+            )
 
-    for period in turnover_periods:
-        if quantile_turnover[period].isnull().all().all():
-            continue
-        plotting.plot_top_bottom_quantile_turnover(
-            quantile_turnover[period], period=period, ax=gf.next_row()
-        )
+        for period in autocorrelation:
+            if autocorrelation[period].isnull().all():
+                continue
+            plotting.plot_factor_rank_auto_correlation(
+                autocorrelation[period], period=period, ax=gf.next_row()
+            )
 
-    for period in autocorrelation:
-        if autocorrelation[period].isnull().all():
-            continue
-        plotting.plot_factor_rank_auto_correlation(
-            autocorrelation[period], period=period, ax=gf.next_row()
-        )
-
-    if save_file is not None:
-        if save_file.endswith(".pdf"):
-            with PdfPages(save_file) as pdf:
-                for fig_num in plt.get_fignums():
-                    pdf.savefig(plt.figure(fig_num), bbox_inches="tight")
+        if save_file is not None:
+            if save_file.endswith(".pdf"):
+                with PdfPages(save_file) as pdf:
+                    for fig_num in plt.get_fignums():
+                        if fig_num in existing_figures:
+                            continue
+                        pdf.savefig(plt.figure(fig_num), bbox_inches="tight")
+            else:
+                gf.fig.savefig(save_file, bbox_inches="tight")
         else:
-            plt.savefig(save_file, bbox_inches="tight")
-        plt.close("all")
-    else:
-        plt.show()
-    gf.close()
+            plt.show()
+
+        completed = True
+        return summaries
+    finally:
+        if save_file is not None or not completed:
+            for num in set(plt.get_fignums()) - existing_figures:
+                plt.close(num)
+        if gf is not None:
+            gf.close()
 
 
 @plotting.customize
 def create_full_tear_sheet(
-    factor_data, long_short=True, group_neutral=False, by_group=False
+    factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True
 ):
     """
     Creates a full tear sheet for analysis and evaluating single
@@ -635,12 +685,12 @@ def create_full_tear_sheet(
 
     plotting.plot_quantile_statistics_table(factor_data)
     create_returns_tear_sheet(
-        factor_data, long_short, group_neutral, by_group, set_context=False
+        factor_data, long_short, group_neutral, by_group, tables_as_figures=tables_as_figures, set_context=False
     )
     create_information_tear_sheet(
-        factor_data, group_neutral, by_group, set_context=False
+        factor_data, group_neutral, by_group, tables_as_figures=tables_as_figures, set_context=False
     )
-    create_turnover_tear_sheet(factor_data, set_context=False)
+    create_turnover_tear_sheet(factor_data, tables_as_figures=tables_as_figures, set_context=False)
 
 
 @plotting.customize

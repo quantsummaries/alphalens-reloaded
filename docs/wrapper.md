@@ -33,7 +33,7 @@ Whatever `func` returns.
 
 ## Workflow wrappers
 
-### `return_analysis_wrapper(data, long_short=True, group_neutral=False, by_group=False, tear_sheet_filepath=None)`
+### `return_analysis_wrapper(data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None)`
 Run return-oriented analysis and optionally save a return tear sheet.
 
 **Arguments**
@@ -61,7 +61,7 @@ A dictionary with:
 
 ---
 
-### `information_analysis_wrapper(data, group_neutral=False, by_group=False, tear_sheet_filepath=None)`
+### `information_analysis_wrapper(data, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None)`
 Run IC analysis under both Spearman and Pearson definitions and optionally save an information tear sheet.
 
 **Arguments**
@@ -74,7 +74,7 @@ Run IC analysis under both Spearman and Pearson definitions and optionally save 
 
 - Computes daily IC via `performance.factor_information_coefficient(..., ic_type="spearman")`.
 - Computes daily IC via `performance.factor_information_coefficient(..., ic_type="pearson")`.
-- Summarizes each IC table via `plotting.plot_information_table(..., as_figure=False, return_df=True)`.
+- Summarizes each IC table via `plotting.plot_information_table(..., tables_as_figures=tables_as_figures)`.
 - IC autocorrelation-adjusted diagnostics are added inside `plotting.plot_information_table(...)`, which calls `utils.ic_autocor_adj(ic_data, lag=1)` before returning the summary table.
 - Optionally saves an information tear sheet when filepath is provided.
 
@@ -89,7 +89,7 @@ Each value is a `DataFrame` containing summary statistics and lag-1 autocorrelat
 
 ---
 
-### `turnover_analysis_wrapper(data, turnover_period, period_unit, tear_sheet_filepath=None)`
+### `turnover_analysis_wrapper(data, turnover_period, period_unit, tables_as_figures=True, tear_sheet_filepath=None)`
 Run turnover diagnostics and optionally save a turnover tear sheet.
 
 **Arguments**
@@ -114,7 +114,7 @@ A dictionary with:
 
 ---
 
-### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D")`
+### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True)`
 Wrapper for alphalens full tear sheet function.
 
 **Arguments**
@@ -193,3 +193,9 @@ full = alphalens.wrapper.full_tear_sheet_wrapper(
 - The wrappers prioritize convenience over configurability while still exposing the main analysis flags (`long_short`, `group_neutral`, `by_group`) in wrapper APIs.
 - `tear_sheet_filepath` is optional in practice: when falsey (for example `None` or empty string), wrappers skip saving.
 - This module is imported at package level, so wrappers are available as `alphalens.wrapper`.
+
+## Table display
+
+All analysis wrappers and `full_tear_sheet_wrapper` accept `tables_as_figures=True` by default. True renders tables in the tear sheet (or standalone figures when no output path is supplied) and suppresses text tables. False prints text tables and omits table figures. Analysis DataFrames are returned in both modes. The full wrapper forwards the same choice to all three analyses.
+
+Use `tables_as_figures=False` for text tables, or `tables_as_figures=True` for table figures. This replaces the former `return_df` and `as_figure` keyword arguments; existing callers must migrate to the new parameter.

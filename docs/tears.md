@@ -27,7 +27,7 @@ Utility class for managing matplotlib grid-based subplot layouts with automatic 
 
 All tear sheet functions are decorated with `@plotting.customize` to apply consistent styling automatically. The `set_context=False` parameter can be passed to any tear sheet to skip the decorator.
 
-### `create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False)`
+### `create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False, tables_as_figures=True)`
 Generate a compact tear sheet with key returns, information, and turnover statistics.
 
 **Behavior**
@@ -45,7 +45,7 @@ Displays a matplotlib figure with the complete summary.
 
 ---
 
-### `create_returns_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, return_df=False, save_file=None)`
+### `create_returns_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None)`
 Detailed tear sheet focused on returns analysis by factor quantile.
 
 **Behavior**
@@ -66,16 +66,16 @@ Detailed tear sheet focused on returns analysis by factor quantile.
 - `long_short` — Enable long-short demeaning for dollar-neutral analysis.
 - `group_neutral` — Normalize weights and returns across groups.
 - `by_group` — Create separate visualizations per group.
-- `return_df` — Return the returns summary table as a `DataFrame` instead of only printing it.
+- `tables_as_figures` — Render summary tables in the tear sheet when `True` (default); otherwise display text tables and omit table figures.
 - `save_file` — Output path for saving all generated plots.
 
 **Returns**
 
-Returns the summary returns table when `return_df=True`; otherwise returns `None` after rendering/saving figures.
+Always returns the returns summary `DataFrame`, independently of table display.
 
 ---
 
-### `create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, return_df=False, save_file=None)`
+### `create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None)`
 Tear sheet focused on Information Coefficient (IC) analysis.
 
 **Behavior**
@@ -136,16 +136,16 @@ create_information_tear_sheet(factor_data, group_neutral, by_group, ...)
 
 - `group_neutral` — Demean forward returns by group before computing IC.
 - `by_group` — Separate analysis by asset group.
-- `return_df` — Forwarded to the IC table helper; currently not exposed as a returned DataFrame by this tear-sheet function.
+- `tables_as_figures` — Render summary tables in the tear sheet when `True` (default); otherwise display text tables and omit table figures.
 - `save_file` — Output path for saving generated plots.
 
 **Returns**
 
-Returns the summary-table figure handle created by `plot_information_table(...)`, and displays/saves the rest of the tear-sheet plots.
+Always returns a dictionary of summary DataFrames keyed by `"spearman"` and `"pearson"`, independently of table display.
 
 ---
 
-### `create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=False, save_file=None)`
+### `create_turnover_tear_sheet(factor_data, turnover_periods=None, tables_as_figures=True, save_file=None)`
 Tear sheet analyzing factor turnover and rank stability.
 
 **Behavior**
@@ -160,16 +160,16 @@ Tear sheet analyzing factor turnover and rank stability.
 **Parameters**
 
 - `turnover_periods` — Custom periods for turnover analysis. If not provided, uses exact day multiples from `factor_data`.
-- `return_df` — Forwarded to `plot_turnover_table(...)` for table generation.
+- `tables_as_figures` — Render summary tables in the tear sheet when `True` (default); otherwise display text tables and omit table figures.
 - `save_file` — Output path for saving generated plots.
 
 **Returns**
 
-Displays or saves turnover figures; this function does not currently return the turnover tables.
+Always returns `(turnover_table, auto_corr)` summary DataFrames, independently of table display.
 
 ---
 
-### `create_full_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False)`
+### `create_full_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True)`
 Comprehensive tear sheet combining all analysis perspectives.
 
 **Behavior**
@@ -298,3 +298,5 @@ create_full_tear_sheet(factor_data, long_short=True, group_neutral=False)
 - The `by_group` parameter enables side-by-side or panel analysis when asset groups are present.
 - For large datasets or many forward-return periods, tear sheets can take time to render; `create_summary_tear_sheet()` is faster for quick feedback.
 - All plotting occurs within the tear sheet functions; call `plt.show()` or allow the Jupyter kernel to display results automatically.
+
+Returns, information, and turnover exports include and close only figures created by the current call. Existing caller figures are preserved, including when plotting or export fails. The former `return_df` and `as_figure` arguments are replaced by `tables_as_figures`. Summary and full tear sheets forward this flag to their analysis tables.
