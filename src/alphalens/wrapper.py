@@ -90,6 +90,9 @@ def return_analysis_wrapper(data: pd.DataFrame,
             alpha_beta, mean_quant_rateret, spread, tables_as_figures=tables_as_figures
         )
 
+    return {'mean_return_by_q': mean_return_by_q,
+            'std_err_by_q': std_err_by_q}
+
 def information_analysis_wrapper(data: pd.DataFrame,
                                  group_neutral: bool = False,
                                  by_group: bool = False,
