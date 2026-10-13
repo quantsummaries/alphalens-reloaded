@@ -501,7 +501,8 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
 
 
 @plotting.customize
-def create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=False, save_file=None):
+def create_turnover_tear_sheet(
+        factor_data, turnover_periods=None, return_df=False, save_file=None, as_figure=False):
     """
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -524,6 +525,10 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=Fal
         If specified, the tear sheet will be saved to this file. If the file
         extension is ".pdf", the tear sheet will be saved as a PDF. Otherwise,
         it will be saved as an image file.
+    as_figure : bool, optional
+        Include the turnover summary table above the charts, including in
+        saved images and PDFs. Defaults to False (display the table as text).
+        When True, the table is rendered regardless of ``return_df``.
     """
 
     if turnover_periods is None:
@@ -555,13 +560,21 @@ def create_turnover_tear_sheet(factor_data, turnover_periods=None, return_df=Fal
         axis=1,
     )
 
-    plotting.plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)
+    if not as_figure:
+        plotting.plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df, as_figure=as_figure)
 
     fr_cols = len(turnover_periods)
     columns_wide = 1
     rows_when_wide = ((fr_cols - 1) // 1) + 1
     vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
+    if as_figure:
+        vertical_sections += 1
     gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+
+    if as_figure:
+        plotting.plot_turnover_table(
+            autocorrelation, quantile_turnover, return_df=return_df, as_figure=as_figure, ax=gf.next_row()
+        )
 
     for period in turnover_periods:
         if quantile_turnover[period].isnull().all().all():

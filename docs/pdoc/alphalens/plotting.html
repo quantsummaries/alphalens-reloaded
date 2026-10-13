@@ -741,9 +741,13 @@ average for a given factor.</p>
     ic_summary_table[&#34;IC Skew&#34;] = stats.skew(ic_data)
     ic_summary_table[&#34;IC Kurtosis&#34;] = stats.kurtosis(ic_data)
 
+    # Ljung-Box test for autocorrelation and Newey-West adjusted t-statistic for IC
+    ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=1)
+    ic_summary_table = pd.concat([ic_summary_table, ic_supplements_df.T], axis=1)
+
     # Create a Matplotlib figure so `plt.get_fignums()` captures it
     if as_figure:
-        fig, ax = plt.subplots(figsize=(8, 2))
+        fig, ax = plt.subplots(figsize=(8, 3))
         ax.axis(&#34;off&#34;)
         ax.axis(&#34;tight&#34;)
         table_data = ic_summary_table.T.map(lambda x: f&#34;{x:.3f}&#34;)
@@ -758,7 +762,7 @@ average for a given factor.</p>
         table.auto_set_font_size(False)
         table.set_fontsize(9)
         table.scale(1.2, 1.2)
-        ax.set_title(&#34;Information Analysis Summary&#34;, fontweight=&#34;bold&#34;, pad=10)
+        ax.set_title(f&#34;Information Analysis Summary ({ic_type})&#34;, fontweight=&#34;bold&#34;, pad=10)
         return fig
 
     if return_df:
@@ -1160,7 +1164,7 @@ performance.average_cumulative_return_by_quantile</dd>
             )
             ax = ax.flatten()
 
-        for a, (sc, cor) in zip(ax, mean_ret_by_q.groupby(level=&#34;group&#34;)):
+        for a, (sc, cor) in zip(ax, mean_ret_by_q.groupby(level=&#34;group&#34;, observed=True)):
             (
                 cor.xs(sc, level=&#34;group&#34;)
                 .multiply(DECIMAL_TO_BPS)

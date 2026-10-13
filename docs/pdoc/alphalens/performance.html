@@ -831,7 +831,7 @@ Benchmark returns computed as the factor universe mean daily returns.</p></div>
 </dl></div>
 </dd>
 <dt id="alphalens.performance.factor_alpha_beta"><code class="name flex">
-<span>def <span class="ident">factor_alpha_beta</span></span>(<span>factor_data, returns=None, demeaned=True, group_adjust=False, equal_weight=False)</span>
+<span>def <span class="ident">factor_alpha_beta</span></span>(<span>factor_data: pandas.core.frame.DataFrame,<br>returns: pandas.core.frame.DataFrame | pandas.core.series.Series | None = None,<br>demeaned: bool = True,<br>group_adjust: bool = False,<br>equal_weight: bool = False) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -839,12 +839,12 @@ Benchmark returns computed as the factor universe mean daily returns.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def factor_alpha_beta(
-    factor_data,
-    returns=None,
-    demeaned=True,
-    group_adjust=False,
-    equal_weight=False,
-):
+    factor_data: pd.DataFrame,
+    returns: Optional[Union[pd.DataFrame, pd.Series]] = None,
+    demeaned: bool = True,
+    group_adjust: bool = False,
+    equal_weight: bool = False,
+) -&gt; pd.DataFrame:
     &#34;&#34;&#34;
     Compute the alpha (excess returns), alpha t-stat (alpha significance),
     and beta (market exposure) of a factor. A regression is run with
@@ -1097,9 +1097,13 @@ are used</dd>
         (optionally) the group the asset belongs to.
         - See full explanation in utils.get_clean_factor_and_forward_returns
     group_adjust : bool
-        Demean forward returns by group before computing IC.
+        Demean forward returns by group before computing IC, so that the result reflects factor skill beyond group-level
+        effects and ICs across groups can be compared. Defaults to False as forward returns are often residual returns,
+        which are already group-neutral.
     by_group : bool
-        If True, compute period wise IC separately for each group.
+        Whether to compute IC statistics separately for each group instead of only one pooled summary
+        across all assets. It does not change the IC computation method; it changes how results are broken out and
+        displayed. Defaults to False unless the factor data has the &#39;group&#39; column.
     ic_type : str
         Type of information coefficient to compute (&#34;spearman&#34; or &#34;pearson&#34;).
 
@@ -1107,7 +1111,7 @@ are used</dd>
     -------
     ic : pd.DataFrame
         Spearman Rank correlation or Pearson correlation between factor and
-        provided forward returns.
+        provided forward returns; indexed by &#39;date&#39; with columns like &#39;1D&#39;, &#39;2D&#39;, etc..
     &#34;&#34;&#34;
 
     def src_ic(group):
@@ -1137,9 +1141,9 @@ are used</dd>
         grouper.append(&#34;group&#34;)
 
     if ic_type == &#34;spearman&#34;:
-        ic = factor_data.groupby(grouper, observed=True).apply(src_ic)
+        ic = factor_data.groupby(grouper, observed=True).apply(src_ic, include_groups=False)
     elif ic_type == &#34;pearson&#34;:
-        ic = factor_data.groupby(grouper, observed=True).apply(src_ic_pearson)
+        ic = factor_data.groupby(grouper, observed=True).apply(src_ic_pearson, include_groups=False)
     else:
         raise ValueError(&#34;Invalid information coefficient type. Use &#39;spearman&#39; or &#39;pearson&#39;.&#34;)
 
@@ -1159,9 +1163,13 @@ each period, the factor quantile/bin that factor value belongs to, and
 (optionally) the group the asset belongs to.
 - See full explanation in utils.get_clean_factor_and_forward_returns</dd>
 <dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Demean forward returns by group before computing IC.</dd>
+<dd>Demean forward returns by group before computing IC, so that the result reflects factor skill beyond group-level
+effects and ICs across groups can be compared. Defaults to False as forward returns are often residual returns,
+which are already group-neutral.</dd>
 <dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True, compute period wise IC separately for each group.</dd>
+<dd>Whether to compute IC statistics separately for each group instead of only one pooled summary
+across all assets. It does not change the IC computation method; it changes how results are broken out and
+displayed. Defaults to False unless the factor data has the 'group' column.</dd>
 <dt><strong><code>ic_type</code></strong> :&ensp;<code>str</code></dt>
 <dd>Type of information coefficient to compute ("spearman" or "pearson").</dd>
 </dl>
@@ -1169,7 +1177,7 @@ each period, the factor quantile/bin that factor value belongs to, and
 <dl>
 <dt><strong><code>ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
 <dd>Spearman Rank correlation or Pearson correlation between factor and
-provided forward returns.</dd>
+provided forward returns; indexed by 'date' with columns like '1D', '2D', etc..</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.performance.factor_positions"><code class="name flex">
@@ -1437,7 +1445,7 @@ factor values.</dd>
         Control how to build factor weights
         -- see performance.factor_weights for a full explanation
     by_asset: bool, optional
-        If True, returns are reported separately for each esset.
+        If True, returns are reported separately for each asset.
 
     Returns
     -------
@@ -1482,7 +1490,7 @@ each period, the factor quantile/bin that factor value belongs to, and
 <dd>Control how to build factor weights
 &ndash; see performance.factor_weights for a full explanation</dd>
 <dt><strong><code>by_asset</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>If True, returns are reported separately for each esset.</dd>
+<dd>If True, returns are reported separately for each asset.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -1502,7 +1510,7 @@ each period, the factor quantile/bin that factor value belongs to, and
     &#34;&#34;&#34;
     Computes asset weights by factor values and dividing by the sum of their
     absolute value (achieving gross leverage of 1). Positive factor values will
-    results in positive weights and negative values in negative weights.
+    result in positive weights and negative values in negative weights.
 
     Parameters
     ----------
@@ -1517,7 +1525,7 @@ each period, the factor quantile/bin that factor value belongs to, and
         weights are computed by demeaning factor values and dividing by the sum
         of their absolute value (achieving gross leverage of 1). The sum of
         positive weights will be the same as the negative weights (absolute
-        value), suitable for a dollar neutral long-short portfolio
+        value), suitable for a dollar neutral long-short portfolio. Defaults to True.
     group_adjust : bool
         Should this computation happen on a group neutral portfolio? If True,
         compute group neutral weights: each group will weight the same and
@@ -1578,7 +1586,7 @@ each period, the factor quantile/bin that factor value belongs to, and
 </details>
 <div class="desc"><p>Computes asset weights by factor values and dividing by the sum of their
 absolute value (achieving gross leverage of 1). Positive factor values will
-results in positive weights and negative values in negative weights.</p>
+result in positive weights and negative values in negative weights.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
@@ -1592,7 +1600,7 @@ each period, the factor quantile/bin that factor value belongs to, and
 weights are computed by demeaning factor values and dividing by the sum
 of their absolute value (achieving gross leverage of 1). The sum of
 positive weights will be the same as the negative weights (absolute
-value), suitable for a dollar neutral long-short portfolio</dd>
+value), suitable for a dollar neutral long-short portfolio. Defaults to True.</dd>
 <dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Should this computation happen on a group neutral portfolio? If True,
 compute group neutral weights: each group will weight the same and
@@ -1626,7 +1634,7 @@ with negative weights</dd>
     Answers questions like:
     What is the mean IC for each month?
     What is the mean IC for each group for our whole timerange?
-    What is the mean IC for for each group, each week?
+    What is the mean IC for each group, each week?
 
     Parameters
     ----------
@@ -1672,7 +1680,7 @@ with negative weights</dd>
 Answers questions like:
 What is the mean IC for each month?
 What is the mean IC for each group for our whole timerange?
-What is the mean IC for for each group, each week?</p>
+What is the mean IC for each group, each week?</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
@@ -1727,11 +1735,14 @@ forward price movement windows.</dd>
     by_date : bool
         If True, compute quantile bucket returns separately for each date.
     by_group : bool
-        If True, compute quantile bucket returns separately for each group.
+        If True, compute quantile bucket returns separately for each group. Defaults to False unless the factor data
+        has the &#39;group&#39; column.
     demeaned : bool
-        Compute demeaned mean returns (long short portfolio)
+        Compute demeaned mean returns across the entire universe per date (long short portfolio). Defaults to True.
     group_adjust : bool
-        Returns demeaning will occur on the group level.
+        Returns demeaning will occur on the group level. When this flag is True, forward return demeaning occurs, at
+        group level, regardless the value of &#39;demean&#39; flag. Defaults to False unless the factor data has the &#39;group&#39;
+        column.
 
     Returns
     -------
@@ -1742,6 +1753,8 @@ forward price movement windows.</dd>
     &#34;&#34;&#34;
 
     if group_adjust:
+        if &#34;group&#34; not in factor_data.columns:
+            raise ValueError(&#34;group_adjust=True requires a &#39;group&#39; column in factor_data&#34;)
         grouper = [factor_data.index.get_level_values(&#34;date&#34;)] + [&#34;group&#34;]
         factor_data = utils.demean_forward_returns(factor_data, grouper)
     elif demeaned:
@@ -1749,9 +1762,13 @@ forward price movement windows.</dd>
     else:
         factor_data = factor_data.copy()
 
+    if &#34;factor_quantile&#34; not in factor_data.columns:
+        raise ValueError(&#34;factor_data must contain a &#39;factor_quantile&#39; column&#34;)
     grouper = [&#34;factor_quantile&#34;, factor_data.index.get_level_values(&#34;date&#34;)]
 
     if by_group:
+        if &#34;group&#34; not in factor_data.columns:
+            raise ValueError(&#34;by_group=True requires a &#39;group&#39; column in factor_data&#34;)
         grouper.append(&#34;group&#34;)
 
     group_stats = factor_data.groupby(grouper, observed=True)[
@@ -1764,7 +1781,7 @@ forward price movement windows.</dd>
         grouper = [mean_ret.index.get_level_values(&#34;factor_quantile&#34;)]
         if by_group:
             grouper.append(mean_ret.index.get_level_values(&#34;group&#34;))
-        group_stats = mean_ret.groupby(grouper).agg([&#34;mean&#34;, &#34;std&#34;, &#34;count&#34;])
+        group_stats = mean_ret.groupby(grouper, observed=True).agg([&#34;mean&#34;, &#34;std&#34;, &#34;count&#34;])
         mean_ret = group_stats.T.xs(&#34;mean&#34;, level=1).T
 
     std_error_ret = group_stats.T.xs(&#34;std&#34;, level=1).T / np.sqrt(
@@ -1786,11 +1803,14 @@ each period, the factor quantile/bin that factor value belongs to, and
 <dt><strong><code>by_date</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True, compute quantile bucket returns separately for each date.</dd>
 <dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True, compute quantile bucket returns separately for each group.</dd>
+<dd>If True, compute quantile bucket returns separately for each group. Defaults to False unless the factor data
+has the 'group' column.</dd>
 <dt><strong><code>demeaned</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Compute demeaned mean returns (long short portfolio)</dd>
+<dd>Compute demeaned mean returns across the entire universe per date (long short portfolio). Defaults to True.</dd>
 <dt><strong><code>group_adjust</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Returns demeaning will occur on the group level.</dd>
+<dd>Returns demeaning will occur on the group level. When this flag is True, forward return demeaning occurs, at
+group level, regardless the value of 'demean' flag. Defaults to False unless the factor data has the 'group'
+column.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>

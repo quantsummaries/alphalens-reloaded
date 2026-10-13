@@ -62,67 +62,175 @@ el.replaceWith(d);
 </details>
 <div class="desc"><p>Filters kwargs to only those accepted by func, keeping all positional args.</p></div>
 </dd>
-<dt id="alphalens.wrapper.ic_autocor_adj"><code class="name flex">
-<span>def <span class="ident">ic_autocor_adj</span></span>(<span>daily_ic: pandas.core.frame.DataFrame, lag: int = 5) ‑> pandas.core.frame.DataFrame</span>
+<dt id="alphalens.wrapper.full_tear_sheet_wrapper"><code class="name flex">
+<span>def <span class="ident">full_tear_sheet_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame,<br>factors: list[str],<br>fwd_rtrn_cols: list[str],<br>output_dir: str,<br>long_short: bool = True,<br>group_neutral: bool = False,<br>by_group: bool = False,<br>turnover_period: int = 1,<br>period_unit: str = 'D') ‑> dict[str, pandas.core.frame.DataFrame]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -&gt; pd.DataFrame:
-    &#34;&#34;&#34;Adjusts the standard error of the information coefficient (IC) for autocorrelation.
-
+<pre><code class="python">def full_tear_sheet_wrapper(data: pd.DataFrame,
+                            factors: list[str],
+                            fwd_rtrn_cols: list[str],
+                            output_dir: str,
+                            long_short: bool = True,
+                            group_neutral: bool = False,
+                            by_group: bool = False,
+                            turnover_period: int = 1,
+                            period_unit: str = &#39;D&#39;) -&gt; dict[str, pd.DataFrame]:
+    &#34;&#34;&#34;Wrapper for alphalens full tear sheet function.
     Args:
-        daily_ic (pd.DataFrame): DataFrame (indexed by &#39;date&#39;) containing the daily IC values in columns.
-        lag (int): Number of lags to consider for the Ljung-Box test. Default is 5.
-
+        data (pd.DataFrame): Factor data in the format expected by alphalens, with &#39;date&#39; and &#39;asset&#39; in the columns.
+        factors (list[str]): List of factor column names to analyze.
+        fwd_rtrn_cols (list[str]): List of forward return column names to analyze.
+        output_dir (str): Directory to save the tear sheets. Each factor will have its own subdirectory.
+        long_short (bool, optional): Whether to perform long-short analysis. When True, returns are demeaned across
+            the full universe so the tear sheet evaluates a long/short factor portfolio rather than a raw long-only one.
+            This affects the calculation of return-based statistics, and usually the labeling/presentation too.
+            Additionally, long_short -&gt; demeaned in factor_weights(...) -&gt; changes whether factor values are demeaned
+            before normalization. Defaults to True.
+        group_neutral (bool, optional): Demean forward returns by group before computing IC, so that the result reflects factor
+            skill beyond group-level effects and ICs across groups can be compared. Defaults to False as forward
+            returns are often residual returns, which are already group-neutral. Additionally,
+            group_neutral -&gt; group_adjust in factor_weights(...) -&gt; changes whether weights are built/normalized in a
+            group-neutral way. Defaults to False.
+        by_group (bool, optional): Whether to compute IC statistics separately for each group instead of only one pooled summary
+            across all assets. It does not change the IC computation method; it changes how results are broken out and
+            displayed. Defaults to False.
+        turnover_period (int, optional): Number of periods for turnover analysis. Defaults to 1.
+        period_unit (str, optional): Unit of time for turnover analysis. Defaults to &#39;D&#39;.
     Returns:
-        pd.DataFrame: DataFrame with adjusted standard errors for the IC.
+        dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     &#34;&#34;&#34;
-    results = []
-    for col in daily_ic.columns:
-        ic_series = daily_ic[col].dropna()
+    result = {}
 
-        # Ljung-Box test for lag-n autocorrelation
-        lag_autocorr = ic_series.autocorr(lag=lag)
-        lb_test = acorr_ljungbox(ic_series, lags=[lag], return_df=True)
-        lb_pvalue = lb_test[&#39;lb_pvalue&#39;].values[0]
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
 
-        # Newey-West adjusted t-statistic for mean IC (accounts for autocorrelation): regression of IC on a constant
-        X = sm.add_constant(np.ones(len(ic_series)))
-        model = sm.OLS(ic_series, X).fit(cov_type=&#39;HAC&#39;, cov_kwds={&#39;maxlags&#39;: lag})
-        nw_tstat = model.tvalues.iloc[0]
-        nw_pvalue = model.pvalues.iloc[0]
+    if &#39;date&#39; not in data.columns or &#39;asset&#39; not in data.columns:
+        raise ValueError(&#34;Data must contain &#39;date&#39; and &#39;asset&#39; columns.&#34;)
 
-        results.append(
-            {
-                &#39;horizon&#39;: col,
-                f&#39;lag{lag}_autocorr&#39;: lag_autocorr,
-                &#39;lb_pvalue&#39;: lb_pvalue,
-                &#39;nw_tstat&#39;: nw_tstat,
-                &#39;nw_pvalue&#39;: nw_pvalue
-            }
-        )
+    data = data.set_index([&#39;date&#39;, &#39;asset&#39;]).sort_index()
 
-    return pd.DataFrame(results).set_index(&#39;horizon&#39;).T.round(3)</code></pre>
+    assert sorted(alphalens.utils.get_forward_returns_columns(data.columns)) == sorted(fwd_rtrn_cols), &#34;Forward return columns in data do not match fwd_rtrn_cols.&#34;
+
+    # information coefficient analysis
+    essential_cols = fwd_rtrn_cols
+    if &#39;group&#39; in data.columns:
+        essential_cols.append(&#39;group&#39;)
+
+    ic_spearman_list = []
+    ic_pearson_list = []
+    for f in factors:
+        df = data[essential_cols + [f]].copy()
+        df = df.rename(columns={f: &#39;factor&#39;})
+
+        ic_tear_sheet = os.path.join(output_dir, f&#34;ic_tear_sheet_{f}.png&#34;)
+        ic_result = alphalens.wrapper.information_analysis_wrapper(data=df,
+                                                                   group_neutral=group_neutral,
+                                                                   by_group=by_group,
+                                                                   tear_sheet_filepath=ic_tear_sheet)
+        ic_result[&#39;ic_spearman&#39;].insert(0, &#39;factor&#39;, f)
+        ic_result[&#39;ic_pearson&#39;].insert(0, &#39;factor&#39;, f)
+        ic_spearman_list.append(ic_result[&#39;ic_spearman&#39;])
+        ic_pearson_list.append(ic_result[&#39;ic_pearson&#39;])
+
+    result[&#39;ic_spearman&#39;] = pd.concat(ic_spearman_list, axis=0)
+    result[&#39;ic_pearson&#39;] = pd.concat(ic_pearson_list, axis=0)
+
+    # return &amp; turnover analysis
+    fwd_rtrn_data = data[fwd_rtrn_cols].copy()
+    if &#39;group&#39; in data.columns:
+        grp_by_series = data[&#39;group&#39;]
+    else:
+        grp_by_series = None
+
+    mean_return_by_q_list = []
+    std_err_by_q_list = []
+    turnover_list = []
+    factor_autocorr_list = []
+    for f in factors:
+        df = data[[f]].copy()
+        df = df.rename(columns={f: &#39;factor&#39;})
+
+        clean_data = alphalens.utils.get_clean_factor(factor=df,
+                                                      forward_returns=fwd_rtrn_data,
+                                                      groupby=grp_by_series,
+                                                      binning_by_group=True if &#39;group&#39; in df.columns else False,
+                                                      quantiles=5,
+                                                      bins=None)
+
+        rtrn_tear_sheet = os.path.join(output_dir, f&#34;rtrn_tear_sheet_{f}.png&#34;)
+        rtrn_result = alphalens.wrapper.return_analysis_wrapper(data=clean_data,
+                                                                long_short=long_short,
+                                                                group_neutral=group_neutral,
+                                                                by_group=by_group,
+                                                                tear_sheet_filepath=rtrn_tear_sheet)
+        rtrn_result[&#39;mean_return_by_q&#39;].insert(0, &#39;factor&#39;, f)
+        rtrn_result[&#39;std_err_by_q&#39;].insert(0, &#39;factor&#39;, f)
+        mean_return_by_q_list.append(rtrn_result[&#39;mean_return_by_q&#39;])
+        std_err_by_q_list.append(rtrn_result[&#39;std_err_by_q&#39;])
+
+        turnover_tear_sheet = os.path.join(output_dir, f&#34;turnover_tear_sheet_{f}.png&#34;)
+        turnover_result = alphalens.wrapper.turnover_analysis_wrapper(data=clean_data,
+                                                                      turnover_period=turnover_period,
+                                                                      period_unit=period_unit,
+                                                                      tear_sheet_filepath=turnover_tear_sheet)
+        turnover = turnover_result[&#39;turnover&#39;].reset_index(drop=False)
+        turnover.insert(0, &#39;factor&#39;, f)
+        turnover_list.append(turnover)
+        factor_autocorr = turnover_result[&#39;factor_autocorr&#39;].reset_index(drop=False)
+        factor_autocorr.insert(0, &#39;factor&#39;, f)
+        factor_autocorr_list.append(factor_autocorr)
+
+    result[&#39;mean_return_by_q&#39;] = pd.concat(mean_return_by_q_list, axis=0)
+    result[&#39;std_err_by_q&#39;] = pd.concat(std_err_by_q_list, axis=0)
+    result[&#39;turnover&#39;] = pd.concat(turnover_list, axis=0)
+    result[&#39;factor_autocorr&#39;] = pd.concat(factor_autocorr_list, axis=0)
+
+    return result</code></pre>
 </details>
-<div class="desc"><p>Adjusts the standard error of the information coefficient (IC) for autocorrelation.</p>
+<div class="desc"><p>Wrapper for alphalens full tear sheet function.</p>
 <dl>
 <dt>Args</dt>
 <dt>-----=</dt>
-<dt><strong><code>daily_ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
-<dd>DataFrame (indexed by 'date') containing the daily IC values in columns.</dd>
-<dt><strong><code>lag</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of lags to consider for the Ljung-Box test. Default is 5.</dd>
+<dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>Factor data in the format expected by alphalens, with 'date' and 'asset' in the columns.</dd>
+<dt><strong><code>factors</code></strong> :&ensp;<code>list[str]</code></dt>
+<dd>List of factor column names to analyze.</dd>
+<dt><strong><code>fwd_rtrn_cols</code></strong> :&ensp;<code>list[str]</code></dt>
+<dd>List of forward return column names to analyze.</dd>
+<dt><strong><code>output_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>Directory to save the tear sheets. Each factor will have its own subdirectory.</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to perform long-short analysis. When True, returns are demeaned across
+the full universe so the tear sheet evaluates a long/short factor portfolio rather than a raw long-only one.
+This affects the calculation of return-based statistics, and usually the labeling/presentation too.
+Additionally, long_short -&gt; demeaned in factor_weights(&hellip;) -&gt; changes whether factor values are demeaned
+before normalization. Defaults to True.</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Demean forward returns by group before computing IC, so that the result reflects factor
+skill beyond group-level effects and ICs across groups can be compared. Defaults to False as forward
+returns are often residual returns, which are already group-neutral. Additionally,
+group_neutral -&gt; group_adjust in factor_weights(&hellip;) -&gt; changes whether weights are built/normalized in a
+group-neutral way. Defaults to False.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to compute IC statistics separately for each group instead of only one pooled summary
+across all assets. It does not change the IC computation method; it changes how results are broken out and
+displayed. Defaults to False.</dd>
+<dt><strong><code>turnover_period</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of periods for turnover analysis. Defaults to 1.</dd>
+<dt><strong><code>period_unit</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Unit of time for turnover analysis. Defaults to 'D'.</dd>
 <dt>Returns</dt>
 <dt>-----=</dt>
-<dt><code>pd.DataFrame</code></dt>
-<dd>DataFrame with adjusted standard errors for the IC.</dd>
+<dt><code>dict[str, pd.DataFrame]</code></dt>
+<dd>Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.</dd>
 </dl></div>
 </dd>
 <dt id="alphalens.wrapper.information_analysis_wrapper"><code class="name flex">
-<span>def <span class="ident">information_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame, tear_sheet_filepath: str) ‑> dict[str, pandas.core.frame.DataFrame]</span>
+<span>def <span class="ident">information_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame,<br>group_neutral: bool = False,<br>by_group: bool = False,<br>tear_sheet_filepath: str = None) ‑> dict[str, pandas.core.frame.DataFrame]</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -130,11 +238,19 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def information_analysis_wrapper(data: pd.DataFrame,
-                                 tear_sheet_filepath: str) -&gt; dict[str, pd.DataFrame]:
+                                 group_neutral: bool = False,
+                                 by_group: bool = False,
+                                 tear_sheet_filepath: str = None) -&gt; dict[str, pd.DataFrame]:
     &#34;&#34;&#34;Wrapper for alphalens information analysis functions.
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
+        group_neutral (bool): Demean forward returns by group before computing IC, so that the result reflects factor
+            skill beyond group-level effects and ICs across groups can be compared. Defaults to False as forward
+            returns are often residual returns, which are already group-neutral. Defaults to False.
+        by_group (bool): Whether to compute IC statistics separately for each group instead of only one pooled summary
+            across all assets. It does not change the IC computation method; it changes how results are broken out and
+            displayed. Defaults to False.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
@@ -142,39 +258,35 @@ el.replaceWith(d);
 
     # spearman correlation
     daily_ic_spearman = alphalens.performance.factor_information_coefficient(factor_data=data,
-                                                                           by_group=False,
-                                                                           group_adjust=False,
-                                                                           ic_type=&#39;spearman&#39;)
+                                                                             group_adjust=group_neutral,
+                                                                             by_group=by_group,
+                                                                             ic_type=&#39;spearman&#39;)
     ic_spearman = alphalens.plotting.plot_information_table(daily_ic_spearman.dropna(),
                                                             return_df=True,
                                                             as_figure=False,
                                                             ic_type=&#39;spearman&#39;)
-    ic_spearman = ic_spearman.round(3).T
-    ic_spearman = pd.concat([ic_spearman, ic_autocor_adj(daily_ic_spearman, lag=1)], axis=0)
 
     # pearson correlation
     daily_ic_pearson = alphalens.performance.factor_information_coefficient(factor_data=data,
-                                                                           by_group=False,
-                                                                           group_adjust=False,
-                                                                           ic_type=&#39;pearson&#39;)
+                                                                            group_adjust=group_neutral,
+                                                                            by_group=by_group,
+                                                                            ic_type=&#39;pearson&#39;)
     ic_pearson = alphalens.plotting.plot_information_table(daily_ic_pearson.dropna(),
                                                            return_df=True,
                                                            as_figure=False,
                                                            ic_type=&#39;pearson&#39;)
-    ic_pearson = ic_pearson.round(3).T
-    ic_pearson = pd.concat([ic_pearson, ic_autocor_adj(daily_ic_pearson, lag=1)], axis=0)
 
     # tear sheet
     if tear_sheet_filepath:
         ic_tble = alphalens.tears.create_information_tear_sheet(factor_data=data,
-                                                                group_neutral=False,
-                                                                by_group=False,
+                                                                group_neutral=group_neutral,
+                                                                by_group=by_group,
                                                                 return_df=True,
                                                                 save_file=tear_sheet_filepath)
-        print(f&#34;\nInformation tear sheet saved to {tear_sheet_filepath}\n&#34;)
+        print(f&#34;\n*** Information tear sheet saved to {tear_sheet_filepath}&#34;)
 
-    return {&#39;ic_spearman&#39;: ic_spearman,
-            &#39;ic_pearson&#39;: ic_pearson}</code></pre>
+    return {&#39;ic_spearman&#39;: ic_spearman.T,
+            &#39;ic_pearson&#39;: ic_pearson.T}</code></pre>
 </details>
 <div class="desc"><p>Wrapper for alphalens information analysis functions.</p>
 <dl>
@@ -182,6 +294,14 @@ el.replaceWith(d);
 <dt>-----=</dt>
 <dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
 <dd>Factor data in the format expected by alphalens.</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Demean forward returns by group before computing IC, so that the result reflects factor
+skill beyond group-level effects and ICs across groups can be compared. Defaults to False as forward
+returns are often residual returns, which are already group-neutral. Defaults to False.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to compute IC statistics separately for each group instead of only one pooled summary
+across all assets. It does not change the IC computation method; it changes how results are broken out and
+displayed. Defaults to False.</dd>
 <dt><strong><code>tear_sheet_filepath</code></strong> :&ensp;<code>str</code></dt>
 <dd>File path to save the tear sheet. Do not save if None.</dd>
 <dt>Returns</dt>
@@ -191,7 +311,7 @@ el.replaceWith(d);
 </dl></div>
 </dd>
 <dt id="alphalens.wrapper.return_analysis_wrapper"><code class="name flex">
-<span>def <span class="ident">return_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame, tear_sheet_filepath: str) ‑> dict[str, pandas.core.frame.DataFrame]</span>
+<span>def <span class="ident">return_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame,<br>long_short: bool = True,<br>group_neutral: bool = False,<br>by_group: bool = False,<br>tear_sheet_filepath: str = None) ‑> dict[str, pandas.core.frame.DataFrame]</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -199,11 +319,23 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def return_analysis_wrapper(data: pd.DataFrame,
-                            tear_sheet_filepath: str) -&gt; dict[str, pd.DataFrame]:
+                            long_short: bool = True,
+                            group_neutral: bool = False,
+                            by_group: bool = False,
+                            tear_sheet_filepath: str = None) -&gt; dict[str, pd.DataFrame]:
     &#34;&#34;&#34;Wrapper for alphalens return analysis functions.
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
+        long_short (bool, optional): When True, forward returns are demeaned across the full universe so the tear sheet
+            evaluates a long/short factor portfolio rather than a raw long-only one. This affects the calculation
+            of return-based statistics, and usually the labeling/presentation too. Additionally, long_short -&gt; demeaned
+            in factor_weights(...) -&gt; changes whether factor values are demeaned before normalization. Defaults to True.
+        group_neutral (bool, optional): When True, demean forward returns by group before computing mean return by
+            quantile, so that the result reflects factor skill beyond group-level effects. Additionally,
+            group_neutral -&gt; group_adjust in factor_weights(...) -&gt; changes whether weights are built/normalized in a
+            group-neutral way. Defaults to False.
+        by_group (bool): If True, display graphs separately for each group.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
@@ -212,19 +344,19 @@ el.replaceWith(d);
     # average forward returns
     mean_return_by_q, std_err_by_q = alphalens.performance.mean_return_by_quantile(factor_data=data,
                                                                                    by_date=False,
-                                                                                   by_group=False,
-                                                                                   demeaned=True,
-                                                                                   group_adjust=False
+                                                                                   by_group=by_group,
+                                                                                   demeaned=long_short,
+                                                                                   group_adjust=group_neutral
                                                                                    )
 
     if tear_sheet_filepath:
         rtrns_tbl = alphalens.tears.create_returns_tear_sheet(factor_data=data,
-                                                              long_short=True,
-                                                              group_neutral=False,
-                                                              by_group=False,
+                                                              long_short=long_short,
+                                                              group_neutral=group_neutral,
+                                                              by_group=by_group,
                                                               return_df=True,
                                                               save_file=tear_sheet_filepath)
-        print(f&#34;\nReturns tear sheet saved to {tear_sheet_filepath}\n&#34;)
+        print(f&#34;\n*** Returns tear sheet saved to {tear_sheet_filepath}&#34;)
 
     return {&#39;mean_return_by_q&#39;: mean_return_by_q,
             &#39;std_err_by_q&#39;: std_err_by_q}</code></pre>
@@ -235,6 +367,18 @@ el.replaceWith(d);
 <dt>-----=</dt>
 <dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
 <dd>Factor data in the format expected by alphalens.</dd>
+<dt><strong><code>long_short</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>When True, forward returns are demeaned across the full universe so the tear sheet
+evaluates a long/short factor portfolio rather than a raw long-only one. This affects the calculation
+of return-based statistics, and usually the labeling/presentation too. Additionally, long_short -&gt; demeaned
+in factor_weights(&hellip;) -&gt; changes whether factor values are demeaned before normalization. Defaults to True.</dd>
+<dt><strong><code>group_neutral</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>When True, demean forward returns by group before computing mean return by
+quantile, so that the result reflects factor skill beyond group-level effects. Additionally,
+group_neutral -&gt; group_adjust in factor_weights(&hellip;) -&gt; changes whether weights are built/normalized in a
+group-neutral way. Defaults to False.</dd>
+<dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, display graphs separately for each group.</dd>
 <dt><strong><code>tear_sheet_filepath</code></strong> :&ensp;<code>str</code></dt>
 <dd>File path to save the tear sheet. Do not save if None.</dd>
 <dt>Returns</dt>
@@ -244,7 +388,7 @@ el.replaceWith(d);
 </dl></div>
 </dd>
 <dt id="alphalens.wrapper.turnover_analysis_wrapper"><code class="name flex">
-<span>def <span class="ident">turnover_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame,<br>turnover_period: int,<br>period_unit: str,<br>tear_sheet_filepath: str) ‑> dict[str, pandas.core.frame.DataFrame]</span>
+<span>def <span class="ident">turnover_analysis_wrapper</span></span>(<span>data: pandas.core.frame.DataFrame,<br>turnover_period: int,<br>period_unit: str,<br>tear_sheet_filepath: str = None) ‑> dict[str, pandas.core.frame.DataFrame]</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -254,12 +398,13 @@ el.replaceWith(d);
 <pre><code class="python">def turnover_analysis_wrapper(data: pd.DataFrame,
                               turnover_period: int,
                               period_unit: str,
-                              tear_sheet_filepath: str) -&gt; dict[str, pd.DataFrame]:
+                              tear_sheet_filepath: str = None) -&gt; dict[str, pd.DataFrame]:
     &#34;&#34;&#34;Wrapper for alphalens turnover analysis functions.
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
-        turnover_period (int): Number of period for turnover analysis.
+        turnover_period (int): Number of periods for turnover analysis.
+        period_unit (str): Unit of time for turnover analysis (e.g., &#39;D&#39; for days, &#39;W&#39; for weeks, &#39;M&#39; for months).
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing turnover data frames.
@@ -281,7 +426,7 @@ el.replaceWith(d);
                                                    turnover_periods=[f&#34;{turnover_period}{period_unit}&#34;],
                                                    return_df=True,
                                                    save_file=tear_sheet_filepath)
-        print(f&#34;\nTurnover tear sheet saved to {tear_sheet_filepath}\n&#34;)
+        print(f&#34;\n*** Turnover tear sheet saved to {tear_sheet_filepath}&#34;)
 
     return {&#39;turnover&#39;: quantile_turnover,
             &#39;factor_autocorr&#39;: factor_autocorr}</code></pre>
@@ -293,7 +438,9 @@ el.replaceWith(d);
 <dt><strong><code>data</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
 <dd>Factor data in the format expected by alphalens.</dd>
 <dt><strong><code>turnover_period</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of period for turnover analysis.</dd>
+<dd>Number of periods for turnover analysis.</dd>
+<dt><strong><code>period_unit</code></strong> :&ensp;<code>str</code></dt>
+<dd>Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks, 'M' for months).</dd>
 <dt><strong><code>tear_sheet_filepath</code></strong> :&ensp;<code>str</code></dt>
 <dd>File path to save the tear sheet. Do not save if None.</dd>
 <dt>Returns</dt>
@@ -320,7 +467,7 @@ el.replaceWith(d);
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="alphalens.wrapper.call_with_matching_args" href="#alphalens.wrapper.call_with_matching_args">call_with_matching_args</a></code></li>
-<li><code><a title="alphalens.wrapper.ic_autocor_adj" href="#alphalens.wrapper.ic_autocor_adj">ic_autocor_adj</a></code></li>
+<li><code><a title="alphalens.wrapper.full_tear_sheet_wrapper" href="#alphalens.wrapper.full_tear_sheet_wrapper">full_tear_sheet_wrapper</a></code></li>
 <li><code><a title="alphalens.wrapper.information_analysis_wrapper" href="#alphalens.wrapper.information_analysis_wrapper">information_analysis_wrapper</a></code></li>
 <li><code><a title="alphalens.wrapper.return_analysis_wrapper" href="#alphalens.wrapper.return_analysis_wrapper">return_analysis_wrapper</a></code></li>
 <li><code><a title="alphalens.wrapper.turnover_analysis_wrapper" href="#alphalens.wrapper.turnover_analysis_wrapper">turnover_analysis_wrapper</a></code></li>

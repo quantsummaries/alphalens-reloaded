@@ -395,6 +395,11 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
     &#34;&#34;&#34;
     Creates a tear sheet for information analysis of a factor.
 
+    First set of plots show IC statistics: mean, std, skew, kurtosis, IC IR, Ljung-Box test, t-statistics (w.i. and w.o. Newey-West adjustment).
+    Second set of plots show time series of IC values.
+    Third set of plots show histogram and QQ-plot of IC values.
+    Fourth set of plots show monthly IC heatmaps if not by group and mean IC values if by group.
+
     Parameters
     ----------
     factor_data : pd.DataFrame - MultiIndex
@@ -412,10 +417,10 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
     return_df : bool
         If True, the function will return the information table as a DataFrame.
     &#34;&#34;&#34;
-
-    ic = perf.factor_information_coefficient(factor_data, group_neutral, ic_type=&#34;spearman&#34;)
-    ic = ic.dropna()
-    ic_tbl = plotting.plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=&#34;spearman&#34;)
+    for ic_type in [&#34;spearman&#34;, &#34;pearson&#34;]:
+        ic = perf.factor_information_coefficient(factor_data, group_neutral, ic_type=ic_type)
+        ic = ic.dropna()
+        ic_tbl = plotting.plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)
 
     columns_wide = 2
     fr_cols = len(ic.columns)
@@ -498,6 +503,10 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
     return ic_tbl</code></pre>
 </details>
 <div class="desc"><p>Creates a tear sheet for information analysis of a factor.</p>
+<p>First set of plots show IC statistics: mean, std, skew, kurtosis, IC IR, Ljung-Box test, t-statistics (w.i. and w.o. Newey-West adjustment).
+Second set of plots show time series of IC values.
+Third set of plots show histogram and QQ-plot of IC values.
+Fourth set of plots show monthly IC heatmaps if not by group and mean IC values if by group.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>factor_data</code></strong> :&ensp;<code>pd.DataFrame - MultiIndex</code></dt>
@@ -551,6 +560,8 @@ def create_returns_tear_sheet(
         plots
     by_group : bool
         If True, display graphs separately for each group.
+    return_df : bool
+        If True, the function will return the data frame containing the returns analysis results.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     &#34;&#34;&#34;
@@ -758,6 +769,8 @@ Additionally each group will weight the same in cumulative returns
 plots</dd>
 <dt><strong><code>by_group</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True, display graphs separately for each group.</dd>
+<dt><strong><code>return_df</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, the function will return the data frame containing the returns analysis results.</dd>
 <dt><strong><code>save_file</code></strong> :&ensp;<code>str</code> or <code>None</code></dt>
 <dd>If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.</dd>
 </dl></div>

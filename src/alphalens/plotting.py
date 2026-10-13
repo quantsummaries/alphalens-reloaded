@@ -156,7 +156,16 @@ def plot_returns_table(
         return None
 
 
-def plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False):
+def plot_turnover_table(
+        autocorrelation_data, quantile_turnover, return_df=False, as_figure=False, ax=None
+):
+    """Display mean quantile turnover and factor rank autocorrelation.
+
+    ``as_figure=True`` renders both tables on ``ax`` (or a new figure),
+    independently of ``return_df``. ``return_df=True `` suppresses text
+    display and returns the two summary DataFrames. Otherwise, display
+    both tables as text and return the figure if rendered, or None.
+    """
     turnover_table = pd.DataFrame()
     for period in sorted(quantile_turnover.keys()):
         for quantile, p_data in quantile_turnover[period].items():
@@ -170,15 +179,41 @@ def plot_turnover_table(autocorrelation_data, quantile_turnover, return_df=False
             "Mean Factor Rank Autocorrelation", "{}D".format(period)
         ] = p_data.mean()
 
+    if as_figure:
+        summary = pd.concat([turnover_table, auto_corr])
+        if ax is None:
+            _, ax = plt.subplots(
+                figsize=(max(8, 5 + len(summary.columns)), 1 + 0.45 * len(summary))
+            )
+        ax.axis("off")
+        table = ax.table(
+            cellText=[[f"{value:.3f}" for value in row] for row in summary.to_numpy()],
+            colLabels=summary.columns,
+            rowLabels=summary.index,
+            loc="center",
+            cellLoc="center",
+        )
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
+        table.scale(1, 1.5)
+        ax.set_title("Turnover Analysis", fontweight="bold", pad=10)
+
     if return_df:
         return turnover_table, auto_corr
     else:
         print("Turnover Analysis")
         utils.print_table(turnover_table.apply(lambda x: x.round(3)))
         utils.print_table(auto_corr.apply(lambda x: x.round(3)))
-        return None
+        return ax.figure if as_figure else None
 
 def plot_information_table(ic_data, return_df=False, as_figure=True, ic_type="spearman"):
+    """Return IC summary statistics with independent display options.
+
+    ``return_df=False`` displays the summary as text; True suppresses text.
+    ``as_figure=True`` also renders a Matplotlib table, regardless of
+    ``return_df``. Always return the summary DataFrame so analysis wrappers
+    can consume it independently of display settings.
+    """
     ic_summary_table = pd.DataFrame()
     ic_summary_table[f"IC Mean ({ic_type})"] = ic_data.mean()
     ic_summary_table["IC Std."] = ic_data.std()
@@ -193,7 +228,7 @@ def plot_information_table(ic_data, return_df=False, as_figure=True, ic_type="sp
     ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=1)
     ic_summary_table = pd.concat([ic_summary_table, ic_supplements_df.T], axis=1)
 
-    # Create a Matplotlib figure so `plt.get_fignums()` captures it
+    # Render a Matplotlib table when requested, but keep data return type stable.
     if as_figure:
         fig, ax = plt.subplots(figsize=(8, 3))
         ax.axis("off")
@@ -211,14 +246,12 @@ def plot_information_table(ic_data, return_df=False, as_figure=True, ic_type="sp
         table.set_fontsize(9)
         table.scale(1.2, 1.2)
         ax.set_title(f"Information Analysis Summary ({ic_type})", fontweight="bold", pad=10)
-        return fig
 
-    if return_df:
-        return ic_summary_table
-    else:
+    if not return_df:
         print(f"Information Analysis ({ic_type})")
         utils.print_table(ic_summary_table.apply(lambda x: x.round(3)).T)
-        return None
+
+    return ic_summary_table
 
 def plot_quantile_statistics_table(factor_data, return_df=False):
     quantile_stats = factor_data.groupby("factor_quantile")["factor"].agg(

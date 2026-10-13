@@ -137,7 +137,7 @@ the first level.</p>
 forward-returns series.</p></div>
 </dd>
 <dt id="alphalens.utils.compute_forward_returns"><code class="name flex">
-<span>def <span class="ident">compute_forward_returns</span></span>(<span>factor, prices, periods=(1, 5, 10), filter_zscore=None, cumulative_returns=True)</span>
+<span>def <span class="ident">compute_forward_returns</span></span>(<span>factor: pandas.core.series.Series,<br>prices: pandas.core.frame.DataFrame,<br>periods: Sequence[int] = (1, 5, 10),<br>filter_zscore: float | None = None,<br>cumulative_returns: bool = True) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -145,12 +145,12 @@ forward-returns series.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def compute_forward_returns(
-    factor,
-    prices,
-    periods=(1, 5, 10),
-    filter_zscore=None,
-    cumulative_returns=True,
-):
+    factor: pd.Series,
+    prices: pd.DataFrame,
+    periods: Sequence[int] = (1, 5, 10),
+    filter_zscore: Optional[float] = None,
+    cumulative_returns: bool = True,
+) -&gt; pd.DataFrame:
     &#34;&#34;&#34;
     Finds the N period forward returns (as percent change) for each asset
     provided.
@@ -173,7 +173,7 @@ forward-returns series.</p></div>
         periods to compute forward returns on.
     filter_zscore : int or float, optional
         Sets forward returns greater than X standard deviations
-        from the the mean to nan. Set it to &#39;None&#39; to avoid filtering.
+        from the mean to nan. Set it to &#39;None&#39; to avoid filtering.
         Caution: this outlier filtering incorporates lookahead bias.
     cumulative_returns : bool, optional
         If True, forward returns columns will contain cumulative returns.
@@ -302,7 +302,7 @@ in the forward returns calculations.</dd>
 <dd>periods to compute forward returns on.</dd>
 <dt><strong><code>filter_zscore</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
 <dd>Sets forward returns greater than X standard deviations
-from the the mean to nan. Set it to 'None' to avoid filtering.
+from the mean to nan. Set it to 'None' to avoid filtering.
 Caution: this outlier filtering incorporates lookahead bias.</dd>
 <dt><strong><code>cumulative_returns</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>If True, forward returns columns will contain cumulative returns.
@@ -331,10 +331,10 @@ from the input data (see infer_trading_calendar for more details).</dd>
 </summary>
 <pre><code class="python">def demean_forward_returns(factor_data, grouper=None):
     &#34;&#34;&#34;
-    Convert forward returns to returns relative to mean
-    period wise all-universe or group returns.
+    Convert forward returns to returns relative to mean period wise all-universe or group returns, beside per date.
+
     group-wise normalization incorporates the assumption of a
-    group neutral portfolio constraint and thus allows allows the
+    group neutral portfolio constraint and thus allows the
     factor to be evaluated across groups.
 
     For example, if AAPL 5 period return is 0.1% and mean 5 period
@@ -348,7 +348,7 @@ from the input data (see infer_trading_calendar for more details).</dd>
         Forward returns indexed by date and asset.
         Separate column for each forward return window.
     grouper : list
-        If True, demean according to group.
+        If True, demean according to group. Otherwise, demean according to &#39;date&#39; across all universe.
 
     Returns
     -------
@@ -363,16 +363,15 @@ from the input data (see infer_trading_calendar for more details).</dd>
         grouper = factor_data.index.get_level_values(&#34;date&#34;)
 
     cols = get_forward_returns_columns(factor_data.columns)
-    factor_data[cols] = factor_data.groupby(grouper)[cols].transform(
+    factor_data[cols] = factor_data.groupby(grouper, observed=True)[cols].transform(
         lambda x: x - x.mean()
     )
 
     return factor_data</code></pre>
 </details>
-<div class="desc"><p>Convert forward returns to returns relative to mean
-period wise all-universe or group returns.
-group-wise normalization incorporates the assumption of a
-group neutral portfolio constraint and thus allows allows the
+<div class="desc"><p>Convert forward returns to returns relative to mean period wise all-universe or group returns, beside per date.</p>
+<p>group-wise normalization incorporates the assumption of a
+group neutral portfolio constraint and thus allows the
 factor to be evaluated across groups.</p>
 <p>For example, if AAPL 5 period return is 0.1% and mean 5 period
 return for the Technology stocks in our universe was 0.5% in the
@@ -384,7 +383,7 @@ period is -0.4%.</p>
 <dd>Forward returns indexed by date and asset.
 Separate column for each forward return window.</dd>
 <dt><strong><code>grouper</code></strong> :&ensp;<code>list</code></dt>
-<dd>If True, demean according to group.</dd>
+<dd>If True, demean according to group. Otherwise, demean according to 'date' across all universe.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -475,7 +474,7 @@ trading calendar</p>
 </dl></div>
 </dd>
 <dt id="alphalens.utils.get_clean_factor"><code class="name flex">
-<span>def <span class="ident">get_clean_factor</span></span>(<span>factor,<br>forward_returns,<br>groupby=None,<br>binning_by_group=False,<br>quantiles=5,<br>bins=None,<br>groupby_labels=None,<br>max_loss=0.35,<br>zero_aware=False)</span>
+<span>def <span class="ident">get_clean_factor</span></span>(<span>factor: pandas.core.series.Series,<br>forward_returns: pandas.core.frame.DataFrame,<br>groupby: pandas.core.series.Series | dict[typing.Any, typing.Any] | None = None,<br>binning_by_group: bool = False,<br>quantiles: int | Sequence[float] | None = 5,<br>bins: int | Sequence[float] | None = None,<br>groupby_labels: dict[typing.Any, typing.Any] | None = None,<br>max_loss: float = 0.35,<br>zero_aware: bool = False) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -483,16 +482,16 @@ trading calendar</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_clean_factor(
-    factor,
-    forward_returns,
-    groupby=None,
-    binning_by_group=False,
-    quantiles=5,
-    bins=None,
-    groupby_labels=None,
-    max_loss=0.35,
-    zero_aware=False,
-):
+    factor: pd.Series,
+    forward_returns: pd.DataFrame,
+    groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None,
+    binning_by_group: bool = False,
+    quantiles: Optional[Union[int, Sequence[float]]] = 5,
+    bins: Optional[Union[int, Sequence[float]]] = None,
+    groupby_labels: Optional[dict[Any, Any]] = None,
+    max_loss: float = 0.35,
+    zero_aware: bool = False,
+) -&gt; pd.DataFrame:
     &#34;&#34;&#34;
     Formats the factor data, forward return data, and group mappings into a
     DataFrame that contains aligned MultiIndex indices of timestamp and asset.
@@ -866,7 +865,7 @@ G1 |
 </dl></div>
 </dd>
 <dt id="alphalens.utils.get_clean_factor_and_forward_returns"><code class="name flex">
-<span>def <span class="ident">get_clean_factor_and_forward_returns</span></span>(<span>factor,<br>prices,<br>groupby=None,<br>binning_by_group=False,<br>quantiles=5,<br>bins=None,<br>periods=(1, 5, 10),<br>filter_zscore=20,<br>groupby_labels=None,<br>max_loss=0.35,<br>zero_aware=False,<br>cumulative_returns=True)</span>
+<span>def <span class="ident">get_clean_factor_and_forward_returns</span></span>(<span>factor: pandas.core.series.Series,<br>prices: pandas.core.frame.DataFrame,<br>groupby: pandas.core.series.Series | dict[typing.Any, typing.Any] | None = None,<br>binning_by_group: bool = False,<br>quantiles: int | Sequence[float] | None = 5,<br>bins: int | Sequence[float] | None = None,<br>periods: Sequence[int] = (1, 5, 10),<br>filter_zscore: float | None = 20,<br>groupby_labels: dict[typing.Any, typing.Any] | None = None,<br>max_loss: float = 0.35,<br>zero_aware: bool = False,<br>cumulative_returns: bool = True) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -874,19 +873,19 @@ G1 |
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_clean_factor_and_forward_returns(
-    factor,
-    prices,
-    groupby=None,
-    binning_by_group=False,
-    quantiles=5,
-    bins=None,
-    periods=(1, 5, 10),
-    filter_zscore=20,
-    groupby_labels=None,
-    max_loss=0.35,
-    zero_aware=False,
-    cumulative_returns=True,
-):
+    factor: pd.Series,
+    prices: pd.DataFrame,
+    groupby: Optional[Union[pd.Series, dict[Any, Any]]] = None,
+    binning_by_group: bool = False,
+    quantiles: Optional[Union[int, Sequence[float]]] = 5,
+    bins: Optional[Union[int, Sequence[float]]] = None,
+    periods: Sequence[int] = (1, 5, 10),
+    filter_zscore: Optional[float] = 20,
+    groupby_labels: Optional[dict[Any, Any]] = None,
+    max_loss: float = 0.35,
+    zero_aware: bool = False,
+    cumulative_returns: bool = True,
+) -&gt; pd.DataFrame:
     &#34;&#34;&#34;
     Formats the factor data, pricing data, and group mappings into a DataFrame
     that contains aligned MultiIndex indices of timestamp and asset. The
@@ -978,7 +977,7 @@ G1 |
         periods to compute forward returns on.
     filter_zscore : int or float, optional
         Sets forward returns greater than X standard deviations
-        from the the mean to nan. Set it to &#39;None&#39; to avoid filtering.
+        from the mean to nan. Set it to &#39;None&#39; to avoid filtering.
         Caution: this outlier filtering incorporates lookahead bias.
     groupby_labels : dict
         A dictionary keyed by group code with values corresponding
@@ -1183,7 +1182,7 @@ Only one of 'quantiles' or 'bins' can be not-None</dd>
 <dd>periods to compute forward returns on.</dd>
 <dt><strong><code>filter_zscore</code></strong> :&ensp;<code>int</code> or <code>float</code>, optional</dt>
 <dd>Sets forward returns greater than X standard deviations
-from the the mean to nan. Set it to 'None' to avoid filtering.
+from the mean to nan. Set it to 'None' to avoid filtering.
 Caution: this outlier filtering incorporates lookahead bias.</dd>
 <dt><strong><code>groupby_labels</code></strong> :&ensp;<code>dict</code></dt>
 <dd>A dictionary keyed by group code with values corresponding
@@ -1260,16 +1259,30 @@ G1 |
 <p><code>utils.get_clean_factor For use when forward returns are already available.</code></p></div>
 </dd>
 <dt id="alphalens.utils.get_forward_returns_columns"><code class="name flex">
-<span>def <span class="ident">get_forward_returns_columns</span></span>(<span>columns, require_exact_day_multiple=False)</span>
+<span>def <span class="ident">get_forward_returns_columns</span></span>(<span>columns: pandas.core.indexes.base.Index,<br>require_exact_day_multiple: bool = False) ‑> pandas.core.indexes.base.Index</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_forward_returns_columns(columns, require_exact_day_multiple=False):
+<pre><code class="python">def get_forward_returns_columns(
+    columns: pd.Index, require_exact_day_multiple: bool = False
+) -&gt; pd.Index:
     &#34;&#34;&#34;
-    Utility that detects and returns the columns that are forward returns
+    Utility that detects and returns the columns that are forward returns.
+
+    Parameters
+    ----------
+    columns : pd.Index
+        Column labels to filter.
+    require_exact_day_multiple : bool, optional
+        If True, keep only exact day-multiple horizons (e.g. &#39;1D&#39;, &#39;5D&#39;).
+
+    Returns
+    -------
+    pd.Index
+        Filtered subset of ``columns`` containing forward return horizons.
     &#34;&#34;&#34;
 
     # If exact day multiples are required in the forward return periods,
@@ -1288,7 +1301,80 @@ G1 |
 
     return columns[valid_columns]</code></pre>
 </details>
-<div class="desc"><p>Utility that detects and returns the columns that are forward returns</p></div>
+<div class="desc"><p>Utility that detects and returns the columns that are forward returns.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>columns</code></strong> :&ensp;<code>pd.Index</code></dt>
+<dd>Column labels to filter.</dd>
+<dt><strong><code>require_exact_day_multiple</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, keep only exact day-multiple horizons (e.g. '1D', '5D').</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.Index</code></dt>
+<dd>Filtered subset of <code>columns</code> containing forward return horizons.</dd>
+</dl></div>
+</dd>
+<dt id="alphalens.utils.ic_autocor_adj"><code class="name flex">
+<span>def <span class="ident">ic_autocor_adj</span></span>(<span>daily_ic: pandas.core.frame.DataFrame, lag: int = 5) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;Adjusts the standard error of the information coefficient (IC) for autocorrelation.
+
+    Args:
+        daily_ic (pd.DataFrame): DataFrame (indexed by &#39;date&#39;) containing the daily IC values in columns.
+        lag (int): Number of lags to consider for the Ljung-Box test. Default is 5.
+
+    Returns:
+        pd.DataFrame: DataFrame with adjusted standard errors for the IC. Columns are the same as those
+        of the input &#39;daily_ic&#39; DataFrame.
+    &#34;&#34;&#34;
+    results = []
+    for col in daily_ic.columns:
+        ic_series = daily_ic[col].dropna()
+
+        # Ljung-Box test for lag-n autocorrelation
+        lag_autocorr = ic_series.autocorr(lag=lag)
+        lb_test = acorr_ljungbox(ic_series, lags=[lag], return_df=True)
+        lb_pvalue = lb_test[&#39;lb_pvalue&#39;].values[0]
+
+        # Newey-West adjusted t-statistic for mean IC (accounts for autocorrelation): regression of IC on a constant
+        X = sm.add_constant(np.ones(len(ic_series)))
+        model = sm.OLS(ic_series, X).fit(cov_type=&#39;HAC&#39;, cov_kwds={&#39;maxlags&#39;: lag})
+        nw_tstat = model.tvalues.iloc[0]
+        nw_pvalue = model.pvalues.iloc[0]
+
+        results.append(
+            {
+                &#39;horizon&#39;: col,
+                f&#39;lag{lag}_autocorr&#39;: lag_autocorr,
+                &#39;lb_pvalue&#39;: lb_pvalue,
+                &#39;nw_tstat&#39;: nw_tstat,
+                &#39;nw_pvalue&#39;: nw_pvalue
+            }
+        )
+
+    return pd.DataFrame(results).set_index(&#39;horizon&#39;).T.round(3)</code></pre>
+</details>
+<div class="desc"><p>Adjusts the standard error of the information coefficient (IC) for autocorrelation.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>daily_ic</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame (indexed by 'date') containing the daily IC values in columns.</dd>
+<dt><strong><code>lag</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of lags to consider for the Ljung-Box test. Default is 5.</dd>
+<dt>Returns</dt>
+<dt>-----=</dt>
+<dt><code>pd.DataFrame</code></dt>
+<dd>DataFrame with adjusted standard errors for the IC. Columns are the same as those</dd>
+</dl>
+<p>of the input 'daily_ic' DataFrame.</p></div>
 </dd>
 <dt id="alphalens.utils.infer_trading_calendar"><code class="name flex">
 <span>def <span class="ident">infer_trading_calendar</span></span>(<span>factor_idx, prices_idx)</span>
@@ -1774,6 +1860,7 @@ compatible with pandas.Timedelta constructor format</p>
 <li><code><a title="alphalens.utils.get_clean_factor" href="#alphalens.utils.get_clean_factor">get_clean_factor</a></code></li>
 <li><code><a title="alphalens.utils.get_clean_factor_and_forward_returns" href="#alphalens.utils.get_clean_factor_and_forward_returns">get_clean_factor_and_forward_returns</a></code></li>
 <li><code><a title="alphalens.utils.get_forward_returns_columns" href="#alphalens.utils.get_forward_returns_columns">get_forward_returns_columns</a></code></li>
+<li><code><a title="alphalens.utils.ic_autocor_adj" href="#alphalens.utils.ic_autocor_adj">ic_autocor_adj</a></code></li>
 <li><code><a title="alphalens.utils.infer_trading_calendar" href="#alphalens.utils.infer_trading_calendar">infer_trading_calendar</a></code></li>
 <li><code><a title="alphalens.utils.make_naive_ts" href="#alphalens.utils.make_naive_ts">make_naive_ts</a></code></li>
 <li><code><a title="alphalens.utils.non_unique_bin_edges_error" href="#alphalens.utils.non_unique_bin_edges_error">non_unique_bin_edges_error</a></code></li>

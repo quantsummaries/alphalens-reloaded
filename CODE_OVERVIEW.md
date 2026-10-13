@@ -2,7 +2,8 @@
 
 ## Review Addendum
 
-_Since commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`._
+_Originally written at commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`;
+last re-verified at HEAD `7c375a3` on 2026-10-09 (9 commits later, branch `yzeng`)._
 
 ### Scope reviewed
 
@@ -15,12 +16,14 @@ _Since commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`._
 
 ### Findings (ordered by severity)
 
-1. **Medium**: `return_df` is effectively ignored in `create_information_tear_sheet(...)` because `plot_information_table(...)` is always called with `as_figure=True`, so the function returns a figure handle rather than a DataFrame.
-   - Ref: `src/alphalens/tears.py`
-2. **Medium**: `create_turnover_tear_sheet(...)` accepts `return_df` and forwards it to `plot_turnover_table(...)`, but does not return the tables.
-   - Ref: `src/alphalens/tears.py`
-3. **Low (testing gap)**: `tests/test_wrapper.py` currently has no pytest test functions (`collected 0 items`), so wrapper behavior is not covered by automated tests.
-   - Ref: `tests/test_wrapper.py`
+Status as of 2026-10-09 re-verification:
+
+1. **Medium (still open)**: `return_df` is effectively ignored in `create_information_tear_sheet(...)` because `plot_information_table(...)` is always called with `as_figure=True`, so the function returns a figure handle rather than a DataFrame.
+   - Ref: `src/alphalens/tears.py:420` — `plot_information_table(ic, return_df=return_df, as_figure=True, ic_type=ic_type)`.
+2. **Medium (still open)**: `create_turnover_tear_sheet(...)` accepts `return_df` and forwards it to `plot_turnover_table(...)`, but the call result is discarded (not returned to the caller).
+   - Ref: `src/alphalens/tears.py:558` — `plot_turnover_table(autocorrelation, quantile_turnover, return_df=return_df)`.
+3. **Low / testing gap (partially improved, still open)**: `tests/test_wrapper.py` now contains script-style helpers (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) but the only entry point is still `if __name__ == "__main__":`. There are still no `test_*` functions, so `pytest tests/test_wrapper.py` collects 0 items.
+   - Ref: `tests/test_wrapper.py` (7.2 KB).
 
 ### API / behavior changes captured
 
@@ -28,7 +31,7 @@ _Since commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`._
 - `plotting.plot_information_table(...)` now supports `as_figure` and `ic_type` and can return a matplotlib figure.
 - Table display helpers explicitly return `None` when not returning DataFrames.
 - `tears.create_returns_tear_sheet(...)` supports `return_df` and `save_file` and can save all generated return plots into a single output file.
-- `tears.create_information_tear_sheet(...)` and `tears.create_turnover_tear_sheet(...)` now expose `return_df` / `save_file` parameters.
+- `tears.create_information_tear_sheet(...)` and `tears.create_turnover_tear_sheet(...)` now expose `return_df` / `save_file` parameters; `create_information_tear_sheet(...)` also forwards `ic_type` through to `plot_information_table(...)`.
 - New top-level wrapper module exposed as `alphalens.wrapper`.
 
 ### Documentation updates completed
@@ -40,12 +43,17 @@ The following docs were updated to reflect current implementation:
 - `docs/tears.md`
 - `docs/utils.md`
 - `docs/wrapper.md`
+- `docs/addl.md` — dedicated note on how `long_short` / `group_neutral` / `by_group` propagate through the codebase (user-facing flags mapped to lower-level `demeaned` / `group_adjust`).
+- `docs/pdoc/alphalens/*.html` — API reference regenerated with `pdoc 0.11.6` on 2026-10-09 (`index.html`, `performance.html`, `plotting.html`, `tears.html`, `utils.html`, `wrapper.html`, plus new `extra.html`). Regenerate with:
+  ```powershell
+  .venv\Scripts\python.exe -m pdoc --html --force --output-dir docs\pdoc alphalens
+  ```
 
 ### Follow-up recommendations
 
-- Align `create_information_tear_sheet(...)` return behavior with its `return_df` parameter intent.
-- Return table outputs from `create_turnover_tear_sheet(...)` when `return_df=True`.
-- Add real unit tests in `tests/test_wrapper.py` for wrapper function outputs and save-file behavior.
+- Align `create_information_tear_sheet(...)` return behavior with its `return_df` parameter intent (currently hard-codes `as_figure=True`).
+- Return table outputs from `create_turnover_tear_sheet(...)` when `return_df=True` (currently discards the call result).
+- Promote the existing script-style helpers in `tests/test_wrapper.py` (`get_test_data`, `compute_factor`, `get_pricing`, `get_factor_data`) into real `test_*` functions covering wrapper outputs and save-file behavior.
 
 ## Table of Contents
 
