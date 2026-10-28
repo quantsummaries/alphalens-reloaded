@@ -192,7 +192,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             tables_as_figures: bool = True) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
-        data (pd.DataFrame): Factor data in the format expected by alphalens, with 'date' and 'asset' in the columns.
+        data (pd.DataFrame): Factor data in the format expected by alphalens, with the multi-index of ['date', 'asset'].
         factors (list[str]): List of factor column names to analyze.
         fwd_rtrn_cols (list[str]): List of forward return column names to analyze.
         output_dir (str): Directory to save the tear sheets. Each factor will have its own subdirectory.
@@ -219,11 +219,6 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
-
-    if 'date' not in data.columns or 'asset' not in data.columns:
-        raise ValueError("Data must contain 'date' and 'asset' columns.")
-
-    data = data.set_index(['date', 'asset']).sort_index()
 
     assert sorted(alphalens.utils.get_forward_returns_columns(data.columns)) == sorted(fwd_rtrn_cols), "Forward return columns in data do not match fwd_rtrn_cols."
 
