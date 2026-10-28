@@ -46,8 +46,7 @@ class TearsTestCase(TestCase):
     factor_groups = {"A": 1, "B": 2, "C": 1, "D": 2, "E": 1, "F": 2}
 
     price_data = [
-        [1.25**i, 1.50**i, 1.00**i, 0.50**i, 1.50**i, 1.00**i]
-        for i in range(1, 51)
+        [1.25**i, 1.50**i, 1.00**i, 0.50**i, 1.50**i, 1.00**i] for i in range(1, 51)
     ]
 
     factor_data = [
@@ -125,7 +124,11 @@ class TearsTestCase(TestCase):
 
     bfactor_index = date_range(start="2015-1-15", end="2015-2-25", freq="B")
     bfactor_index.name = "date"
-    bfactor = DataFrame(index=bfactor_index, columns=tickers, data=factor_data).stack()
+    bfactor = (
+        DataFrame(index=bfactor_index, columns=tickers, data=factor_data)
+        .stack()
+        .dropna()
+    )
 
     #
     # full calendar
@@ -136,7 +139,11 @@ class TearsTestCase(TestCase):
 
     factor_index = date_range(start="2015-1-15", end="2015-2-13")
     factor_index.name = "date"
-    factor = DataFrame(index=factor_index, columns=tickers, data=factor_data).stack()
+    factor = (
+        DataFrame(index=factor_index, columns=tickers, data=factor_data)
+        .stack()
+        .dropna()
+    )
 
     #
     # intraday factor
@@ -160,22 +167,28 @@ class TearsTestCase(TestCase):
     today_open_3h -= today_open_3h * 0.002
     intraday_prices = concat([today_open, today_open_1h, today_open_3h]).sort_index()
 
-    intraday_factor = DataFrame(
-        index=factor_index + Timedelta("9h30m"),
-        columns=tickers,
-        data=factor_data,
-    ).stack()
+    intraday_factor = (
+        DataFrame(
+            index=factor_index + Timedelta("9h30m"),
+            columns=tickers,
+            data=factor_data,
+        )
+        .stack()
+        .dropna()
+    )
 
     #
     # event factor
     #
-    bevent_factor = DataFrame(
-        index=bfactor_index, columns=tickers, data=event_data
-    ).stack()
+    bevent_factor = (
+        DataFrame(index=bfactor_index, columns=tickers, data=event_data)
+        .stack()
+        .dropna()
+    )
 
-    event_factor = DataFrame(
-        index=factor_index, columns=tickers, data=event_data
-    ).stack()
+    event_factor = (
+        DataFrame(index=factor_index, columns=tickers, data=event_data).stack().dropna()
+    )
 
     all_prices = [prices, bprices]
     all_factors = [factor, bfactor]
@@ -185,7 +198,7 @@ class TearsTestCase(TestCase):
         if tz is not None:
             factor = factor.unstack()
             factor.index = factor.index.tz_localize(tz)
-            factor = factor.stack()
+            factor = factor.stack().dropna()
             prices = prices.copy()
             prices.index = prices.index.tz_localize(tz)
         return prices, factor

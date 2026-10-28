@@ -25,6 +25,16 @@ The main function of Alphalens is to surface the most relevant statistics and pl
 - Turnover Analysis
 - Grouped Analysis
 
+# Maintenance and new projects
+
+We continue to maintain Alphalens Reloaded for bug, security and compatibility fixes.
+Our new development focuses on [ML4T Diagnostic](https://github.com/ml4t/diagnostic).
+For new projects, evaluate it through the
+[factor-analysis migration guide](https://www.ml4trading.io/docs/diagnostic/user-guide/migration/#alphalens-factor-analysis),
+which includes a runnable example and explains the differences between the workflows.
+See the [Diagnostic documentation](https://www.ml4trading.io/docs/diagnostic/) and the
+[ML4T website](https://www.ml4trading.io/) for the current libraries and their workflows.
+
 # Getting started
 
 With a signal and pricing data creating a factor \"tear sheet\" is a two step process:
@@ -45,10 +55,16 @@ alphalens.tears.create_full_tear_sheet(factor_data)
 
 # Learn more
 
-Check out the [example notebooks](https://github.com/stefan-jansen/alphalens-reloaded/tree/master/alphalens/examples)
+Check out the [example notebooks](https://github.com/stefan-jansen/alphalens-reloaded/tree/main/src/alphalens/examples)
 for more on how to read and use the factor tear sheet.
 
 # Installation
+
+The next release supports Python 3.11-3.15. Python 3.10 and older are no longer
+supported; previous release artifacts remain available. Python 3.15 requires
+pandas 3; earlier supported Python versions also support pandas 1.5 and 2.x.
+Native tests, built wheels and Conda packages have been qualified on Linux, macOS
+and Windows. These source changes do not alter previously published releases.
 
 Install with pip:
 
@@ -71,8 +87,8 @@ Alphalens depends on:
 - [seaborn](https://github.com/mwaskom/seaborn)
 - [statsmodels](https://github.com/statsmodels/statsmodels)
 
-> Note that Numpy>=2.0 requires pandas>=2.2.2. If you are using an older version of pandas, you may need to upgrade
-> accordingly, otherwise you may encounter compatibility issues.
+NumPy >=2.0 requires pandas >=2.2.2. Upgrade older pandas versions before using
+NumPy 2 to avoid compatibility issues.
 
 # Usage
 
@@ -95,6 +111,9 @@ Execute the code in a notebook cell by clicking on it and hitting Shift+Enter.
 If you find a bug, feel free to open an issue on our [github tracker](https://github.com/stefan-jansen/alphalens-reloaded/issues).
 
 # Contribute
+
+Read the [contribution guide](https://github.com/stefan-jansen/alphalens-reloaded/blob/main/CONTRIBUTING.md)
+for maintenance scope, review requirements and local checks.
 
 If you want to contribute, a great place to start would be the
 [help-wanted issues](https://github.com/stefan-jansen/alphalens-reloaded/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
