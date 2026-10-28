@@ -178,7 +178,7 @@ def plot_returns_table(
     returns_table.loc["Mean Period Wise Return Bottom Quantile (bps)"] = (
         mean_ret_quantile.iloc[0] * DECIMAL_TO_BPS
     )
-    returns_table.loc["Mean Period Wise Spread (bps)"] = (
+    returns_table.loc["Mean Period Wise Spread (bps, 100% gross)"] = (
         mean_ret_spread_quantile.mean() * DECIMAL_TO_BPS
     )
 
@@ -187,6 +187,7 @@ def plot_returns_table(
     else:
         print("Returns Analysis")
         utils.print_table(returns_table.round(3))
+    utils.display(returns_table)
     return returns_table
 
 
@@ -216,7 +217,9 @@ def plot_turnover_table(
     return turnover_table, auto_corr
 
 
-def plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman"):
+def plot_information_table(
+    ic_data, return_df=False, tables_as_figures=True, ic_type="spearman"
+):
     """Display IC statistics as a figure or text; always return the DataFrame."""
 
     def _safe_ttest_1samp(series):
@@ -259,6 +262,9 @@ def plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman"):
     # Ljung-Box test for autocorrelation and Newey-West adjusted t-statistic for IC
     ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=1)
     ic_summary_table = pd.concat([ic_summary_table, ic_supplements_df.T], axis=1)
+
+    if return_df:
+        return ic_summary_table
 
     # Render a Matplotlib table when requested, but keep data return type stable.
     if tables_as_figures:
@@ -388,7 +394,7 @@ def plot_ic_hist(ic, ax=None, plot_kws=None):
         ax = ax.flatten()
 
     for a, (period_num, ic) in zip(ax, ic.items()):
-        clean_ic = ic.replace(np.nan, 0.0)
+        clean_ic = ic.dropna()
 
         has_variance = clean_ic.nunique() > 1
 
@@ -460,7 +466,7 @@ def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None):
 
     for a, (period_num, ic) in zip(ax, ic.items()):
         sm.qqplot(
-            ic.replace(np.nan, 0.0).values,
+            ic.dropna().values,
             theoretical_dist,
             fit=True,
             line="45",
@@ -656,7 +662,7 @@ def plot_mean_quantile_returns_spread_time_series(
         ):
             stdn = None if std_err is None else std_err[name]
             a = plot_mean_quantile_returns_spread_time_series(
-                fr_column, std_err=stdn, ax=a
+                fr_column, std_err=stdn, bandwidth=bandwidth, ax=a
             )
             ax[i] = a
             curr_ymin, curr_ymax = a.get_ylim()
@@ -673,7 +679,7 @@ def plot_mean_quantile_returns_spread_time_series(
 
     periods = mean_returns_spread.name
     title = (
-        "Top Minus Bottom Quantile Mean Return "
+        "Top Minus Bottom Quantile Mean Return (100% gross) "
         "({} Period Forward Return)".format(periods if periods is not None else "")
     )
 

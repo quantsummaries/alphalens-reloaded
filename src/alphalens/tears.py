@@ -26,6 +26,16 @@ from . import performance as perf
 from . import utils
 
 
+def _maybe_show():
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="FigureCanvasAgg is non-interactive, and thus cannot be shown",
+            category=UserWarning,
+        )
+        plt.show()
+
+
 class GridFigure(object):
     """
     It makes life easier with grid plots
@@ -170,7 +180,7 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False,
 
     plotting.plot_turnover_table(autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures)
 
-    plt.show()
+    _maybe_show()
     gf.close()
 
 
@@ -390,7 +400,7 @@ def create_returns_tear_sheet(
                     combined_image.save(save_file)
 
         else:
-            plt.show()
+            _maybe_show()
 
         completed = True
         return rtrns_tbl
@@ -526,7 +536,7 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
                     combined_image.save(save_file)
 
         else:
-            plt.show()
+            _maybe_show()
 
         completed = True
         return summaries
@@ -643,7 +653,7 @@ def create_turnover_tear_sheet(
             else:
                 gf.fig.savefig(save_file, bbox_inches="tight")
         else:
-            plt.show()
+            _maybe_show()
 
         completed = True
         return summaries
@@ -768,7 +778,7 @@ def create_event_returns_tear_sheet(
             ax=ax_avg_cumulative_returns_by_q,
         )
 
-    plt.show()
+    _maybe_show()
     gf.close()
 
     if by_group:
@@ -797,7 +807,7 @@ def create_event_returns_tear_sheet(
                 ax=gf.next_cell(),
             )
 
-        plt.show()
+        _maybe_show()
         gf.close()
 
 
@@ -838,7 +848,7 @@ def create_event_study_tear_sheet(
     plotting.plot_events_distribution(
         events=factor_data["factor"], num_bars=n_bars, ax=gf.next_row()
     )
-    plt.show()
+    _maybe_show()
     gf.close()
 
     if returns is not None and avgretplot is not None:
@@ -893,5 +903,5 @@ def create_event_study_tear_sheet(
             UserWarning,
         )
 
-    plt.show()
+    _maybe_show()
     gf.close()

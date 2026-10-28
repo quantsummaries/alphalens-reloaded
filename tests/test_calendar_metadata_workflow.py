@@ -11,7 +11,7 @@ def _holiday_inputs(clock, timezone):
         ["2017-01-13", "2017-01-18", "2017-01-30", "2017-02-07"], tz=timezone
     )
     dates = pd.bdate_range("2017-01-12", "2017-02-15", tz=timezone).drop(holidays)
-    dates = dates + pd.Timedelta(clock)
+    dates = dates + utils._coerce_timedelta(clock)
     prices = pd.DataFrame(
         100 * np.array([1.1, 0.9])[None, :] ** np.arange(len(dates))[:, None],
         index=dates,
@@ -63,7 +63,7 @@ def test_holiday_cleaner_positions_do_not_expire_on_closed_dates(
     clock, group_neutral, sparse
 ):
     factor, prices, holidays = _holiday_inputs(clock, None)
-    missing_date = pd.Timestamp("2017-01-17") + pd.Timedelta(clock)
+    missing_date = pd.Timestamp("2017-01-17") + utils._coerce_timedelta(clock)
     if sparse:
         factor = factor.drop(index=missing_date, level="date")
     panel = utils.get_clean_factor_and_forward_returns(
@@ -85,7 +85,7 @@ def test_holiday_cleaner_positions_do_not_expire_on_closed_dates(
     np.testing.assert_allclose(
         positions.loc[factor_dates], np.tile([-0.5, 0.5], (len(factor_dates), 1))
     )
-    expiry = pd.Timestamp("2017-02-13") + pd.Timedelta(clock)
+    expiry = pd.Timestamp("2017-02-13") + utils._coerce_timedelta(clock)
     if sparse:
         np.testing.assert_array_equal(positions.loc[missing_date], [0.0, 0.0])
     assert positions.index[-1] == expiry

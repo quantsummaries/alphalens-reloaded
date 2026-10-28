@@ -26,7 +26,9 @@ from pandas.tseries.offsets import (
     CustomBusinessDay,
     Day,
     BusinessDay,
+    Tick,
 )
+from pandas.tseries.frequencies import to_offset
 from scipy.stats import mode
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
@@ -308,9 +310,12 @@ def compute_forward_returns(
             "tz_convert."
         )
 
-    if factor_dateindex.freq:
-        freq = factor_dateindex.freq
-    else:
+    freq = factor_dateindex.freq
+    if freq is None:
+        inferred = factor_dateindex.inferred_freq or prices.index.inferred_freq
+        if inferred is not None:
+            freq = to_offset(inferred)
+    if freq is None:
         freq = infer_trading_calendar(factor_dateindex, prices.index)
 
     factor_dateindex = factor_dateindex.intersection(prices.index)
@@ -361,6 +366,13 @@ def compute_forward_returns(
             period_len = diff_custom_calendar_timedeltas(start, end, freq)
             days_diffs.append(period_len.days)
 
+        if not days_diffs:
+            raise ValueError(
+                "Not enough price data to compute %s-period forward "
+                "returns. Prices must extend past the factor dates by "
+                "at least that many observations." % period
+            )
+
         delta_days = int(period_len.days - mode(days_diffs, keepdims=True).mode[0])
         period_len -= _coerce_timedelta_days(delta_days)
         label = timedelta_to_string(period_len)
@@ -380,7 +392,16 @@ def compute_forward_returns(
 
     # now set the columns correctly
     df = df[column_list]
-    df.index.levels[0].freq = freq
+    try:
+        date_index = pd.DatetimeIndex(df.index.levels[0], freq=freq, copy=True)
+        df.index = df.index.set_levels(date_index, level=0)
+    except ValueError:
+        # Intraday timestamps may not conform to a daily/custom business calendar.
+        warnings.warn(
+            "Factor dates do not conform to the inferred trading calendar "
+            "(%s); retaining their observed frequency." % freq,
+            UserWarning,
+        )
     df.index.set_names(["date", "asset"], inplace=True)
 
     return df
@@ -983,7 +1004,7 @@ def get_forward_returns_columns(
             )
             _NON_EXACT_DAY_WARNING_EMITTED = True
     else:
-        pattern = re.compile(r"^(\d+([Dhms]|ms|us|ns]))+$", re.IGNORECASE)
+        pattern = re.compile(r"^(\d+(?:D|h|ms|us|ns|m|s))+$", re.IGNORECASE)
         valid_columns = [(pattern.match(col) is not None) for col in columns]
 
     return columns[valid_columns]
@@ -1059,7 +1080,13 @@ def add_custom_calendar_timedelta(input, timedelta, freq):
         raise ValueError("freq must be Day, BDay or CustomBusinessDay")
     days = timedelta.days
     offset = timedelta - _coerce_timedelta_days(days)
-    return input + freq * days + offset
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="Non-vectorized DateOffset being applied to Series or DatetimeIndex\\.",
+            category=pd.errors.PerformanceWarning,
+        )
+        return input + freq * days + offset
 
 
 def make_naive_ts(t):
@@ -1089,6 +1116,12 @@ def diff_custom_calendar_timedeltas(start, end, freq):
             "freq must be an instance of pandas.tseries.offsets.BaseOffset "
             "(e.g. Day, BusinessDay or CustomBusinessDay)"
         )
+
+    timediff = end - start
+
+    # Intraday fixed offsets (hours/minutes/seconds/...) use wall-clock deltas.
+    if isinstance(freq, Tick) and freq < Day():
+        return timediff
 
     weekmask = getattr(freq, "weekmask", None)
     holidays = getattr(freq, "holidays", None)

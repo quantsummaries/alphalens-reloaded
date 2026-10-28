@@ -6,7 +6,7 @@ from alphalens import performance, utils
 
 @pytest.mark.parametrize("period", ["1ns", "1us", "1ms", "1D1ns"])
 def test_cleaned_subsecond_returns_are_retained_in_quantile_analysis(period):
-    horizon = pd.Timedelta(period)
+    horizon = utils._coerce_timedelta(period)
     dates = pd.date_range("2024-01-01", periods=3, freq=horizon)
     prices = pd.DataFrame({"A": [100, 102, 104], "B": [200, 201, 202]}, index=dates)
     forward = (

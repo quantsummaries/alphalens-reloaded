@@ -26,6 +26,19 @@ from statsmodels.tools.tools import add_constant
 from . import utils
 
 
+def _reindex_to_freq(result, freq):
+    """Attach frequency metadata without changing observations."""
+    if freq is None:
+        return result
+    try:
+        new_index = pd.DatetimeIndex(result.index, freq=freq, copy=True)
+    except ValueError:
+        return result
+    reindexed = result.copy()
+    reindexed.index = new_index
+    return reindexed
+
+
 def factor_information_coefficient(factor_data, group_adjust=False, by_group=False,
                                    ic_type="spearman"):
     """
@@ -58,17 +71,29 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
         provided forward returns; indexed by 'date' with columns like '1D', '2D', etc..
     """
 
+    def _safe_corr(x, f, method):
+        valid = pd.concat([x, f], axis=1).dropna()
+        if len(valid) < 2:
+            return np.nan
+        x_valid = valid.iloc[:, 0]
+        f_valid = valid.iloc[:, 1]
+        if x_valid.nunique() <= 1 or f_valid.nunique() <= 1:
+            return np.nan
+        if method == "spearman":
+            return stats.spearmanr(x_valid, f_valid)[0]
+        return stats.pearsonr(x_valid, f_valid)[0]
+
     def src_ic(group):
         f = group["factor"]
         _ic = group[utils.get_forward_returns_columns(factor_data.columns)].apply(
-            lambda x: stats.spearmanr(x, f)[0]
+            lambda x: _safe_corr(x, f, "spearman")
         )
         return _ic
 
     def src_ic_pearson(group):
         f = group["factor"]
         _ic = group[utils.get_forward_returns_columns(factor_data.columns)].apply(
-            lambda x: stats.pearsonr(x, f)[0]
+            lambda x: _safe_corr(x, f, "pearson")
         )
         return _ic
 
@@ -94,7 +119,7 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
     if by_group:
         return ic
     else:
-        return ic.asfreq(freq) if freq is not None else ic
+        return _reindex_to_freq(ic, freq)
 
 
 def mean_information_coefficient(
@@ -220,7 +245,10 @@ def factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=
         elif _demeaned:
             group = group - group.mean()
 
-        return group / group.abs().sum()
+        gross = group.abs().sum()
+        if gross == 0 or pd.isna(gross):
+            return group * 0.0
+        return group / gross
 
     grouper = [factor_data.index.get_level_values("date")]
     if group_adjust:
@@ -288,7 +316,9 @@ def factor_returns(
     else:
         # requires at least one weighted return
         # otherwise returns np.nan
-        returns = weighted_returns.groupby(level="date").sum(min_count=1).asfreq(freq)
+        returns = _reindex_to_freq(
+            weighted_returns.groupby(level="date").sum(min_count=1), freq
+        )
 
     return returns
 
@@ -432,7 +462,7 @@ def positions(weights, period, freq=None):
     weights = weights.unstack()
 
     if not isinstance(period, pd.Timedelta):
-        period = pd.Timedelta(str(period))
+        period = utils._coerce_timedelta(period)
 
     if freq is None:
         freq = weights.index.freq
@@ -450,11 +480,15 @@ def positions(weights, period, freq=None):
     trades_idx = weights.index.copy()
     returns_idx = utils.add_custom_calendar_timedelta(trades_idx, period, freq)
     weights_idx = trades_idx.union(returns_idx)
+    # Remove duplicated dates when trading dates include weekend timestamps.
+    weights_idx = weights_idx.drop_duplicates()
 
     #
     # Compute portfolio weights for each point in time contained in the index
     #
-    portfolio_weights = pd.DataFrame(index=weights_idx, columns=weights.columns)
+    portfolio_weights = pd.DataFrame(
+        index=weights_idx, columns=weights.columns, dtype=float
+    )
     active_weights = []
 
     for curr_time in weights_idx:
@@ -471,10 +505,11 @@ def positions(weights, period, freq=None):
         #
         # remove expired entry in active_weights (older than 'period')
         #
-        if active_weights:
-            expire_ts, assets_weights = active_weights[0]
-            if expire_ts <= curr_time:
-                active_weights.pop(0)
+        active_weights = [
+            (expiry, allocation)
+            for expiry, allocation in active_weights
+            if expiry > curr_time
+        ]
 
         if not active_weights:
             continue
@@ -603,13 +638,15 @@ def compute_mean_returns_spread(mean_returns, upper_quant, lower_quant, std_err=
     mean_return_difference = mean_returns.xs(
         upper_quant, level="factor_quantile"
     ) - mean_returns.xs(lower_quant, level="factor_quantile")
+    # Report spread at 100% gross leverage (50% long, 50% short).
+    mean_return_difference = mean_return_difference / 2.0
 
     if std_err is None:
         joint_std_err = None
     else:
         std1 = std_err.xs(upper_quant, level="factor_quantile")
         std2 = std_err.xs(lower_quant, level="factor_quantile")
-        joint_std_err = np.sqrt(std1**2 + std2**2)
+        joint_std_err = np.sqrt(std1**2 + std2**2) / 2.0
 
     return mean_return_difference, joint_std_err
 
@@ -1100,7 +1137,7 @@ def factor_positions(
 
     weights = factor_weights(portfolio_data, long_short, group_neutral, equal_weight)
 
-    return positions(weights, period)
+    return positions(weights, period, freq=portfolio_data.index.levels[0].freq)
 
 
 def create_pyfolio_input(
