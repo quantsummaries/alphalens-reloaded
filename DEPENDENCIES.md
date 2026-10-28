@@ -1,6 +1,6 @@
 # Alphalens Function Dependencies
 
-> **Version**: branch `yzeng` at HEAD `a51dd45` (2026-10-13, the `tables_as_figures` refactor). Prior revision: HEAD `7c375a3` (2026-10-09).
+> **Version**: branch `yzeng` at HEAD `6d4e1cd` (2026-10-28, pandas 3.x / Python 3.12 compatibility + 100% gross-leverage spread + IC robustness). Prior revisions: HEAD `a51dd45` (2026-10-13), `7c375a3` (2026-10-09).
 
 This document maps the in-package function calls in `src/alphalens`. It is
 intended as a navigation aid for reviewing implementation changes: a change to
@@ -10,9 +10,9 @@ Dependencies below are direct calls between Alphalens functions. Calls into
 NumPy, pandas, SciPy, statsmodels, matplotlib, seaborn, PIL, and empyrical
 are not listed. Decorators (`customize`, `non_unique_bin_edges_error`) wrap
 their decorated functions dynamically; those edges are called out separately.
-The graph follows the checked-in source on branch `yzeng` at HEAD `a51dd45`
-(2026-10-13, the `tables_as_figures` refactor; previous revision was HEAD
-`7c375a3`) and may need updating when functions are added or refactored.
+The graph follows the checked-in source on branch `yzeng` at HEAD `6d4e1cd`
+(2026-10-28; previous revisions were HEAD `a51dd45` and `7c375a3`) and may
+need updating when functions are added or refactored.
 
 ## Table of Contents
 - [Function dependency layers](#function-dependency-layers)
@@ -39,10 +39,16 @@ These functions do not call another Alphalens function directly.
    `backshift_returns_series`, `get_forward_returns_columns`,
    `infer_trading_calendar`, `make_naive_ts`, `print_table`,
    `quantize_factor`, `rate_of_return`, `rethrow`, `std_conversion`,
-   `timedelta_strings_to_integers`, `timedelta_to_string`, `ic_autocor_adj`.
+   `timedelta_strings_to_integers`, `timedelta_to_string`, `ic_autocor_adj`,
+   `_coerce_timedelta` (new in `6d4e1cd`; wraps `pd.Timedelta` to suppress
+   the numpy timedelta deprecation warning), `_coerce_timedelta_days` (new in
+   `6d4e1cd`; strict day-count coercion).
 2. `alphalens.performance`: `common_start_returns`,
    `compute_mean_returns_spread`, `cumulative_returns`,
-   `factor_rank_autocorrelation`, `factor_weights`, `quantile_turnover`.
+   `factor_rank_autocorrelation`, `factor_weights`, `quantile_turnover`,
+   `_reindex_to_freq` (new in `6d4e1cd`; reattaches a frequency to a
+   result index without changing observations — the replacement for
+   `.asfreq()`).
 3. `alphalens.plotting`: `axes_style`, `plotting_context`,
    `plot_cumulative_returns`, `plot_cumulative_returns_by_quantile`,
    `plot_events_distribution`, `plot_factor_rank_auto_correlation`,
@@ -62,7 +68,8 @@ These functions do not call another Alphalens function directly.
    `quantize_factor` with a friendlier error message).
 4. `performance.average_cumulative_return_by_quantile` →
    `common_start_returns`.
-5. `performance.positions` → `add_custom_calendar_timedelta`.
+5. `performance.positions` → `add_custom_calendar_timedelta`,
+   `_coerce_timedelta`.
 6. `plotting.customize` → `axes_style`, `plotting_context` (decorator;
    dynamically invokes whichever plotting function it wraps).
 7. `plotting.plot_information_table` → `ic_autocor_adj`, `print_table`.
@@ -70,6 +77,20 @@ These functions do not call another Alphalens function directly.
 9. `plotting.plot_returns_table` → `_plot_summary_table`, `print_table`.
 10. `plotting.plot_turnover_table` → `_plot_summary_table`, `print_table`.
 11. `extra.hit_rate` → `get_forward_returns_columns`.
+
+> Note (`6d4e1cd`): the new pandas-3.x coercion helpers are private and are
+> called by functions in higher layers via same-module or
+> module-qualified edges that do not appear as import-based `Call` nodes:
+> `utils._coerce_timedelta` / `utils._coerce_timedelta_days` are used by
+> `utils.rate_of_return`, `utils.std_conversion`,
+> `utils.timedelta_strings_to_integers`,
+> `utils.add_custom_calendar_timedelta`, `utils.diff_custom_calendar_timedeltas`
+> (same-module), by `performance.factor_alpha_beta`,
+> `performance.positions` (module-qualified), and by
+> `tears.create_summary_tear_sheet`; `performance._reindex_to_freq` is used
+> by `performance.factor_returns` and
+> `performance.factor_information_coefficient`; `tears._maybe_show` is used
+> by every `create_*_tear_sheet` in place of `plt.show()`.
 
 > Note: `_plot_summary_table` is defined in `plotting.py` itself, so it is not
 > captured by the AST caller-map's import-based alias resolution; the
@@ -83,16 +104,18 @@ These functions do not call another Alphalens function directly.
    `infer_trading_calendar`, `timedelta_to_string`.
 2. `utils.get_clean_factor` → `quantize_factor`.
 3. `performance.factor_returns` → `factor_weights`,
-   `get_forward_returns_columns`.
+   `get_forward_returns_columns`, `_reindex_to_freq` (`6d4e1cd`).
 4. `performance.factor_information_coefficient` →
-   `demean_forward_returns`, `get_forward_returns_columns`.
+   `demean_forward_returns`, `get_forward_returns_columns`,
+   `_reindex_to_freq` (`6d4e1cd`).
 5. `performance.mean_return_by_quantile` → `demean_forward_returns`,
    `get_forward_returns_columns`.
 
 ### Level 3 — composed analytics and the four core tear sheets
 
 1. `performance.factor_alpha_beta` → `factor_returns`,
-   `get_forward_returns_columns`.
+   `get_forward_returns_columns`, `_coerce_timedelta`,
+   `_coerce_timedelta_days` (`6d4e1cd`).
 2. `performance.factor_cumulative_returns` → `cumulative_returns`,
    `factor_returns`, `get_forward_returns_columns`.
 3. `performance.factor_positions` → `factor_weights`,
@@ -124,7 +147,8 @@ These functions do not call another Alphalens function directly.
    `performance.factor_rank_autocorrelation`,
    `get_forward_returns_columns`, `plot_information_table`,
    `plot_quantile_returns_bar`, `plot_quantile_statistics_table`,
-   `plot_returns_table`, `plot_turnover_table`.
+   `plot_returns_table`, `plot_turnover_table`, `_coerce_timedelta`
+   (`6d4e1cd`).
 10. `tears.create_turnover_tear_sheet` →
     `performance.quantile_turnover`,
     `performance.factor_rank_autocorrelation`,
@@ -263,5 +287,18 @@ alphalens.wrapper
   analytics; it only re-exports existing public API with convenience.
 - `extra.hit_rate` is a small, standalone metric that reuses
   `get_forward_returns_columns`; it is not part of any tear-sheet flow.
+- Since `6d4e1cd`, `performance.compute_mean_returns_spread` halves the
+  mean-return difference and joint std-err, so every "spread" figure / table
+  is now reported at **100% gross leverage** (50% long / 50% short). Its
+  direct callers are `tears.create_returns_tear_sheet` and
+  `tears.create_summary_tear_sheet`; the row label in
+  `plotting.plot_returns_table` is now `"Mean Period Wise Spread (bps, 100%
+  gross)"`.
+- `utils.get_forward_returns_columns` gained a `warn_on_drop` flag at
+  `6d4e1cd`; the non-exact-day warning now fires at most once per process.
+- The pandas 3.x pass added four private helpers that sit at the bottom of
+  the graph (`utils._coerce_timedelta`, `utils._coerce_timedelta_days`,
+  `performance._reindex_to_freq`, `tears._maybe_show`). They have no
+  in-package callees and are leaf nodes.
 
 [⬆ 回到目录](#table-of-contents)

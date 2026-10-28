@@ -1,6 +1,6 @@
 # Alphalens Reloaded — Learning Roadmap
 
-> **Version**: branch `yzeng` at HEAD `a51dd45` (2026-10-13, the `tables_as_figures` refactor). Prior revision: HEAD `7c375a3` (2026-10-09).
+> **Version**: branch `yzeng` at HEAD `6d4e1cd` (2026-10-28, pandas 3.x / Python 3.12 compatibility + 100% gross-leverage spread + IC robustness). Prior revisions: HEAD `a51dd45` (2026-10-13), `7c375a3` (2026-10-09).
 
 Entry-points and recommended reading order for learning this codebase.
 All paths below are relative to the repo root `alphalens-reloaded/`.
@@ -141,7 +141,11 @@ Read in this order; each group builds on the previous one.
       internalize the `w·r` portfolio math.
 - [x] **Alpha / beta vs. universe**: `factor_alpha_beta`.
 - [x] **Quantile analysis**: `mean_return_by_quantile`,
-      `compute_mean_returns_spread`.
+      `compute_mean_returns_spread`. Since `6d4e1cd`,
+      `compute_mean_returns_spread` reports the spread at **100% gross
+      leverage** (50% long / 50% short) — the mean-return difference and
+      joint std-err are halved. The spread tables / time series are labeled
+      "(100% gross)".
 - [x] **Turnover & rank stability**: `quantile_turnover`,
       `factor_rank_autocorrelation`.
 - [ ] **Event studies**: `common_start_returns`,
@@ -163,7 +167,10 @@ Read in this order; each group builds on the previous one.
         `plot_information_table`, `plot_quantile_statistics_table`
         (note the `tables_as_figures` contract: the three summary tables
         always return their DataFrames; `plot_quantile_statistics_table`
-        is the legacy `return_df` holdout).
+        is the legacy `return_df` holdout. At `6d4e1cd`,
+        `plot_information_table` **re-introduced its own `return_df` flag** —
+        `plot_information_table(ic_data, return_df=False, tables_as_figures=True, ic_type="spearman")` — so with `return_df=True` it returns the table
+        without rendering).
   - [ ] IC plots: `plot_ic_ts`, `plot_ic_hist`, `plot_ic_qq`,
         `plot_ic_by_group`, `plot_monthly_ic_heatmap`.
   - [ ] Returns: `plot_quantile_returns_bar`, `plot_quantile_returns_violin`,
@@ -227,16 +234,30 @@ Read in this order; each group builds on the previous one.
 
 ## 11. Known quirks / pitfalls to watch for
 
-From `CODE_OVERVIEW.md` (re-verified 2026-10-13 at HEAD `a51dd45`; the
-`tables_as_figures` refactor resolved the two `return_df` quirks below):
+From `CODE_OVERVIEW.md` (re-verified 2026-10-28 at HEAD `6d4e1cd`):
 
 - [ ] `tests/test_wrapper.py` is script-style — run it directly, not via
-      pytest, until it gets real `test_*` functions (a new
-      `tests/test_information_display.py` now covers the table-display path).
+      pytest, until it gets real `test_*` functions (new workflow tests —
+      `test_pandas_compat_workflow.py`, `test_spread_workflow.py`,
+      `test_intraday_workflow.py`, etc. — now cover much of the rest).
 - [ ] `filter_zscore` in `utils.get_clean_factor_and_forward_returns` can
       introduce lookahead bias — understand when it is safe to use.
 - [ ] `factor_alpha_beta` docstring still advertises a t-stat(alpha) row that
       the function body does not produce (it emits `Ann. alpha` and `beta`).
+- [ ] Since `6d4e1cd`, all "spread" figures and tables are at **100% gross
+      leverage** (halved). When comparing against older runs or against
+      pyfolio / upstream alphalens, expect the scale to differ by 2×.
+- [ ] `plot_information_table` has **two** display flags that can interact:
+      `return_df` (short-circuits, returns the table) and `tables_as_figures`
+      (figure vs. text). Pass `return_df=True` deliberately — do not assume
+      it is unset.
+- [ ] The IC / table helpers (`factor_information_coefficient`,
+      `plot_information_table`, `utils.ic_autocor_adj`) return `NaN` rather
+      than raising for short or constant IC series — a `NaN` row is a data
+      limitation, not a crash.
+- [ ] `utils.get_forward_returns_columns(..., warn_on_drop=True)` emits the
+      non-exact-day warning at most once per process; suppress it with
+      `warn_on_drop=False` in noisy loops.
 
 [⬆ 回到目录](#table-of-contents)
 

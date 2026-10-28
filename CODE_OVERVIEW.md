@@ -1,6 +1,6 @@
 # Alphalens Documentation
 
-> **Version**: branch `yzeng` at HEAD `a51dd45` (2026-10-13, the `tables_as_figures` refactor). Prior revision: HEAD `7c375a3` (2026-10-09).
+> **Version**: branch `yzeng` at HEAD `6d4e1cd` (2026-10-28, pandas 3.x / Python 3.12 compatibility + 100% gross-leverage spread + IC robustness). Prior revisions: HEAD `a51dd45` (2026-10-13), `7c375a3` (2026-10-09).
 
 ## Table of Contents
 - [0 Review Addendum](#review-addendum)
@@ -28,7 +28,7 @@
     - [2.6.5 `make_naive_ts()`](#make_naive_tst)
     - [2.6.6 `diff_custom_calendar_timedeltas()`](#diff_custom_calendar_timedeltasstart-end-freq)
   - 2.7 Column detection and display helpers
-    - [2.7.1 `get_forward_returns_columns()`](#get_forward_returns_columnscolumns-require_exact_day_multiplefalse)
+    - [2.7.1 `get_forward_returns_columns()`](#get_forward_returns_columnscolumns-require_exact_day_multiplefalse-warn_on_droptrue)
     - [2.7.2 `print_table()`](#print_tabletable-namenone-fmtnone)
   - 2.8 Error handling helper
     - [2.8.1 `rethrow()`](#rethrowexception-additional_message)
@@ -67,7 +67,7 @@
   - 4.2 Data table displays
     - [4.2.1 `plot_returns_table()`](#plot_returns_tablealpha_beta-mean_ret_quantile-mean_ret_spread_quantile-tables_as_figurestrue-axnone)
     - [4.2.2 `plot_turnover_table()`](#plot_turnover_tableautocorrelation_data-quantile_turnover-tables_as_figurestrue-axnone)
-    - [4.2.3 `plot_information_table()`](#plot_information_tableic_data-tables_as_figurestrue-ic_typespearman)
+    - [4.2.3 `plot_information_table()`](#plot_information_tableic_data-return_dffalse-tables_as_figurestrue-ic_typespearman)
     - [4.2.4 `plot_quantile_statistics_table()`](#plot_quantile_statistics_tablefactor_data-return_dffalse)
   - 4.3 Information Coefficient visualization
     - [4.3.1 `plot_ic_ts()`](#plot_ic_tsic-axnone)
@@ -120,13 +120,15 @@
 
 ## Review Addendum
 _Originally written at commit `3cd82b40c5013a12d1b4fa1d37ae9d1d34af2a82`;
-re-verified at HEAD `7c375a3` on 2026-10-09; last updated at HEAD `a51dd45`
-on 2026-10-13 (branch `yzeng`)._
+re-verified at HEAD `7c375a3` on 2026-10-09; updated at HEAD `a51dd45`
+on 2026-10-13; last re-verified at HEAD `6d4e1cd` on 2026-10-28 (branch `yzeng`)._
 
-> **Version**: `a51dd45` (2026-10-13, branch `yzeng`). The `tables_as_figures`
-> refactor (commit range `7c375a3..a51dd45`) replaced the `return_df` /
-> `as_figure` flags in the table-display helpers and tear sheets; this doc is
-> written against that refactor.
+> **Version**: `6d4e1cd` (2026-10-28, branch `yzeng`). This revision covers
+> the pandas 3.x / Python 3.12 compatibility pass (`a51dd45..6d4e1cd`):
+> `compute_mean_returns_spread` now reports the spread at **100% gross
+> leverage** (halved), `plot_information_table` re-introduced a `return_df`
+> flag, `get_forward_returns_columns` gained `warn_on_drop`, and the IC / table
+> helpers were hardened against short / constant series.
 
 ### Scope reviewed
 
@@ -148,6 +150,13 @@ Status as of 2026-10-13 re-verification at HEAD `a51dd45`:
 3. **Low / testing gap (partially improved, still open)**: a new `tests/test_information_display.py` (265 lines) covers the table-display / `tables_as_figures` behavior. However, `tests/test_wrapper.py` is still script-style — it only has `if __name__ == "__main__":` with helper functions and no `test_*` functions, so `pytest tests/test_wrapper.py` still collects 0 items.
    - Ref: `tests/test_wrapper.py` (7.2 KB), `tests/test_information_display.py` (new).
 
+#### Re-verified 2026-10-28 at HEAD `6d4e1cd` (a51dd45..6d4e1cd)
+
+- Finding 3 (test_wrapper zero-pytest gap) **still open** — `tests/test_wrapper.py` remains script-style; the pandas 3.x pass did not add `test_*` functions there. Coverage improved elsewhere via many new workflow tests (`test_pandas_compat_workflow.py`, `test_intraday_workflow.py`, `test_spread_workflow.py`, `test_spread_bandwidth_workflow.py`, `test_calendar_metadata_workflow.py`, `test_position_expiry.py`, `test_subsecond_workflow.py`, `test_missing_ic_workflow.py`).
+- **New, worth watching**: `compute_mean_returns_spread` now halves the mean-return difference and joint std-err so the spread is reported at **100% gross leverage** (50% long / 50% short). This changes the numeric values of every "spread" figure / table vs. the previous convention — verify downstream consumers (pyfolio bridge, event tear sheets) expect the halved scale.
+- **New, worth watching**: `plot_information_table` re-introduced a `return_df=False` parameter (alongside `tables_as_figures`); with `return_df=True` it short-circuits and returns the table without rendering. Confirm callers still get the DataFrame they expect.
+- **New, minor**: `factor_alpha_beta` docstring still advertises a t-stat(alpha) row that the body does not emit — carried forward unchanged.
+
 ### API / behavior changes captured (HEAD `a51dd45`)
 
 - `plotting.plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, tables_as_figures=True, ax=None)` — `return_df` → `tables_as_figures`; added `ax`; **always returns** the `returns_table` DataFrame.
@@ -160,6 +169,19 @@ Status as of 2026-10-13 re-verification at HEAD `a51dd45`:
 - `information_analysis_wrapper` now returns `{f"ic_{ic_type}": summary.T}` and forwards `by_group` into `factor_information_coefficient`.
 - `performance.factor_information_coefficient(...)` supports `ic_type` (`"spearman"` | `"pearson"`).
 - New test module `tests/test_information_display.py`.
+
+#### Additional API / behavior changes (HEAD `6d4e1cd`, pandas 3.x pass)
+
+- `performance.compute_mean_returns_spread(...)` — the spread and its joint std-err are now **halved** to report at 100% gross leverage (50/50 long-short). Plot titles and table rows updated to "(100% gross)".
+- `plotting.plot_information_table(ic_data, return_df=False, tables_as_figures=True, ic_type="spearman")` — a `return_df` flag was **re-introduced** (short-circuits and returns the table without rendering).
+- `plotting.plot_returns_table(...)` — the spread row is now labeled `"Mean Period Wise Spread (bps, 100% gross)"`; also calls `utils.display(returns_table)`.
+- `utils.get_forward_returns_columns(columns, require_exact_day_multiple=False, warn_on_drop=True)` — new `warn_on_drop` parameter; the non-exact-day warning now fires at most once.
+- `performance.factor_information_coefficient` / `plotting.plot_information_table` / `utils.ic_autocor_adj` — hardened to return `NaN` (instead of raising) for short or constant series (fewer than 2–3 obs, zero std).
+- `performance.factor_weights` — guards against zero/NaN gross (returns zeros instead of dividing by zero).
+- `performance.positions` — deduplicates weekend/trading timestamps in the merged index; `factor_positions` now passes `freq` through to `positions`.
+- `utils.compute_forward_returns` — raises `ValueError` when there is not enough price data; infers freq from `inferred_freq`; tolerates intraday timestamps that don't fit the inferred calendar (with a warning).
+- New private helpers: `utils._coerce_timedelta`, `utils._coerce_timedelta_days`, `performance._reindex_to_freq`, `tears._maybe_show`.
+- **pandas 3.x / Python 3.12 compatibility** throughout: `MultiIndex.labels`→`.codes`, `.fillna(method="ffill")`→`.ffill()`, `groupby(observed=False)`, `stack(future_stack=True)` with fallback, `cm.coolwarm`→`"coolwarm"` / `plt.colormaps`, `.components.days`→`.days`.
 
 ### Documentation updates completed
 
@@ -389,7 +411,7 @@ This is used when forward-return horizons must respect trading days, weekends, a
 
 ### Column detection and display helpers
 
-#### `get_forward_returns_columns(columns, require_exact_day_multiple=False)`
+#### `get_forward_returns_columns(columns, require_exact_day_multiple=False, warn_on_drop=True)`
 
 Identify which columns look like forward-return horizons.
 
@@ -397,7 +419,7 @@ Identify which columns look like forward-return horizons.
 
 - Recognizes `Timedelta`-style labels such as `1D`, `5D`, `30m`, `1D1h`.
 - When `require_exact_day_multiple=True`, only exact day multiples are kept.
-- Emits a warning if non-day-multiple columns are skipped in that mode.
+- Emits a warning if non-day-multiple columns are skipped in that mode, at most once per process (`warn_on_drop` controls it; added `6d4e1cd`).
 
 #### `print_table(table, name=None, fmt=None)`
 
@@ -621,11 +643,12 @@ Compute the difference in mean returns between two quantiles.
 ##### Behavior
 
 - Subtracts lower-quantile mean returns from upper-quantile mean returns.
+- Since `6d4e1cd`, the difference and joint std-err are **halved**, so the spread is reported at 100% gross leverage (50% long / 50% short) rather than a fully-invested long-minus-short.
 - Optionally propagates standard error for the spread.
 
 ##### Returns
 
-A pair: $(mean_return_difference, joint_std_err)$.
+A pair: $(mean_return_difference, joint_std_err)$ (at 100% gross).
 
 #### `quantile_turnover(quantile_factor, quantile, period=1)`
 
@@ -828,7 +851,7 @@ Display quantile turnover and factor rank autocorrelation statistics.
 
 Always a `(turnover_table, auto_corr)` tuple of `DataFrame`s.
 
-#### `plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman")`
+#### `plot_information_table(ic_data, return_df=False, tables_as_figures=True, ic_type="spearman")`
 
 Display Information Coefficient summary statistics.
 
@@ -838,6 +861,7 @@ Display Information Coefficient summary statistics.
 - Includes skewness and kurtosis.
 - `tables_as_figures=True` renders an inline matplotlib table; otherwise prints the summary.
 - `ic_type` (`"spearman"` | `"pearson"`) labels the IC columns.
+- `return_df=True` short-circuits and returns the table without rendering (flag re-introduced at `6d4e1cd`).
 
 ##### Returns
 
