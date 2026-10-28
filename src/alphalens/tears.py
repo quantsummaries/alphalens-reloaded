@@ -125,7 +125,7 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False,
     )
 
     periods = utils.get_forward_returns_columns(factor_data.columns)
-    periods = list(map(lambda p: pd.Timedelta(p).days, periods))
+    periods = [utils._coerce_timedelta(str(p)).days for p in periods]
 
     fr_cols = len(periods)
     vertical_sections = 2 + fr_cols * 3 + int(tables_as_figures)
@@ -429,7 +429,7 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     tables_as_figures : bool
-        If True (default), render summary tables in the tear sheet; otherwise display text.
+        If True (default), render summary tables in the tear sheet; otherwise dgitisplay text.
         Return a dictionary of Spearman and Pearson summary DataFrames in either mode.
     """
     existing_figures = set(plt.get_fignums())
@@ -574,7 +574,9 @@ def create_turnover_tear_sheet(
     try:
         if turnover_periods is None:
             input_periods = utils.get_forward_returns_columns(
-                factor_data.columns, require_exact_day_multiple=True
+                factor_data.columns,
+                require_exact_day_multiple=True,
+                warn_on_drop=False,
             ).to_numpy()
             turnover_periods = utils.timedelta_strings_to_integers(input_periods)
         else:

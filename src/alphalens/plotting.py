@@ -15,12 +15,14 @@
 
 import numpy as np
 import pandas as pd
+import warnings
 from scipy import stats
 import statsmodels.api as sm
 
 import seaborn as sns
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+from matplotlib import MatplotlibDeprecationWarning
 from matplotlib.ticker import ScalarFormatter
 
 from functools import wraps
@@ -41,9 +43,20 @@ def customize(func):
         set_context = kwargs.pop("set_context", True)
         if set_context:
             color_palette = sns.color_palette("colorblind")
-            with plotting_context(), axes_style(), color_palette:
-                sns.despine(left=True)
-                return func(*args, **kwargs)
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="The locs attribute was deprecated in Matplotlib 3.11.*",
+                    category=MatplotlibDeprecationWarning,
+                )
+                warnings.filterwarnings(
+                    "ignore",
+                    message="The set_bad function will be deprecated.*",
+                    category=PendingDeprecationWarning,
+                )
+                with plotting_context(), axes_style(), color_palette:
+                    sns.despine(left=True)
+                    return func(*args, **kwargs)
         else:
             return func(*args, **kwargs)
 
@@ -205,15 +218,43 @@ def plot_turnover_table(
 
 def plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman"):
     """Display IC statistics as a figure or text; always return the DataFrame."""
+
+    def _safe_ttest_1samp(series):
+        clean = series.dropna()
+        if clean.size < 2 or np.isclose(clean.std(ddof=0), 0.0):
+            return np.nan, np.nan
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            t_stat, p_value = stats.ttest_1samp(clean.values, 0)
+        return t_stat, p_value
+
+    def _safe_moment(series, moment_fn):
+        clean = series.dropna()
+        if clean.size < 3 or np.isclose(clean.std(ddof=0), 0.0):
+            return np.nan
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            return moment_fn(clean.values)
+
     ic_summary_table = pd.DataFrame()
     ic_summary_table[f"IC Mean ({ic_type})"] = ic_data.mean()
     ic_summary_table["IC Std."] = ic_data.std()
     ic_summary_table["Risk-Adjusted IC (ICIR)"] = ic_data.mean() / ic_data.std()
-    t_stat, p_value = stats.ttest_1samp(ic_data, 0)
-    ic_summary_table["t-stat(IC)"] = t_stat
-    ic_summary_table["p-value(IC)"] = p_value
-    ic_summary_table["IC Skew"] = stats.skew(ic_data)
-    ic_summary_table["IC Kurtosis"] = stats.kurtosis(ic_data)
+    t_stats = {}
+    p_values = {}
+    for col in ic_data.columns:
+        t_stat, p_value = _safe_ttest_1samp(ic_data[col])
+        t_stats[col] = t_stat
+        p_values[col] = p_value
+
+    ic_summary_table["t-stat(IC)"] = pd.Series(t_stats)
+    ic_summary_table["p-value(IC)"] = pd.Series(p_values)
+    ic_summary_table["IC Skew"] = ic_data.apply(
+        lambda col: _safe_moment(col, stats.skew), axis=0
+    )
+    ic_summary_table["IC Kurtosis"] = ic_data.apply(
+        lambda col: _safe_moment(col, stats.kurtosis), axis=0
+    )
 
     # Ljung-Box test for autocorrelation and Newey-West adjusted t-statistic for IC
     ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=1)
@@ -552,7 +593,10 @@ def plot_quantile_returns_violin(return_by_q, ylim_percentiles=None, ax=None):
 
     unstacked_dr = return_by_q.multiply(DECIMAL_TO_BPS)
     unstacked_dr.columns = unstacked_dr.columns.set_names("forward_periods")
-    unstacked_dr = unstacked_dr.stack()
+    try:
+        unstacked_dr = unstacked_dr.stack(future_stack=True)
+    except TypeError:
+        unstacked_dr = unstacked_dr.stack()
     unstacked_dr.name = "return"
     unstacked_dr = unstacked_dr.reset_index()
 
@@ -657,6 +701,8 @@ def plot_mean_quantile_returns_spread_time_series(
         )
 
     ylim = np.nanpercentile(abs(mean_returns_spread_bps.values), 95)
+    if not np.isfinite(ylim) or np.isclose(ylim, 0.0):
+        ylim = 1.0
     ax.set(
         ylabel="Difference In Quantile Mean Return (bps)",
         xlabel="",
@@ -817,7 +863,7 @@ def plot_monthly_ic_heatmap(mean_monthly_ic, ax=None):
             annot_kws={"size": 7},
             linewidths=0.01,
             linecolor="white",
-            cmap=cm.coolwarm_r,
+            cmap="coolwarm_r",
             cbar=False,
             ax=a,
         )
@@ -913,7 +959,7 @@ def plot_cumulative_returns_by_quantile(quantile_returns, period, freq=None, ax=
 
     cum_ret = cum_ret.loc[:, ::-1]  # we want negative quantiles as 'red'
 
-    cum_ret.plot(lw=2, ax=ax, cmap=cm.coolwarm)
+    cum_ret.plot(lw=2, ax=ax, cmap="coolwarm")
     ax.legend()
     ymin, ymax = cum_ret.min().min(), cum_ret.max().max()
     ax.set(
@@ -966,7 +1012,8 @@ def plot_quantile_average_cumulative_return(
 
     avg_cumulative_returns = avg_cumulative_returns.multiply(DECIMAL_TO_BPS)
     quantiles = len(avg_cumulative_returns.index.levels[0].unique())
-    palette = [cm.coolwarm(i) for i in np.linspace(0, 1, quantiles)]
+    cmap = plt.colormaps["coolwarm"]
+    palette = [cmap(i) for i in np.linspace(0, 1, quantiles)]
     palette = palette[::-1]  # we want negative quantiles as 'red'
 
     if by_quantile:

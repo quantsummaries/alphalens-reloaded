@@ -143,7 +143,18 @@ def mean_information_coefficient(
         ic = ic.mean()
 
     else:
-        ic = ic.reset_index().set_index("date").groupby(grouper).mean()
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="The 'generic' unit for NumPy timedelta is deprecated.*",
+                category=DeprecationWarning,
+            )
+            ic = (
+                ic.reset_index()
+                .set_index("date")
+                .groupby(grouper, observed=False)
+                .mean()
+            )
 
     return ic
 
@@ -353,7 +364,9 @@ def factor_alpha_beta(
             alpha_beta.loc["Ann. alpha", period] = np.nan
             alpha_beta.loc["beta", period] = np.nan
         else:
-            freq_adjust = pd.Timedelta("252Days") / pd.Timedelta(period)
+            freq_adjust = utils._coerce_timedelta_days(252) / utils._coerce_timedelta(
+                str(period)
+            )
 
             alpha_beta.loc["Ann. alpha", period] = (1 + alpha) ** freq_adjust - 1
             alpha_beta.loc["beta", period] = beta
@@ -419,7 +432,7 @@ def positions(weights, period, freq=None):
     weights = weights.unstack()
 
     if not isinstance(period, pd.Timedelta):
-        period = pd.Timedelta(period)
+        period = pd.Timedelta(str(period))
 
     if freq is None:
         freq = weights.index.freq
@@ -931,7 +944,11 @@ def average_cumulative_return_by_quantile(
             q_returns = pd.DataFrame(
                 {"mean": q_returns.mean(axis=1), "std": q_returns.std(axis=1)}
             )
-            return q_returns.unstack(level=1).stack(level=0)
+            q_returns = q_returns.unstack(level=1)
+            try:
+                return q_returns.stack(level=0, future_stack=True)
+            except TypeError:
+                return q_returns.stack(level=0)
         elif demeaned:
             fq = factor_data["factor_quantile"]
             return fq.groupby(fq).apply(average_cumulative_return, fq)
@@ -1200,7 +1217,7 @@ def create_pyfolio_input(
         quantiles,
         groups,
     )
-    cumrets = cumrets.resample("1D").last().fillna(method="ffill")
+    cumrets = cumrets.resample("1D").last().ffill()
     returns = cumrets.pct_change().fillna(0)
 
     #
@@ -1217,7 +1234,7 @@ def create_pyfolio_input(
         quantiles,
         groups,
     )
-    positions = positions.resample("1D").sum().fillna(method="ffill")
+    positions = positions.resample("1D").sum().ffill()
     positions = positions.div(positions.abs().sum(axis=1), axis=0).fillna(0)
     positions["cash"] = 1.0 - positions.sum(axis=1)
 
@@ -1243,7 +1260,7 @@ def create_pyfolio_input(
             group_neutral=False,
             equal_weight=True,
         )
-        benchmark_rets = benchmark_rets.resample("1D").last().fillna(method="ffill")
+        benchmark_rets = benchmark_rets.resample("1D").last().ffill()
         benchmark_rets = benchmark_rets.pct_change().fillna(0)
         benchmark_rets.name = "benchmark"
     else:

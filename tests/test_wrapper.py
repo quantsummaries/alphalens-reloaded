@@ -78,7 +78,7 @@ def get_test_data(filepath: str) -> pd.DataFrame:
     if data.empty:
         raise ValueError("The downloaded data is empty. Please check the ticker symbols and date range.")
     data.index = pd.to_datetime(data.index, utc=True)
-    data = data.stack(future_stack=True)
+    data = data.stack()
     data.index.names = ['date', 'asset']
     data.to_pickle(filepath)
 

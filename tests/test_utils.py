@@ -15,6 +15,7 @@
 
 from packaging.version import Version
 from unittest import TestCase, skipIf
+from datetime import timedelta
 
 import pandas as pd
 from numpy import nan
@@ -23,7 +24,6 @@ from pandas import (
     DataFrame,
     date_range,
     MultiIndex,
-    Timedelta,
     Timestamp,
     concat,
 )
@@ -471,18 +471,18 @@ class UtilsTestCase(TestCase):
         price_index = date_range(start=start, end=price_end, freq="B")
         price_index.name = "date"
         today_open = DataFrame(
-            index=price_index + Timedelta("9h30m"),
+            index=price_index + timedelta(hours=9, minutes=30),
             columns=tickers,
             data=price_data,
         )
         today_open_1h = DataFrame(
-            index=price_index + Timedelta("10h30m"),
+            index=price_index + timedelta(hours=10, minutes=30),
             columns=tickers,
             data=price_data,
         )
         today_open_1h += today_open_1h * 0.001
         today_open_3h = DataFrame(
-            index=price_index + Timedelta("12h30m"),
+            index=price_index + timedelta(hours=12, minutes=30),
             columns=tickers,
             data=price_data,
         )
@@ -492,7 +492,7 @@ class UtilsTestCase(TestCase):
         factor_index = date_range(start=start, end=factor_end, freq="B")
         factor_index.name = "date"
         factor = DataFrame(
-            index=factor_index + Timedelta("9h30m"),
+            index=factor_index + timedelta(hours=9, minutes=30),
             columns=tickers,
             data=factor_data,
         ).stack()
@@ -633,18 +633,18 @@ class UtilsTestCase(TestCase):
         price_index = price_index.drop(holidays)
 
         today_open = DataFrame(
-            index=price_index + Timedelta("9h30m"),
+            index=price_index + timedelta(hours=9, minutes=30),
             columns=tickers,
             data=price_data,
         )
         today_open_1h = DataFrame(
-            index=price_index + Timedelta("10h30m"),
+            index=price_index + timedelta(hours=10, minutes=30),
             columns=tickers,
             data=price_data,
         )
         today_open_1h += today_open_1h * 0.001
         today_open_3h = DataFrame(
-            index=price_index + Timedelta("12h30m"),
+            index=price_index + timedelta(hours=12, minutes=30),
             columns=tickers,
             data=price_data,
         )
@@ -654,7 +654,7 @@ class UtilsTestCase(TestCase):
         factor_index = date_range(start=start, end=factor_end, freq="B", name="date")
         factor_index = factor_index.drop(holidays)
         factor = DataFrame(
-            index=factor_index + Timedelta("9h30m"),
+            index=factor_index + timedelta(hours=9, minutes=30),
             columns=tickers,
             data=factor_data,
         ).stack()

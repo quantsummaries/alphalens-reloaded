@@ -24,7 +24,6 @@ from pandas import (
     MultiIndex,
     Index,
     DatetimeIndex,
-    Timedelta,
     Categorical,
     CategoricalIndex,
 )
@@ -1017,7 +1016,6 @@ class PerformanceTestCase(TestCase):
         else:
             ret_freq_class = Day()
 
-        period_len = Timedelta(period_len)
         index = date_range("1/1/1999", periods=len(returns), freq=ret_freq)
         returns = Series(returns, index=index)
 

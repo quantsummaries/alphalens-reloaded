@@ -8,9 +8,6 @@ All paths below are relative to the repo root `alphalens-reloaded/`.
 Companion docs: `CODE_OVERVIEW.md` (module-by-module writeup + known findings),
 `docs/pdoc/alphalens/*.html` (pdoc-generated API reference).
 
-> the `tables_as_figures` refactor). Prior revision covered HEAD `7c375a3`
-> (2026-10-09).
-
 ## Table of Contents
 
 - [0. Layout at a glance](#0-layout-at-a-glance)

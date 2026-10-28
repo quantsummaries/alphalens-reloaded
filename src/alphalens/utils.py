@@ -31,6 +31,30 @@ from scipy.stats import mode
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
 
+_NON_EXACT_DAY_WARNING_EMITTED = False
+_GENERIC_TIMEDELTA_WARNING = "The 'generic' unit for NumPy timedelta is deprecated"
+
+
+def _coerce_timedelta(value):
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=f"{_GENERIC_TIMEDELTA_WARNING}.*",
+            category=DeprecationWarning,
+        )
+        return pd.Timedelta(value)
+
+
+def _coerce_timedelta_days(days: int):
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=f"{_GENERIC_TIMEDELTA_WARNING}.*",
+            category=DeprecationWarning,
+        )
+        return pd.Timedelta(days=int(days))
+
+
 class NonMatchingTimezoneError(Exception):
     pass
 
@@ -335,12 +359,10 @@ def compute_forward_returns(
             start = prices.index[p_idx]
             end = prices.index[p_idx + period]
             period_len = diff_custom_calendar_timedeltas(start, end, freq)
-            days_diffs.append(period_len.components.days)
+            days_diffs.append(period_len.days)
 
-        delta_days = (
-            period_len.components.days - mode(days_diffs, keepdims=True).mode[0]
-        )
-        period_len -= pd.Timedelta(days=delta_days)
+        delta_days = int(period_len.days - mode(days_diffs, keepdims=True).mode[0])
+        period_len -= _coerce_timedelta_days(delta_days)
         label = timedelta_to_string(period_len)
 
         column_list.append(label)
@@ -373,7 +395,7 @@ def backshift_returns_series(series, N):
     """
     ix = series.index
     dates, sids = ix.levels
-    date_labels, sid_labels = map(np.array, ix.labels)
+    date_labels, sid_labels = map(np.array, ix.codes)
 
     # Output date labels will contain the all but the last N dates.
     new_dates = dates[:-N]
@@ -390,7 +412,6 @@ def backshift_returns_series(series, N):
     new_index = pd.MultiIndex(
         levels=[new_dates, sids],
         codes=[new_date_labels, new_sid_labels],
-        sortorder=1,
         names=ix.names,
     )
 
@@ -887,7 +908,9 @@ def rate_of_return(period_ret, base_period):
         returns values.
     """
     period_len = period_ret.name
-    conversion_factor = pd.Timedelta(base_period) / pd.Timedelta(period_len)
+    conversion_factor = _coerce_timedelta(str(base_period)) / _coerce_timedelta(
+        str(period_len)
+    )
     return period_ret.add(1).pow(conversion_factor).sub(1)
 
 
@@ -912,12 +935,16 @@ def std_conversion(period_std, base_period):
         standard deviation/error values.
     """
     period_len = period_std.name
-    conversion_factor = pd.Timedelta(period_len) / pd.Timedelta(base_period)
+    conversion_factor = _coerce_timedelta(str(period_len)) / _coerce_timedelta(
+        str(base_period)
+    )
     return period_std / np.sqrt(conversion_factor)
 
 
 def get_forward_returns_columns(
-    columns: pd.Index, require_exact_day_multiple: bool = False
+    columns: pd.Index,
+    require_exact_day_multiple: bool = False,
+    warn_on_drop: bool = True,
 ) -> pd.Index:
     """
     Utility that detects and returns the columns that are forward returns.
@@ -928,6 +955,8 @@ def get_forward_returns_columns(
         Column labels to filter.
     require_exact_day_multiple : bool, optional
         If True, keep only exact day-multiple horizons (e.g. '1D', '5D').
+    warn_on_drop : bool, optional
+        If True, emit a warning when non day-multiple periods are filtered out.
 
     Returns
     -------
@@ -937,14 +966,22 @@ def get_forward_returns_columns(
 
     # If exact day multiples are required in the forward return periods,
     # drop all other columns (e.g. drop 3D12h).
+    global _NON_EXACT_DAY_WARNING_EMITTED
+
     if require_exact_day_multiple:
         pattern = re.compile(r"^(\d+([D]))+$", re.IGNORECASE)
         valid_columns = [(pattern.match(col) is not None) for col in columns]
 
-        if sum(valid_columns) < len(valid_columns):
+        if (
+            warn_on_drop
+            and sum(valid_columns) < len(valid_columns)
+            and not _NON_EXACT_DAY_WARNING_EMITTED
+        ):
             warnings.warn(
-                "Skipping return periods that aren't exact multiples" + " of days."
+                "Skipping return periods that aren't exact multiples" + " of days.",
+                stacklevel=2,
             )
+            _NON_EXACT_DAY_WARNING_EMITTED = True
     else:
         pattern = re.compile(r"^(\d+([Dhms]|ms|us|ns]))+$", re.IGNORECASE)
         valid_columns = [(pattern.match(col) is not None) for col in columns]
@@ -999,7 +1036,7 @@ def timedelta_strings_to_integers(sequence):
     sequence : list
         Integer days corresponding to the input sequence, e.g. [1, 5].
     """
-    return list(map(lambda x: pd.Timedelta(x).days, sequence))
+    return [_coerce_timedelta(str(x)).days for x in sequence]
 
 
 def add_custom_calendar_timedelta(input, timedelta, freq):
@@ -1020,8 +1057,8 @@ def add_custom_calendar_timedelta(input, timedelta, freq):
     """
     if not isinstance(freq, (Day, BusinessDay, CustomBusinessDay)):
         raise ValueError("freq must be Day, BDay or CustomBusinessDay")
-    days = timedelta.components.days
-    offset = timedelta - pd.Timedelta(days=days)
+    days = timedelta.days
+    offset = timedelta - _coerce_timedelta_days(days)
     return input + freq * days + offset
 
 
@@ -1078,9 +1115,9 @@ def diff_custom_calendar_timedeltas(start, end, freq):
         if not freq.is_on_offset(start):
             actual_days -= 1
 
-    timediff = end - start
-    delta_days = timediff.components.days - actual_days
-    return timediff - pd.Timedelta(days=delta_days)
+    timediff = pd.Timedelta(end.to_pydatetime() - start.to_pydatetime())
+    delta_days = int(timediff.days - actual_days)
+    return timediff - _coerce_timedelta_days(delta_days)
 
 def ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -> pd.DataFrame:
     """Adjusts the standard error of the information coefficient (IC) for autocorrelation.
@@ -1097,16 +1134,32 @@ def ic_autocor_adj(daily_ic: pd.DataFrame, lag: int = 5) -> pd.DataFrame:
     for col in daily_ic.columns:
         ic_series = daily_ic[col].dropna()
 
+        if ic_series.size <= (lag + 1) or np.isclose(ic_series.std(ddof=0), 0.0):
+            results.append(
+                {
+                    'horizon': col,
+                    f'lag{lag}_autocorr': np.nan,
+                    'lb_pvalue': np.nan,
+                    'nw_tstat': np.nan,
+                    'nw_pvalue': np.nan
+                }
+            )
+            continue
+
         # Ljung-Box test for lag-n autocorrelation
-        lag_autocorr = ic_series.autocorr(lag=lag)
-        lb_test = acorr_ljungbox(ic_series, lags=[lag], return_df=True)
-        lb_pvalue = lb_test['lb_pvalue'].values[0]
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            lag_autocorr = ic_series.autocorr(lag=lag)
+            lb_test = acorr_ljungbox(ic_series, lags=[lag], return_df=True)
+            lb_pvalue = lb_test['lb_pvalue'].values[0]
 
         # Newey-West adjusted t-statistic for mean IC (accounts for autocorrelation): regression of IC on a constant
-        X = sm.add_constant(np.ones(len(ic_series)))
-        model = sm.OLS(ic_series, X).fit(cov_type='HAC', cov_kwds={'maxlags': lag})
-        nw_tstat = model.tvalues.iloc[0]
-        nw_pvalue = model.pvalues.iloc[0]
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            X = sm.add_constant(np.ones(len(ic_series)))
+            model = sm.OLS(ic_series, X).fit(cov_type='HAC', cov_kwds={'maxlags': lag})
+            nw_tstat = model.tvalues.iloc[0]
+            nw_pvalue = model.pvalues.iloc[0]
 
         results.append(
             {
