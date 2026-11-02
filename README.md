@@ -87,8 +87,7 @@ Alphalens depends on:
 - [seaborn](https://github.com/mwaskom/seaborn)
 - [statsmodels](https://github.com/statsmodels/statsmodels)
 
-NumPy >=2.0 requires pandas >=2.2.2. Upgrade older pandas versions before using
-NumPy 2 to avoid compatibility issues.
+Alphalens requires Python 3.12+, NumPy >=2.5.4, and pandas >=3.0.6.
 
 # Usage
 

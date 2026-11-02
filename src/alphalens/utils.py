@@ -1120,7 +1120,7 @@ def diff_custom_calendar_timedeltas(start, end, freq):
     timediff = end - start
 
     # Intraday fixed offsets (hours/minutes/seconds/...) use wall-clock deltas.
-    if isinstance(freq, Tick) and freq < Day():
+    if isinstance(freq, Tick) and freq.nanos < Day().nanos:
         return timediff
 
     weekmask = getattr(freq, "weekmask", None)
