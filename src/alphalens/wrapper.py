@@ -4,6 +4,7 @@
 
 import inspect
 import os
+from collections.abc import Sequence
 
 import warnings
 
@@ -189,7 +190,9 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             by_group: bool = False,
                             turnover_period: int = 1,
                             period_unit: str = 'D',
-                            tables_as_figures: bool = True) -> dict[str, pd.DataFrame]:
+                            tables_as_figures: bool = True,
+                            quantiles: int | Sequence[float] | None = 5,
+                            bins: int | Sequence[float] | None = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens, with the multi-index of ['date', 'asset'].
@@ -212,9 +215,16 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         turnover_period (int, optional): Number of periods for turnover analysis. Defaults to 1.
         period_unit (str, optional): Unit of time for turnover analysis. Defaults to 'D'.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
+        quantiles (int or sequence[float] or None): Number of equal-count quantiles, or quantile
+            boundaries. Defaults to 5. Set to None when using bins.
+        bins (int or sequence[float] or None): Number of equal-width bins, or explicit bin edges.
+            Defaults to None. Exactly one of quantiles and bins must be provided.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
+    if (quantiles is None) == (bins is None):
+        raise ValueError("Exactly one of quantiles or bins must be provided")
+
     result = {}
 
     if not os.path.exists(output_dir):
@@ -266,8 +276,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                       forward_returns=fwd_rtrn_data,
                                                       groupby=grp_by_series,
                                                       binning_by_group=True if 'group' in df.columns else False,
-                                                      quantiles=5,
-                                                      bins=None)
+                                                      quantiles=quantiles,
+                                                      bins=bins)
 
         rtrn_tear_sheet = os.path.join(output_dir, f"rtrn_tear_sheet_{f}.png")
         rtrn_result = alphalens.wrapper.return_analysis_wrapper(data=clean_data,
