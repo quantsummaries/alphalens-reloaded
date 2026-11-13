@@ -98,7 +98,8 @@ def information_analysis_wrapper(data: pd.DataFrame,
                                  group_neutral: bool = False,
                                  by_group: bool = False,
                                  tables_as_figures: bool = True,
-                                 tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
+                                 tear_sheet_filepath: str = None,
+                                 lag: int = 5) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens information analysis functions.
 
     Args:
@@ -111,6 +112,8 @@ def information_analysis_wrapper(data: pd.DataFrame,
             displayed. Defaults to False.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
+        lag (int): Number of lags for Ljung-Box autocorrelation diagnostics and
+            Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
     """
@@ -122,6 +125,7 @@ def information_analysis_wrapper(data: pd.DataFrame,
             by_group=by_group,
             tables_as_figures=tables_as_figures,
             save_file=tear_sheet_filepath,
+            lag=lag,
         )
         print(f"\n*** Information tear sheet saved to {tear_sheet_filepath}")
     else:
@@ -132,7 +136,10 @@ def information_analysis_wrapper(data: pd.DataFrame,
                 by_group=by_group, ic_type=ic_type,
             )
             summaries[ic_type] = alphalens.plotting.plot_information_table(
-                daily_ic.dropna(), tables_as_figures=tables_as_figures, ic_type=ic_type,
+                daily_ic.dropna(),
+                tables_as_figures=tables_as_figures,
+                ic_type=ic_type,
+                lag=lag,
             )
     return {f"ic_{ic_type}": summary.T for ic_type, summary in summaries.items()}
 
@@ -192,7 +199,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             period_unit: str = 'D',
                             tables_as_figures: bool = True,
                             quantiles: int | Sequence[float] | None = 5,
-                            bins: int | Sequence[float] | None = None) -> dict[str, pd.DataFrame]:
+                            bins: int | Sequence[float] | None = None,
+                            lag: int = 5) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens, with the multi-index of ['date', 'asset'].
@@ -219,6 +227,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             boundaries. Defaults to 5. Set to None when using bins.
         bins (int or sequence[float] or None): Number of equal-width bins, or explicit bin edges.
             Defaults to None. Exactly one of quantiles and bins must be provided.
+        lag (int): Number of lags for Ljung-Box autocorrelation diagnostics and
+            Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
@@ -248,7 +258,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                    group_neutral=group_neutral,
                                                                    by_group=by_group,
                                                                    tables_as_figures=tables_as_figures,
-                                                                   tear_sheet_filepath=ic_tear_sheet)
+                                                                   tear_sheet_filepath=ic_tear_sheet,
+                                                                   lag=lag)
         ic_result['ic_spearman'].insert(0, 'factor', f)
         ic_result['ic_pearson'].insert(0, 'factor', f)
         ic_spearman_list.append(ic_result['ic_spearman'])

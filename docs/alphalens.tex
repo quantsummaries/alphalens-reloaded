@@ -187,7 +187,7 @@ Compute IC autocorrelation diagnostics and Newey-West-adjusted t-statistics for 
   \item Works column-wise on a DataFrame of daily IC values.
   \item Computes the lagged autocorrelation, Ljung-Box p-value, Newey-West t-stat, and Newey-West p-value for each horizon.
   \item Returns a transposed summary table with diagnostics as rows and horizons as columns.
-  \item Used by \texttt{plot\_information\_table()} to add lag-1 diagnostics to IC summary tables.
+  \item Used by \texttt{plot\_information\_table()} to add lag-based diagnostics to IC summary tables (default lag is 5).
 \end{itemize}
 
 \paragraph{Returns}
@@ -906,14 +906,14 @@ Summarize mean quantile turnover and factor rank autocorrelation.
 \paragraph{Returns}
 Two summary \texttt{DataFrame}s: turnover and autocorrelation.
 
-\subsubsection{\texttt{plot\_information\_table(ic\_data, tables\_as\_figures=True, ic\_type="spearman")}}
+\subsubsection{\texttt{plot\_information\_table(ic\_data, tables\_as\_figures=True, ic\_type="spearman", lag=5)}}
 Display Information Coefficient summary statistics.
 
 \paragraph{Behavior}
 \begin{itemize}
   \item Computes IC mean, standard deviation, risk-adjusted IC, and t-statistics.
   \item Labels the mean row as \texttt{IC Mean (spearman)} or \texttt{IC Mean (pearson)} depending on \texttt{ic\_type}.
-  \item Includes skewness, kurtosis, and lag-1 autocorrelation diagnostics from \texttt{utils.ic\_autocor\_adj(ic\_data, lag=1)}.
+  \item Includes skewness, kurtosis, and lag-based autocorrelation diagnostics from \texttt{utils.ic\_autocor\_adj(ic\_data, lag=lag)}.
   \item Renders table figures or prints text tables depending on \texttt{tables\_as\_figures}.
 \end{itemize}
 
@@ -1438,4 +1438,3 @@ create_full_tear_sheet(factor_data, long_short=True, group_neutral=False)
 \end{itemize}
 
 \end{document}
-

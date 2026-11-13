@@ -34,6 +34,7 @@ def test_constant_factor_day_does_not_poison_information_statistics_or_add_zero_
     ic = performance.factor_information_coefficient(clean)
     np.testing.assert_allclose(ic["1D"], [1, 0.5, -1, np.nan, 0.5], equal_nan=True)
     table = plotting.plot_information_table(ic, return_df=True)
+    assert "lag5_autocorr" in table.columns
     assert table.loc["1D", "t-stat(IC)"] == pytest.approx(1 / np.sqrt(3))
     assert np.isfinite(table.loc["1D", ["p-value(IC)", "IC Skew", "IC Kurtosis"]]).all()
     try:

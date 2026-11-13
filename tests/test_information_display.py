@@ -34,8 +34,9 @@ def information_data():
 
 
 @pytest.mark.parametrize("tables_as_figures", [False, True])
+@pytest.mark.parametrize("lag", [1, 3])
 def test_full_wrapper_forwards_table_display(
-    information_data, tmp_path, tables_as_figures
+    information_data, tmp_path, tables_as_figures, lag
 ):
     summary = pd.DataFrame({"1D": [0.1]})
     with (
@@ -68,10 +69,12 @@ def test_full_wrapper_forwards_table_display(
             fwd_rtrn_cols=["1D"],
             output_dir=str(tmp_path),
             tables_as_figures=tables_as_figures,
+            lag=lag,
         )
     for wrapper in [information, returns, turnover]:
         assert wrapper.call_count == 1
         assert wrapper.call_args.kwargs["tables_as_figures"] is tables_as_figures
+    assert information.call_args.kwargs["lag"] == lag
     assert len(result) == 6
 
 
@@ -99,6 +102,17 @@ def test_information_wrapper_returns_data_with_independent_display(
     finally:
         for number in set(plt.get_fignums()) - existing_figures:
             plt.close(number)
+
+
+def test_information_wrapper_supports_custom_lag(information_data):
+    with patch("alphalens.plotting.utils.print_table"):
+        result = information_analysis_wrapper(
+            information_data, tables_as_figures=False, lag=3
+        )
+    for ic_type in ["spearman", "pearson"]:
+        summary = result[f"ic_{ic_type}"]
+        assert "lag3_autocorr" in summary.index
+        assert "lag1_autocorr" not in summary.index
 
 
 @pytest.mark.parametrize("tables_as_figures", [False, True])

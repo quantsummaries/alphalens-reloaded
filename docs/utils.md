@@ -212,7 +212,7 @@ Compute IC autocorrelation diagnostics and Newey-West-adjusted t-statistics for 
 - Works column-wise on a DataFrame of daily IC values.
 - Computes the lagged autocorrelation, Ljung-Box p-value, Newey-West t-stat, and Newey-West p-value for each horizon.
 - Returns a transposed summary table with diagnostics as rows and horizons as columns.
-- Used by `alphalens.plotting.plot_information_table()` to add lag-1 diagnostics to IC summary tables.
+- Used by `alphalens.plotting.plot_information_table()` to add lag-based diagnostics to IC summary tables (default lag is 5).
 
 **Returns**
 

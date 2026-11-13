@@ -61,7 +61,7 @@ A dictionary with:
 
 ---
 
-### `information_analysis_wrapper(data, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None)`
+### `information_analysis_wrapper(data, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None, lag=5)`
 Run IC analysis under both Spearman and Pearson definitions and optionally save an information tear sheet.
 
 **Arguments**
@@ -69,13 +69,14 @@ Run IC analysis under both Spearman and Pearson definitions and optionally save 
 - `group_neutral` — If `True`, demean forward returns by group before computing the Information Coefficient.
 - `by_group` — If `True`, compute and display IC statistics separately for each group rather than as one pooled result.
 - `tear_sheet_filepath` — Optional output path for saving the information tear sheet.
+- `lag` — Number of lags for Ljung-Box autocorrelation diagnostics and Newey-West-adjusted IC t-statistics.
 
 **Behavior**
 
 - Computes daily IC via `performance.factor_information_coefficient(..., ic_type="spearman")`.
 - Computes daily IC via `performance.factor_information_coefficient(..., ic_type="pearson")`.
-- Summarizes each IC table via `plotting.plot_information_table(..., tables_as_figures=tables_as_figures)`, which also adds lag-1 autocorrelation diagnostics and Newey-West-adjusted statistics.
-- IC autocorrelation-adjusted diagnostics are added inside `plotting.plot_information_table(...)`, which calls `utils.ic_autocor_adj(ic_data, lag=1)` before returning the summary table.
+- Summarizes each IC table via `plotting.plot_information_table(..., tables_as_figures=tables_as_figures, lag=lag)`, which also adds autocorrelation diagnostics and Newey-West-adjusted statistics using the configured lag.
+- IC autocorrelation-adjusted diagnostics are added inside `plotting.plot_information_table(...)`, which calls `utils.ic_autocor_adj(ic_data, lag=lag)` before returning the summary table.
 - Optionally saves an information tear sheet when filepath is provided.
 
 **Returns**
@@ -85,7 +86,7 @@ A dictionary with:
 - `ic_spearman`
 - `ic_pearson`
 
-Each value is a `DataFrame` containing summary statistics plus lag-1 autocorrelation diagnostics.
+Each value is a `DataFrame` containing summary statistics plus lag-`lag` autocorrelation diagnostics.
 
 ---
 
@@ -114,7 +115,7 @@ A dictionary with:
 
 ---
 
-### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True)`
+### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True, quantiles=5, bins=None, lag=5)`
 Wrapper for alphalens full tear sheet function.
 
 **Arguments**
@@ -128,6 +129,8 @@ Wrapper for alphalens full tear sheet function.
 - `by_group` — Whether to compute/display statistics separately by group; forwarded to lower-level wrappers.
 - `turnover_period` — Number of periods for turnover analysis.
 - `period_unit` — Unit of time for turnover analysis (default: `"D"`).
+- `quantiles` / `bins` — Exactly one must be provided for factor bucketing.
+- `lag` — Number of lags for Ljung-Box autocorrelation diagnostics and Newey-West-adjusted IC t-statistics in information analysis.
 
 **Behavior**
 
@@ -135,7 +138,7 @@ Wrapper for alphalens full tear sheet function.
 - Validates forward-return columns against `fwd_rtrn_cols`.
 - For each factor in `factors`:
   - Renames that factor column to `factor`.
-  - Runs `information_analysis_wrapper(...)` with `group_neutral` and `by_group`, and saves an information tear sheet.
+  - Runs `information_analysis_wrapper(...)` with `group_neutral`, `by_group`, and `lag`, and saves an information tear sheet.
   - Builds cleaned factor data with `utils.get_clean_factor(...)`.
   - Runs `return_analysis_wrapper(...)` with `long_short`, `group_neutral`, and `by_group`, then saves return and turnover tear sheets.
 - Concatenates per-factor outputs into combined result tables.

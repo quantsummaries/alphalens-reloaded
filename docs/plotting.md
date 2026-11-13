@@ -52,13 +52,13 @@ Summarize portfolio alpha/beta and quantile returns in basis points.
 ### `plot_turnover_table(autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None)`
 Summarize mean quantile turnover and factor rank autocorrelation.
 
-### `plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman")`
+### `plot_information_table(ic_data, tables_as_figures=True, ic_type="spearman", lag=5)`
 Summarize IC mean, standard deviation, ICIR, t-statistics, skewness, kurtosis, and Ljung-Box/Newey-West diagnostics.
 
 **Behavior**
 
 - Uses `ic_type` to label the summary row as `IC Mean (spearman)` or `IC Mean (pearson)`.
-- Adds lag-1 autocorrelation diagnostics from `utils.ic_autocor_adj(ic_data, lag=1)` before returning the table.
+- Adds lag-based autocorrelation diagnostics from `utils.ic_autocor_adj(ic_data, lag=lag)` before returning the table.
 - Keeps the rest of the IC summary statistics unchanged.
 
 All three helpers use one display flag:

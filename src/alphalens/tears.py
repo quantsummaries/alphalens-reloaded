@@ -415,7 +415,14 @@ def create_returns_tear_sheet(
 
 
 @plotting.customize
-def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None):
+def create_information_tear_sheet(
+    factor_data,
+    group_neutral=False,
+    by_group=False,
+    tables_as_figures=True,
+    save_file=None,
+    lag=5,
+):
     """
     Creates a tear sheet for information analysis of a factor.
 
@@ -441,6 +448,9 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
     tables_as_figures : bool
         If True (default), render summary tables in the tear sheet; otherwise dgitisplay text.
         Return a dictionary of Spearman and Pearson summary DataFrames in either mode.
+    lag : int
+        Number of lags used for Ljung-Box autocorrelation diagnostics and Newey-West
+        adjusted t-statistics in the IC summary table.
     """
     existing_figures = set(plt.get_fignums())
     gf = None
@@ -452,7 +462,9 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
                 factor_data, group_neutral, by_group=by_group, ic_type=ic_type
             )
             ic = ic.dropna()
-            summaries[ic_type] = plotting.plot_information_table(ic, tables_as_figures=tables_as_figures, ic_type=ic_type)
+            summaries[ic_type] = plotting.plot_information_table(
+                ic, tables_as_figures=tables_as_figures, ic_type=ic_type, lag=lag
+            )
 
         if by_group:
             # Time-series charts need one IC per date rather than a date/group index.
