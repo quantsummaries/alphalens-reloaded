@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Mapping
+from numbers import Real
+
 import pandas as pd
 import numpy as np
 import warnings
@@ -329,6 +332,7 @@ def factor_alpha_beta(
     demeaned: bool = True,
     group_adjust: bool = False,
     equal_weight: bool = False,
+    periods_per_year: Optional[Union[float, Mapping[str, float]]] = None,
 ) -> pd.DataFrame:
     """
     Compute the alpha (excess returns), alpha t-stat (alpha significance),
@@ -359,6 +363,14 @@ def factor_alpha_beta(
         Control how to build factor returns used for alpha/beta computation
         -- see performance.factor_return for a full explanation
 
+    periods_per_year : float or mapping[str, float], optional
+        Number of non-overlapping return periods compounded per year. A scalar
+        applies to all forward return columns; a mapping must provide every column.
+        For one intraday trade per session use 252; for one trade every two
+        sessions use 126. Values must be finite and positive. If None, preserve
+        the duration-based default of 252 days divided by each column's horizon.
+        This override affects annualized alpha only, not beta or other statistics.
+
     Returns
     -------
     alpha_beta : pd.Series
@@ -381,6 +393,28 @@ def factor_alpha_beta(
         returns.name = universe_ret.columns.values[0]
         returns = pd.DataFrame(returns)
 
+    annualization = {}
+    for period in returns.columns:
+        if periods_per_year is None:
+            annualization[period] = (
+                utils._coerce_timedelta_days(252) / utils._coerce_timedelta(str(period))
+            )
+            continue
+        if isinstance(periods_per_year, Mapping):
+            if period not in periods_per_year:
+                raise ValueError(f"periods_per_year is missing forward return column {period!r}")
+            value = periods_per_year[period]
+        else:
+            value = periods_per_year
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, Real)
+            or not np.isfinite(value)
+            or value <= 0
+        ):
+            raise ValueError("periods_per_year must contain finite positive numbers")
+        annualization[period] = float(value)
+
     alpha_beta = pd.DataFrame()
     for period in returns.columns.values:
         x = universe_ret[period].values
@@ -394,9 +428,7 @@ def factor_alpha_beta(
             alpha_beta.loc["Ann. alpha", period] = np.nan
             alpha_beta.loc["beta", period] = np.nan
         else:
-            freq_adjust = utils._coerce_timedelta_days(252) / utils._coerce_timedelta(
-                str(period)
-            )
+            freq_adjust = annualization[period]
 
             alpha_beta.loc["Ann. alpha", period] = (1 + alpha) ** freq_adjust - 1
             alpha_beta.loc["beta", period] = beta

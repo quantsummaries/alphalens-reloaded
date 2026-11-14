@@ -191,21 +191,48 @@ def plot_returns_table(
     return returns_table
 
 
+def _observation_label(period):
+    return f"{period} observation" if period == 1 else f"{period} observations"
+
+
 def plot_turnover_table(
-        autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None
+        autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None,
+        period_labels=None,
 ):
-    """Display turnover tables as figures or text; always return both DataFrames."""
+    """Display turnover tables; period_labels maps observation lags to display text.
+
+    Labels affect presentation only. Omitted labels use observation counts.
+    Both summary DataFrames are returned in either display mode.
+
+    Raises
+    ------
+    ValueError
+        If different observation lags resolve to the same display label.
+    """
+    period_labels = {} if period_labels is None else period_labels
+    resolved_labels = {}
+    label_periods = {}
+    for period in dict.fromkeys([*quantile_turnover.keys(), *autocorrelation_data.keys()]):
+        label = period_labels.get(period, _observation_label(period))
+        if label in label_periods:
+            raise ValueError(
+                f"Turnover lags {label_periods[label]} and {period} both resolve "
+                f"to label {label!r}. Provide unique labels."
+            )
+        resolved_labels[period] = label
+        label_periods[label] = period
+
     turnover_table = pd.DataFrame()
     for period in sorted(quantile_turnover.keys()):
         for quantile, p_data in quantile_turnover[period].items():
             turnover_table.loc[
                 "Quantile {} Mean Turnover ".format(quantile),
-                "{}D".format(period),
+                resolved_labels[period],
             ] = p_data.mean()
     auto_corr = pd.DataFrame()
     for period, p_data in autocorrelation_data.items():
         auto_corr.loc[
-            "Mean Factor Rank Autocorrelation", "{}D".format(period)
+            "Mean Factor Rank Autocorrelation", resolved_labels[period]
         ] = p_data.mean()
 
     if tables_as_figures:
@@ -218,7 +245,7 @@ def plot_turnover_table(
 
 
 def plot_information_table(
-    ic_data, return_df=False, tables_as_figures=True, ic_type="spearman", lag=5
+    ic_data, return_df=False, tables_as_figures=True, ic_type="spearman"
 ):
     """Display IC statistics as a figure or text; always return the DataFrame."""
 
@@ -260,7 +287,7 @@ def plot_information_table(
     )
 
     # Ljung-Box test for autocorrelation and Newey-West adjusted t-statistic for IC
-    ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=lag)
+    ic_supplements_df = utils.ic_autocor_adj(ic_data, lag=1)
     ic_summary_table = pd.concat([ic_summary_table, ic_supplements_df.T], axis=1)
 
     if return_df:
@@ -747,7 +774,7 @@ def plot_ic_by_group(ic_group, ax=None):
     return ax
 
 
-def plot_factor_rank_auto_correlation(factor_autocorrelation, period=1, ax=None):
+def plot_factor_rank_auto_correlation(factor_autocorrelation, period=1, ax=None, period_label=None):
     """
     Plots factor rank autocorrelation over time.
     See factor_rank_autocorrelation for more details.
@@ -762,16 +789,22 @@ def plot_factor_rank_auto_correlation(factor_autocorrelation, period=1, ax=None)
     ax : matplotlib.Axes, optional
         Axes upon which to plot.
 
+    period_label : str, optional
+        Display text for the observation lag; defaults to observation counts.
+        This does not alter the lag used to compute the supplied values.
+
     Returns
     -------
     ax : matplotlib.Axes
         The axes that were plotted on.
     """
+    label = _observation_label(period) if period_label is None else period_label
+
     if ax is None:
         f, ax = plt.subplots(1, 1, figsize=(18, 6))
 
     factor_autocorrelation.plot(
-        title="{}D Period Factor Rank Autocorrelation".format(period), ax=ax
+        title=f"{label} Period Factor Rank Autocorrelation", ax=ax
     )
     ax.set(ylabel="Autocorrelation Coefficient", xlabel="")
     ax.axhline(0.0, linestyle="-", color="black", lw=1)
@@ -788,7 +821,7 @@ def plot_factor_rank_auto_correlation(factor_autocorrelation, period=1, ax=None)
     return ax
 
 
-def plot_top_bottom_quantile_turnover(quantile_turnover, period=1, ax=None):
+def plot_top_bottom_quantile_turnover(quantile_turnover, period=1, ax=None, period_label=None):
     """
     Plots period wise top and bottom quantile factor turnover.
 
@@ -801,11 +834,17 @@ def plot_top_bottom_quantile_turnover(quantile_turnover, period=1, ax=None):
     ax : matplotlib.Axes, optional
         Axes upon which to plot.
 
+    period_label : str, optional
+        Display text for the observation lag; defaults to observation counts.
+        This does not alter the lag used to compute the supplied values.
+
     Returns
     -------
     ax : matplotlib.Axes
         The axes that were plotted on.
     """
+    label = _observation_label(period) if period_label is None else period_label
+
     if ax is None:
         f, ax = plt.subplots(1, 1, figsize=(18, 6))
 
@@ -815,7 +854,7 @@ def plot_top_bottom_quantile_turnover(quantile_turnover, period=1, ax=None):
     turnover["top quantile turnover"] = quantile_turnover[max_quantile]
     turnover["bottom quantile turnover"] = quantile_turnover[min_quantile]
     turnover.plot(
-        title="{}D Period Top and Bottom Quantile Turnover".format(period),
+        title=f"{label} Period Top and Bottom Quantile Turnover",
         ax=ax,
         alpha=0.6,
         lw=0.8,

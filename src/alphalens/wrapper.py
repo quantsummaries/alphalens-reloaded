@@ -4,7 +4,7 @@
 
 import inspect
 import os
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 import warnings
 
@@ -29,7 +29,8 @@ def return_analysis_wrapper(data: pd.DataFrame,
                             group_neutral: bool = False,
                             by_group: bool = False,
                             tables_as_figures: bool = True,
-                            tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
+                            tear_sheet_filepath: str = None,
+                            periods_per_year: float | Mapping[str, float] | None = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens return analysis functions.
 
     Args:
@@ -200,7 +201,9 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             tables_as_figures: bool = True,
                             quantiles: int | Sequence[float] | None = 5,
                             bins: int | Sequence[float] | None = None,
-                            lag: int = 5) -> dict[str, pd.DataFrame]:
+                            lag: int = 5,
+                            periods_per_year: float | Mapping[str, float] | None = None,
+                            turnover_period_labels: Mapping[int, str] | None = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens, with the multi-index of ['date', 'asset'].
@@ -220,7 +223,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         by_group (bool, optional): Whether to compute IC statistics separately for each group instead of only one pooled summary
             across all assets. It does not change the IC computation method; it changes how results are broken out and
             displayed. Defaults to False.
-        turnover_period (int, optional): Number of periods for turnover analysis. Defaults to 1.
+        turnover_period (int, optional): Number of observation steps for turnover analysis. Defaults to 1.
         period_unit (str, optional): Unit of time for turnover analysis. Defaults to 'D'.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         quantiles (int or sequence[float] or None): Number of equal-count quantiles, or quantile
@@ -229,6 +232,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             Defaults to None. Exactly one of quantiles and bins must be provided.
         lag (int): Number of lags for Ljung-Box autocorrelation diagnostics and
             Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
+        periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
+        turnover_period_labels (mapping[int, str], optional): Turnover and rank-autocorrelation display labels keyed by observation lag.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
@@ -296,7 +301,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                 group_neutral=group_neutral,
                                                                 by_group=by_group,
                                                                 tables_as_figures=tables_as_figures,
-                                                                tear_sheet_filepath=rtrn_tear_sheet)
+                                                                tear_sheet_filepath=rtrn_tear_sheet,
+                                                                periods_per_year=periods_per_year)
         rtrn_result['mean_return_by_q'].insert(0, 'factor', f)
         rtrn_result['std_err_by_q'].insert(0, 'factor', f)
         mean_return_by_q_list.append(rtrn_result['mean_return_by_q'])
@@ -307,7 +313,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                       turnover_period=turnover_period,
                                                                       period_unit=period_unit,
                                                                       tables_as_figures=tables_as_figures,
-                                                                      tear_sheet_filepath=turnover_tear_sheet)
+                                                                      tear_sheet_filepath=turnover_tear_sheet,
+                                                                      turnover_period_labels=turnover_period_labels)
         turnover = turnover_result['turnover'].reset_index(drop=False)
         turnover.insert(0, 'factor', f)
         turnover_list.append(turnover)

@@ -72,7 +72,10 @@ class GridFigure(object):
 
 
 @plotting.customize
-def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False, tables_as_figures=True):
+def create_summary_tear_sheet(
+    factor_data, long_short=True, group_neutral=False, tables_as_figures=True,
+    periods_per_year=None,
+):
     """
     Creates a small summary tear sheet with returns, information, and turnover
     analysis.
@@ -91,6 +94,9 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False,
     group_neutral : bool
         Should this computation happen on a group neutral portfolio? if so,
         returns demeaning will occur on the group level.
+    periods_per_year : float or mapping[str, float], optional
+        Annualization override for alpha; see performance.factor_alpha_beta.
+        None preserves duration-based annualization. Other statistics are unchanged.
     """
 
     # Returns Analysis
@@ -124,7 +130,8 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False,
     )
 
     alpha_beta = perf.factor_alpha_beta(
-        factor_data, demeaned=long_short, group_adjust=group_neutral
+        factor_data, demeaned=long_short, group_adjust=group_neutral,
+        periods_per_year=periods_per_year,
     )
 
     mean_ret_spread_quant, std_spread_quant = perf.compute_mean_returns_spread(
@@ -186,10 +193,15 @@ def create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False,
 
 @plotting.customize
 def create_returns_tear_sheet(
-    factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None
+    factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None,
+    periods_per_year=None,
 ):
     """
     Creates a tear sheet for returns analysis of a factor.
+
+    Cumulative plots compound each supplied horizon's simple returns in observation
+    order. Input observations must represent non-overlapping trades; this function
+    does not remove overlapping forward-return windows or infer a trading schedule.
 
     Parameters
     ----------
@@ -216,6 +228,9 @@ def create_returns_tear_sheet(
         Summary DataFrames are returned in either mode.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
+    periods_per_year : float or mapping[str, float], optional
+        Annualization override for alpha; see performance.factor_alpha_beta.
+        None preserves duration-based annualization. Other statistics are unchanged.
     """
 
     existing_figures = set(plt.get_fignums())
@@ -255,7 +270,8 @@ def create_returns_tear_sheet(
         )
 
         alpha_beta = perf.factor_alpha_beta(
-            factor_data, factor_returns, long_short, group_neutral
+            factor_data, factor_returns, long_short, group_neutral,
+            periods_per_year=periods_per_year,
         )
 
         mean_ret_spread_quant, std_spread_quant = perf.compute_mean_returns_spread(
@@ -294,22 +310,22 @@ def create_returns_tear_sheet(
                 UserWarning,
             )
 
-        # Compute cumulative returns from daily simple returns, if '1D'
-        # returns are provided.
-        if "1D" in factor_returns:
+        # Compound the supplied period returns for every horizon. Callers must
+        # sample non-overlapping trades before passing returns to this tear sheet.
+        for period in factor_returns.columns:
             title = (
                 "Factor Weighted "
                 + ("Group Neutral " if group_neutral else "")
                 + ("Long/Short " if long_short else "")
-                + "Portfolio Cumulative Return (1D Period)"
+                + f"Portfolio Cumulative Return ({period} Period)"
             )
 
             plotting.plot_cumulative_returns(
-                factor_returns["1D"], period="1D", title=title, ax=gf.next_row()
+                factor_returns[period], period=period, title=title, ax=gf.next_row()
             )
 
             plotting.plot_cumulative_returns_by_quantile(
-                mean_quant_ret_bydate["1D"], period="1D", ax=gf.next_row()
+                mean_quant_ret_bydate[period], period=period, ax=gf.next_row()
             )
 
         ax_mean_quantile_returns_spread_ts = [gf.next_row() for x in range(fr_cols)]
@@ -415,14 +431,7 @@ def create_returns_tear_sheet(
 
 
 @plotting.customize
-def create_information_tear_sheet(
-    factor_data,
-    group_neutral=False,
-    by_group=False,
-    tables_as_figures=True,
-    save_file=None,
-    lag=5,
-):
+def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None):
     """
     Creates a tear sheet for information analysis of a factor.
 
@@ -448,9 +457,6 @@ def create_information_tear_sheet(
     tables_as_figures : bool
         If True (default), render summary tables in the tear sheet; otherwise dgitisplay text.
         Return a dictionary of Spearman and Pearson summary DataFrames in either mode.
-    lag : int
-        Number of lags used for Ljung-Box autocorrelation diagnostics and Newey-West
-        adjusted t-statistics in the IC summary table.
     """
     existing_figures = set(plt.get_fignums())
     gf = None
@@ -462,9 +468,7 @@ def create_information_tear_sheet(
                 factor_data, group_neutral, by_group=by_group, ic_type=ic_type
             )
             ic = ic.dropna()
-            summaries[ic_type] = plotting.plot_information_table(
-                ic, tables_as_figures=tables_as_figures, ic_type=ic_type, lag=lag
-            )
+            summaries[ic_type] = plotting.plot_information_table(ic, tables_as_figures=tables_as_figures, ic_type=ic_type)
 
         if by_group:
             # Time-series charts need one IC per date rather than a date/group index.
@@ -562,7 +566,8 @@ def create_information_tear_sheet(
 
 @plotting.customize
 def create_turnover_tear_sheet(
-        factor_data, turnover_periods=None, tables_as_figures=True, save_file=None):
+        factor_data, turnover_periods=None, tables_as_figures=True, save_file=None,
+        turnover_period_labels=None):
     """
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -588,6 +593,11 @@ def create_turnover_tear_sheet(
     tables_as_figures : bool
         If True (default), render summary tables in the tear sheet; otherwise display text.
         Both summary DataFrames are returned in either mode.
+    turnover_period_labels : mapping[int, str], optional
+        Display labels keyed by observation lag, e.g. {1: "2 trading sessions"}
+        for adjacent observations sampled every two sessions. Numeric lags and
+        calculated values are unchanged; omitted labels use observation counts.
+        Resolved labels must be unique across lags or a ValueError is raised.
     """
 
     existing_figures = set(plt.get_fignums())
@@ -604,6 +614,7 @@ def create_turnover_tear_sheet(
         else:
             turnover_periods = utils.timedelta_strings_to_integers(turnover_periods)
 
+        period_labels = {} if turnover_period_labels is None else turnover_period_labels
         quantile_factor = factor_data["factor_quantile"]
 
         quantile_turnover = {
@@ -626,7 +637,10 @@ def create_turnover_tear_sheet(
         )
 
         if not tables_as_figures:
-            summaries = plotting.plot_turnover_table(autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures)
+            summaries = plotting.plot_turnover_table(
+                autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures,
+                period_labels=period_labels,
+            )
 
         fr_cols = len(turnover_periods)
         columns_wide = 1
@@ -638,21 +652,24 @@ def create_turnover_tear_sheet(
 
         if tables_as_figures:
             summaries = plotting.plot_turnover_table(
-                autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures, ax=gf.next_row()
+                autocorrelation, quantile_turnover, tables_as_figures=tables_as_figures, ax=gf.next_row(),
+                period_labels=period_labels,
             )
 
         for period in turnover_periods:
             if quantile_turnover[period].isnull().all().all():
                 continue
             plotting.plot_top_bottom_quantile_turnover(
-                quantile_turnover[period], period=period, ax=gf.next_row()
+                quantile_turnover[period], period=period, ax=gf.next_row(),
+                period_label=period_labels.get(period),
             )
 
         for period in autocorrelation:
             if autocorrelation[period].isnull().all():
                 continue
             plotting.plot_factor_rank_auto_correlation(
-                autocorrelation[period], period=period, ax=gf.next_row()
+                autocorrelation[period], period=period, ax=gf.next_row(),
+                period_label=period_labels.get(period),
             )
 
         if save_file is not None:
@@ -679,7 +696,8 @@ def create_turnover_tear_sheet(
 
 @plotting.customize
 def create_full_tear_sheet(
-    factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True
+    factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True,
+    periods_per_year=None,
 ):
     """
     Creates a full tear sheet for analysis and evaluating single
@@ -705,11 +723,15 @@ def create_full_tear_sheet(
         flag affects information analysis
     by_group : bool
         If True, display graphs separately for each group.
+    periods_per_year : float or mapping[str, float], optional
+        Annualization override for alpha; see performance.factor_alpha_beta.
+        None preserves duration-based annualization. Other statistics are unchanged.
     """
 
     plotting.plot_quantile_statistics_table(factor_data)
     create_returns_tear_sheet(
-        factor_data, long_short, group_neutral, by_group, tables_as_figures=tables_as_figures, set_context=False
+        factor_data, long_short, group_neutral, by_group, tables_as_figures=tables_as_figures, set_context=False,
+        periods_per_year=periods_per_year,
     )
     create_information_tear_sheet(
         factor_data, group_neutral, by_group, tables_as_figures=tables_as_figures, set_context=False
