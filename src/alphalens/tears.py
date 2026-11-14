@@ -431,7 +431,14 @@ def create_returns_tear_sheet(
 
 
 @plotting.customize
-def create_information_tear_sheet(factor_data, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None):
+def create_information_tear_sheet(
+    factor_data,
+    group_neutral=False,
+    by_group=False,
+    tables_as_figures=True,
+    save_file=None,
+    lag=5,
+):
     """
     Creates a tear sheet for information analysis of a factor.
 
@@ -452,6 +459,9 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
         Demean forward returns by group before computing IC.
     by_group : bool
         If True, display graphs separately for each group.
+    lag : int
+        Number of lags for Ljung-Box autocorrelation diagnostics and
+        Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     tables_as_figures : bool
@@ -468,7 +478,12 @@ def create_information_tear_sheet(factor_data, group_neutral=False, by_group=Fal
                 factor_data, group_neutral, by_group=by_group, ic_type=ic_type
             )
             ic = ic.dropna()
-            summaries[ic_type] = plotting.plot_information_table(ic, tables_as_figures=tables_as_figures, ic_type=ic_type)
+            summaries[ic_type] = plotting.plot_information_table(
+                ic,
+                tables_as_figures=tables_as_figures,
+                ic_type=ic_type,
+                lag=lag,
+            )
 
         if by_group:
             # Time-series charts need one IC per date rather than a date/group index.

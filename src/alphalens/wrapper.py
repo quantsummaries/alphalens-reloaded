@@ -148,7 +148,8 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
                               turnover_period: int,
                               period_unit: str,
                               tables_as_figures: bool = True,
-                              tear_sheet_filepath: str = None) -> dict[str, pd.DataFrame]:
+                              tear_sheet_filepath: str = None,
+                              turnover_period_labels: Mapping[int, str] | None = None) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens turnover analysis functions.
 
     Args:
@@ -157,6 +158,7 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
         period_unit (str): Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks, 'M' for months).
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
+        turnover_period_labels (mapping[int, str], optional): Display labels keyed by observation lag.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing turnover data frames.
     """
@@ -176,7 +178,8 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
         alphalens.tears.create_turnover_tear_sheet(factor_data=data,
                                                    turnover_periods=[f"{turnover_period}{period_unit}"],
                                                    tables_as_figures=tables_as_figures,
-                                                   save_file=tear_sheet_filepath)
+                                                   save_file=tear_sheet_filepath,
+                                                   turnover_period_labels=turnover_period_labels)
         print(f"\n*** Turnover tear sheet saved to {tear_sheet_filepath}")
 
     else:
@@ -184,6 +187,7 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
             pd.DataFrame({turnover_period: factor_autocorr}),
             {turnover_period: quantile_turnover},
             tables_as_figures=tables_as_figures,
+            period_labels=turnover_period_labels,
         )
 
     return {'turnover': quantile_turnover,
