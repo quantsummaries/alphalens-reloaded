@@ -228,7 +228,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             bins: int | Sequence[float] | None = None,
                             lag: int = 5,
                             periods_per_year: float | Mapping[str, float] | None = None,
-                            turnover_period_labels: Mapping[int, str] | None = None) -> dict[str, pd.DataFrame]:
+                            turnover_period_labels: Mapping[int, str] | None = None,
+                            binning_by_group: bool = False) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens, with the multi-index of ['date', 'asset'].
@@ -260,11 +261,16 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         lag (int): Observation lags for Ljung-Box diagnostics and Newey-West
             adjusted IC t-statistics. Defaults to 5.
         turnover_period_labels (mapping[int, str], optional): Turnover and rank-autocorrelation display labels keyed by observation lag.
+        binning_by_group (bool, optional): Compute quantiles or bins separately within
+            each group when True. Requires a group column. Defaults to False, which
+            pools assets across groups. Independent of group_neutral and by_group.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
     if (quantiles is None) == (bins is None):
         raise ValueError("Exactly one of quantiles or bins must be provided")
+    if binning_by_group and "group" not in data.columns:
+        raise ValueError("binning_by_group=True requires a group column in data")
 
     result = {}
 
@@ -319,7 +325,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         clean_data = alphalens.utils.get_clean_factor(factor=df,
                                                       forward_returns=fwd_rtrn_data,
                                                       groupby=grp_by_series,
-                                                      binning_by_group=grp_by_series is not None,
+                                                      binning_by_group=binning_by_group,
                                                       quantiles=quantiles,
                                                       bins=bins)
 

@@ -115,7 +115,7 @@ A dictionary with:
 
 ---
 
-### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True, quantiles=5, bins=None, lag=5)`
+### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True, quantiles=5, bins=None, lag=5, periods_per_year=None, turnover_period_labels=None, binning_by_group=False)`
 Wrapper for alphalens full tear sheet function.
 
 **Arguments**
@@ -130,6 +130,7 @@ Wrapper for alphalens full tear sheet function.
 - `turnover_period` — Number of periods for turnover analysis.
 - `period_unit` — Unit of time for turnover analysis (default: `"D"`).
 - `quantiles` / `bins` — Exactly one must be provided for factor bucketing.
+- `binning_by_group` ?? Defaults to `False`: form buckets across all assets at each date, even when a `group` column is present. Set to `True` to form buckets separately within each group; a `group` column is required. This is independent of `group_neutral` (demeaning/weighting) and `by_group` (report breakdown).
 - `lag` — Number of lags for Ljung-Box autocorrelation diagnostics and Newey-West-adjusted IC t-statistics in information analysis.
 
 **Behavior**
@@ -139,7 +140,7 @@ Wrapper for alphalens full tear sheet function.
 - For each factor in `factors`:
   - Renames that factor column to `factor`.
   - Runs `information_analysis_wrapper(...)` with `group_neutral`, `by_group`, and `lag`, and saves an information tear sheet.
-  - Builds cleaned factor data with `utils.get_clean_factor(...)`.
+  - Builds cleaned factor data with `utils.get_clean_factor(..., binning_by_group=binning_by_group)`.
   - Runs `return_analysis_wrapper(...)` with `long_short`, `group_neutral`, and `by_group`, then saves return and turnover tear sheets.
 - Concatenates per-factor outputs into combined result tables.
 
