@@ -247,7 +247,11 @@ def plot_turnover_table(
 def plot_information_table(
     ic_data, return_df=False, tables_as_figures=True, ic_type="spearman", lag=5
 ):
-    """Display IC statistics as a figure or text; always return the DataFrame."""
+    """Display IC statistics and diagnostics; always return the DataFrame.
+
+    lag is the observation lag count for Ljung-Box diagnostics and Newey-West
+    adjusted IC t-statistics (default 5).
+    """
 
     def _safe_ttest_1samp(series):
         clean = series.dropna()

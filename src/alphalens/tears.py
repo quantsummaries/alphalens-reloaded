@@ -459,9 +459,9 @@ def create_information_tear_sheet(
         Demean forward returns by group before computing IC.
     by_group : bool
         If True, display graphs separately for each group.
-    lag : int
-        Number of lags for Ljung-Box autocorrelation diagnostics and
-        Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
+    lag : int, optional
+        Observation lags for Ljung-Box diagnostics and Newey-West adjusted IC
+        t-statistics. Defaults to 5.
     save_file : str or None
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     tables_as_figures : bool

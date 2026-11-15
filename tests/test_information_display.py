@@ -103,17 +103,20 @@ def test_information_wrapper_returns_data_with_independent_display(
         for number in set(plt.get_fignums()) - existing_figures:
             plt.close(number)
 
-
-def test_information_wrapper_supports_custom_lag(information_data):
+@pytest.mark.parametrize("saved", [False, True])
+def test_information_wrapper_supports_custom_lag(information_data, tmp_path, saved):
     with patch("alphalens.plotting.utils.print_table"):
         result = information_analysis_wrapper(
-            information_data, tables_as_figures=False, lag=3
+            information_data, tables_as_figures=False, lag=3,
+            tear_sheet_filepath=str(tmp_path / "custom_lag.png") if saved else None
         )
     for ic_type in ["spearman", "pearson"]:
         summary = result[f"ic_{ic_type}"]
         assert "lag3_autocorr" in summary.index
         assert "lag1_autocorr" not in summary.index
-
+        assert "lag5_autocorr" not in summary.index
+    if saved:
+        assert (tmp_path / "custom_lag.png").is_file()
 
 @pytest.mark.parametrize("tables_as_figures", [False, True])
 @pytest.mark.parametrize("analysis", ["returns", "turnover"])

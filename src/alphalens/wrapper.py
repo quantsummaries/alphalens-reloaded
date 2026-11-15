@@ -46,6 +46,7 @@ def return_analysis_wrapper(data: pd.DataFrame,
         by_group (bool): If True, display graphs separately for each group.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
+        periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
     """
@@ -64,12 +65,14 @@ def return_analysis_wrapper(data: pd.DataFrame,
                                                               group_neutral=group_neutral,
                                                               by_group=by_group,
                                                               tables_as_figures=tables_as_figures,
-                                                              save_file=tear_sheet_filepath)
+                                                              save_file=tear_sheet_filepath,
+                                                              periods_per_year=periods_per_year)
         print(f"\n*** Returns tear sheet saved to {tear_sheet_filepath}")
     else:
         factor_returns = alphalens.performance.factor_returns(data, long_short, group_neutral)
         alpha_beta = alphalens.performance.factor_alpha_beta(
-            data, factor_returns, long_short, group_neutral
+            data, factor_returns, long_short, group_neutral,
+            periods_per_year=periods_per_year
         )
         mean_quant_ret, _ = alphalens.performance.mean_return_by_quantile(
             data, by_group=False, demeaned=long_short, group_adjust=group_neutral
@@ -113,8 +116,9 @@ def information_analysis_wrapper(data: pd.DataFrame,
             displayed. Defaults to False.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
-        lag (int): Number of lags for Ljung-Box autocorrelation diagnostics and
-            Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
+        lag (int): Observation lags for Ljung-Box diagnostics and Newey-West
+            adjusted IC t-statistics. Defaults to 5.
+        periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
     """
@@ -137,9 +141,7 @@ def information_analysis_wrapper(data: pd.DataFrame,
                 by_group=by_group, ic_type=ic_type,
             )
             summaries[ic_type] = alphalens.plotting.plot_information_table(
-                daily_ic.dropna(),
-                tables_as_figures=tables_as_figures,
-                ic_type=ic_type,
+                daily_ic.dropna(), tables_as_figures=tables_as_figures, ic_type=ic_type,
                 lag=lag,
             )
     return {f"ic_{ic_type}": summary.T for ic_type, summary in summaries.items()}
@@ -154,7 +156,7 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
 
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
-        turnover_period (int): Number of periods for turnover analysis.
+        turnover_period (int): Number of observation steps for turnover analysis.
         period_unit (str): Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks, 'M' for months).
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
@@ -234,9 +236,9 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             boundaries. Defaults to 5. Set to None when using bins.
         bins (int or sequence[float] or None): Number of equal-width bins, or explicit bin edges.
             Defaults to None. Exactly one of quantiles and bins must be provided.
-        lag (int): Number of lags for Ljung-Box autocorrelation diagnostics and
-            Newey-West adjusted t-statistics in IC summaries. Defaults to 5.
         periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
+        lag (int): Observation lags for Ljung-Box diagnostics and Newey-West
+            adjusted IC t-statistics. Defaults to 5.
         turnover_period_labels (mapping[int, str], optional): Turnover and rank-autocorrelation display labels keyed by observation lag.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
