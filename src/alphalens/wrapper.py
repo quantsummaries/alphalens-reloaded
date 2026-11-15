@@ -118,7 +118,6 @@ def information_analysis_wrapper(data: pd.DataFrame,
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
         lag (int): Observation lags for Ljung-Box diagnostics and Newey-West
             adjusted IC t-statistics. Defaults to 5.
-        periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
     """
@@ -157,28 +156,48 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens.
         turnover_period (int): Number of observation steps for turnover analysis.
-        period_unit (str): Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks, 'M' for months).
+        period_unit (str): Unit of time for turnover analysis (e.g., 'D' for days, 'W' for weeks).
+            Only positive whole-day multiples are supported; calendar-month unit 'M' is not supported.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
         turnover_period_labels (mapping[int, str], optional): Display labels keyed by observation lag.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing turnover data frames.
     """
+    period_str = f"{turnover_period}{period_unit}"
+    try:
+        turnover_delta = alphalens.utils._coerce_timedelta(period_str)
+    except Exception as exc:
+        raise ValueError(
+            f"Invalid turnover period {period_str!r}. Use whole-day units like 'D' or 'W'."
+        ) from exc
+
+    if (
+        turnover_delta <= pd.Timedelta(0)
+        or turnover_delta < pd.Timedelta(days=1)
+        or turnover_delta % pd.Timedelta(days=1) != pd.Timedelta(0)
+    ):
+        raise ValueError(
+            f"Invalid turnover period {period_str!r}: turnover lag must be a positive whole-day multiple."
+        )
+
+    turnover_period_obs = int(turnover_delta.days)
+
     # Calculate turnover
     quantile_factor = data['factor_quantile']
 
     quantile_turnover = pd.concat([alphalens.performance.quantile_turnover(quantile_factor=quantile_factor,
                                                                            quantile=q,
-                                                                           period=turnover_period)
+                                                                           period=turnover_period_obs)
                                    for q in range(1, int(quantile_factor.max()) + 1)],
                                   axis=1)
 
     factor_autocorr = alphalens.performance.factor_rank_autocorrelation(factor_data=data,
-                                                                        period=turnover_period)
+                                                                        period=turnover_period_obs)
 
     if tear_sheet_filepath:
         alphalens.tears.create_turnover_tear_sheet(factor_data=data,
-                                                   turnover_periods=[f"{turnover_period}{period_unit}"],
+                                                   turnover_periods=[period_str],
                                                    tables_as_figures=tables_as_figures,
                                                    save_file=tear_sheet_filepath,
                                                    turnover_period_labels=turnover_period_labels)
@@ -186,8 +205,8 @@ def turnover_analysis_wrapper(data: pd.DataFrame,
 
     else:
         alphalens.plotting.plot_turnover_table(
-            pd.DataFrame({turnover_period: factor_autocorr}),
-            {turnover_period: quantile_turnover},
+            pd.DataFrame({turnover_period_obs: factor_autocorr}),
+            {turnover_period_obs: quantile_turnover},
             tables_as_figures=tables_as_figures,
             period_labels=turnover_period_labels,
         )
@@ -231,6 +250,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             displayed. Defaults to False.
         turnover_period (int, optional): Number of observation steps for turnover analysis. Defaults to 1.
         period_unit (str, optional): Unit of time for turnover analysis. Defaults to 'D'.
+            Only positive whole-day multiples are supported; calendar-month unit 'M' is not supported.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         quantiles (int or sequence[float] or None): Number of equal-count quantiles, or quantile
             boundaries. Defaults to 5. Set to None when using bins.
@@ -251,10 +271,12 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
 
-    assert sorted(alphalens.utils.get_forward_returns_columns(data.columns)) == sorted(fwd_rtrn_cols), "Forward return columns in data do not match fwd_rtrn_cols."
+    data_forward_return_cols = sorted(alphalens.utils.get_forward_returns_columns(data.columns))
+    if data_forward_return_cols != sorted(fwd_rtrn_cols):
+        raise ValueError("Forward return columns in data do not match fwd_rtrn_cols.")
 
     # information coefficient analysis
-    essential_cols = fwd_rtrn_cols
+    essential_cols = list(fwd_rtrn_cols)
     if 'group' in data.columns:
         essential_cols.append('group')
 
@@ -297,7 +319,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         clean_data = alphalens.utils.get_clean_factor(factor=df,
                                                       forward_returns=fwd_rtrn_data,
                                                       groupby=grp_by_series,
-                                                      binning_by_group=True if 'group' in df.columns else False,
+                                                      binning_by_group=grp_by_series is not None,
                                                       quantiles=quantiles,
                                                       bins=bins)
 
