@@ -4,17 +4,34 @@ High-level convenience wrappers that orchestrate common Alphalens workflows (ret
 
 This module sits on top of `alphalens.performance`, `alphalens.plotting`, and `alphalens.tears` and is intended for quick end-to-end analysis with fewer manual function calls.
 
+## Table of Contents
+
+- [`alphalens.wrapper`](#alphalenswrapper)
+  - [Input data expectation](#input-data-expectation)
+  - [Utility helpers](#utility-helpers)
+    - [`call_with_matching_args(func, *args, **kwargs)`](#call_with_matching_argsfunc-args-kwargs)
+  - [Workflow wrappers](#workflow-wrappers)
+    - [`return_analysis_wrapper(data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None, periods_per_year=None, equal_weight=False)`](#return_analysis_wrapperdata-long_shorttrue-group_neutralfalse-by_groupfalse-tables_as_figurestrue-tear_sheet_filepathnone-periods_per_yearnone-equal_weightfalse)
+    - [`information_analysis_wrapper(data, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None, lag=5)`](#information_analysis_wrapperdata-group_neutralfalse-by_groupfalse-tables_as_figurestrue-tear_sheet_filepathnone-lag5)
+    - [`turnover_analysis_wrapper(data, turnover_period, period_unit, tables_as_figures=True, tear_sheet_filepath=None)`](#turnover_analysis_wrapperdata-turnover_period-period_unit-tables_as_figurestrue-tear_sheet_filepathnone)
+    - [`full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True, quantiles=5, bins=None, lag=5, periods_per_year=None, turnover_period_labels=None, binning_by_group=False, equal_weight=False)`](#full_tear_sheet_wrapperdata-factors-fwd_rtrn_cols-output_dir-long_shorttrue-group_neutralfalse-by_groupfalse-turnover_period1-period_unitd-tables_as_figurestrue-quantiles5-binsnone-lag5-periods_per_yearnone-turnover_period_labelsnone-binning_by_groupfalse-equal_weightfalse)
+  - [Practical example](#practical-example)
+  - [Notes](#notes)
+  - [Table display](#table-display)
+
 ## Input data expectation
 
-All wrapper entry points expect `data` in standard Alphalens cleaned format, typically produced by:
+Input expectations differ slightly by wrapper:
 
-- `alphalens.utils.get_clean_factor_and_forward_returns(...)`
-
-That means:
-
-- MultiIndex index: `(date, asset)`
-- Columns include at least: forward-return horizons, `factor`, `factor_quantile`
-- Optional `group` column for group-aware analysis
+- `return_analysis_wrapper`, `information_analysis_wrapper`, and `turnover_analysis_wrapper` expect standard cleaned Alphalens factor data (typically from `alphalens.utils.get_clean_factor_and_forward_returns(...)`) with:
+  - MultiIndex index: `(date, asset)`
+  - Columns including forward-return horizons, `factor`, and (for turnover) `factor_quantile`
+  - Optional `group` column for group-aware analysis
+- `full_tear_sheet_wrapper` expects a frame that already contains:
+  - Forward-return columns listed in `fwd_rtrn_cols`
+  - One or more raw factor columns listed in `factors`
+  - Optional `group` column when using group-aware options
+  - A `(date, asset)` MultiIndex compatible with Alphalens cleaning and downstream analysis
 
 ## Utility helpers
 
@@ -98,7 +115,7 @@ Run turnover diagnostics and optionally save a turnover tear sheet.
 
 - `data` — Factor data in standard Alphalens cleaned format.
 - `turnover_period` — Number of periods for turnover analysis.
-- `period_unit` — Time unit for turnover analysis (for example `"D"`, `"W"`, `"M"`).
+- `period_unit` — Time unit for turnover analysis (for example `"D"` or `"W"`), with a positive whole-day multiple required.
 - `tear_sheet_filepath` — Optional output path for saving the turnover tear sheet.
 
 **Behavior**
@@ -124,7 +141,7 @@ Wrapper for alphalens full tear sheet function.
 - `data` — Factor data in the format expected by alphalens.
 - `factors` — List of factor column names to analyze.
 - `fwd_rtrn_cols` — List of forward return column names to analyze.
-- `output_dir` — Directory to save tear sheets; each factor gets its own output files.
+- `output_dir` — Directory to save tear sheets; files are named per factor (for example `rtrn_tear_sheet_<factor>.png`).
 - `long_short` — Whether to perform long-short analysis. When `True`, returns are demeaned across the full universe so analysis reflects a long/short factor portfolio rather than a raw long-only one.
 - `group_neutral` — Whether to demean forward returns by group during information/return analysis; forwarded to lower-level wrappers.
 - `by_group` — Whether to compute/display statistics separately by group; forwarded to lower-level wrappers.
@@ -132,18 +149,19 @@ Wrapper for alphalens full tear sheet function.
 - `period_unit` — Unit of time for turnover analysis (default: `"D"`).
 - `quantiles` / `bins` — Exactly one must be provided for factor bucketing.
 - `equal_weight` — Forwarded to `return_analysis_wrapper`; defaults to `False`. Controls portfolio weighting independently of factor bucketing, IC, and turnover analysis.
-- `binning_by_group` ?? Defaults to `False`: form buckets across all assets at each date, even when a `group` column is present. Set to `True` to form buckets separately within each group; a `group` column is required. This is independent of `group_neutral` (demeaning/weighting) and `by_group` (report breakdown).
+- `binning_by_group` — Defaults to `False`: form buckets across all assets at each date, even when a `group` column is present. Set to `True` to form buckets separately within each group; a `group` column is required. This is independent of `group_neutral` (demeaning/weighting) and `by_group` (report breakdown).
 - `lag` — Number of lags for Ljung-Box autocorrelation diagnostics and Newey-West-adjusted IC t-statistics in information analysis.
 
 **Behavior**
 
-- Validates that `data` contains `date` and `asset`, then sets a MultiIndex (`date`, `asset`).
-- Validates forward-return columns against `fwd_rtrn_cols`.
+- Validates quantile/bin configuration (`quantiles` xor `bins`) and validates that `group` exists when `binning_by_group=True`.
+- Validates forward-return columns by comparing detected forward-return columns in `data` against `fwd_rtrn_cols`.
 - For each factor in `factors`:
   - Renames that factor column to `factor`.
-  - Runs `information_analysis_wrapper(...)` with `group_neutral`, `by_group`, and `lag`, and saves an information tear sheet.
+  - Runs `information_analysis_wrapper(...)` with `group_neutral`, `by_group`, and `lag`, saving `ic_tear_sheet_<factor>.png`.
   - Builds cleaned factor data with `utils.get_clean_factor(..., binning_by_group=binning_by_group)`.
-  - Runs `return_analysis_wrapper(...)` with `long_short`, `group_neutral`, and `by_group`, then saves return and turnover tear sheets.
+  - Runs `return_analysis_wrapper(...)` with `long_short`, `group_neutral`, and `by_group`, saving `rtrn_tear_sheet_<factor>.png`.
+  - Runs `turnover_analysis_wrapper(...)`, saving `turnover_tear_sheet_<factor>.png`.
 - Concatenates per-factor outputs into combined result tables.
 
 **Returns**
