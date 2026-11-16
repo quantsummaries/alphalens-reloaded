@@ -30,7 +30,8 @@ def return_analysis_wrapper(data: pd.DataFrame,
                             by_group: bool = False,
                             tables_as_figures: bool = True,
                             tear_sheet_filepath: str = None,
-                            periods_per_year: float | Mapping[str, float] | None = None) -> dict[str, pd.DataFrame]:
+                            periods_per_year: float | Mapping[str, float] | None = None,
+                            equal_weight: bool = False) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens return analysis functions.
 
     Args:
@@ -47,6 +48,9 @@ def return_analysis_wrapper(data: pd.DataFrame,
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
         periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
+        equal_weight (bool, optional): Equal-weight assets within portfolio legs
+            instead of weighting by factor magnitude. Defaults to False. See
+            performance.factor_weights for median ties and one-sided portfolios.
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
     """
@@ -66,10 +70,12 @@ def return_analysis_wrapper(data: pd.DataFrame,
                                                               by_group=by_group,
                                                               tables_as_figures=tables_as_figures,
                                                               save_file=tear_sheet_filepath,
-                                                              periods_per_year=periods_per_year)
+                                                              periods_per_year=periods_per_year,
+                                                              equal_weight=equal_weight)
         print(f"\n*** Returns tear sheet saved to {tear_sheet_filepath}")
     else:
-        factor_returns = alphalens.performance.factor_returns(data, long_short, group_neutral)
+        factor_returns = alphalens.performance.factor_returns(
+            data, long_short, group_neutral, equal_weight=equal_weight)
         alpha_beta = alphalens.performance.factor_alpha_beta(
             data, factor_returns, long_short, group_neutral,
             periods_per_year=periods_per_year
@@ -229,7 +235,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                             lag: int = 5,
                             periods_per_year: float | Mapping[str, float] | None = None,
                             turnover_period_labels: Mapping[int, str] | None = None,
-                            binning_by_group: bool = False) -> dict[str, pd.DataFrame]:
+                            binning_by_group: bool = False,
+                            equal_weight: bool = False) -> dict[str, pd.DataFrame]:
     """Wrapper for alphalens full tear sheet function.
     Args:
         data (pd.DataFrame): Factor data in the format expected by alphalens, with the multi-index of ['date', 'asset'].
@@ -258,6 +265,9 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         bins (int or sequence[float] or None): Number of equal-width bins, or explicit bin edges.
             Defaults to None. Exactly one of quantiles and bins must be provided.
         periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
+        equal_weight (bool, optional): Equal-weight assets within portfolio legs
+            instead of weighting by factor magnitude. Defaults to False. See
+            performance.factor_weights for median ties and one-sided portfolios.
         lag (int): Observation lags for Ljung-Box diagnostics and Newey-West
             adjusted IC t-statistics. Defaults to 5.
         turnover_period_labels (mapping[int, str], optional): Turnover and rank-autocorrelation display labels keyed by observation lag.
@@ -336,7 +346,8 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                 by_group=by_group,
                                                                 tables_as_figures=tables_as_figures,
                                                                 tear_sheet_filepath=rtrn_tear_sheet,
-                                                                periods_per_year=periods_per_year)
+                                                                periods_per_year=periods_per_year,
+                                                                equal_weight=equal_weight)
         rtrn_result['mean_return_by_q'].insert(0, 'factor', f)
         rtrn_result['std_err_by_q'].insert(0, 'factor', f)
         mean_return_by_q_list.append(rtrn_result['mean_return_by_q'])

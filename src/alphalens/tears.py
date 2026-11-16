@@ -194,7 +194,7 @@ def create_summary_tear_sheet(
 @plotting.customize
 def create_returns_tear_sheet(
     factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, save_file=None,
-    periods_per_year=None,
+    periods_per_year=None, equal_weight=False,
 ):
     """
     Creates a tear sheet for returns analysis of a factor.
@@ -231,6 +231,13 @@ def create_returns_tear_sheet(
     periods_per_year : float or mapping[str, float], optional
         Annualization override for alpha; see performance.factor_alpha_beta.
         None preserves duration-based annualization. Other statistics are unchanged.
+    equal_weight : bool, optional
+        If True, equal-weight assets within portfolio legs. With long_short=True,
+        split at the cross-sectional median: ties receive zero weight, and each
+        populated leg receives half the gross exposure when both legs exist.
+        A single populated leg receives all gross exposure; a constant factor
+        produces zero weights. Defaults to False (factor-value weights).
+        Quantile summaries and quantile cumulative returns are unaffected.
     """
 
     existing_figures = set(plt.get_fignums())
@@ -238,7 +245,9 @@ def create_returns_tear_sheet(
     group_gf = None
     completed = False
     try:
-        factor_returns = perf.factor_returns(factor_data, long_short, group_neutral)
+        factor_returns = perf.factor_returns(
+            factor_data, long_short, group_neutral, equal_weight=equal_weight
+        )
 
         mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
             factor_data,
@@ -314,7 +323,7 @@ def create_returns_tear_sheet(
         # sample non-overlapping trades before passing returns to this tear sheet.
         for period in factor_returns.columns:
             title = (
-                "Factor Weighted "
+                ("Equal Weighted " if equal_weight else "Factor Weighted ")
                 + ("Group Neutral " if group_neutral else "")
                 + ("Long/Short " if long_short else "")
                 + f"Portfolio Cumulative Return ({period} Period)"

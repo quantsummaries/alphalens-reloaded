@@ -33,7 +33,7 @@ Whatever `func` returns.
 
 ## Workflow wrappers
 
-### `return_analysis_wrapper(data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None)`
+### `return_analysis_wrapper(data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, tear_sheet_filepath=None, periods_per_year=None, equal_weight=False)`
 Run return-oriented analysis and optionally save a return tear sheet.
 
 **Arguments**
@@ -43,6 +43,7 @@ Run return-oriented analysis and optionally save a return tear sheet.
 - `group_neutral` — Enable group-level normalization/de-meaning path for return analysis.
 - `by_group` — Enable group-level breakout in return summaries/plots.
 - `tear_sheet_filepath` — Optional output path for saving the return tear sheet.
+- `equal_weight` — Defaults to `False`. Set to `True` for equal weights within portfolio legs. With `long_short=True`, legs are formed above/below the median, median ties receive zero weight, and both legs receive 50% gross exposure when populated. A single populated leg receives 100% gross exposure; constant signals produce zero weights. Applies to portfolio cumulative returns and alpha/beta in saved and text reports; quantile returns and spreads are unaffected.
 
 **Behavior**
 
@@ -115,7 +116,7 @@ A dictionary with:
 
 ---
 
-### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True, quantiles=5, bins=None, lag=5, periods_per_year=None, turnover_period_labels=None, binning_by_group=False)`
+### `full_tear_sheet_wrapper(data, factors, fwd_rtrn_cols, output_dir, long_short=True, group_neutral=False, by_group=False, turnover_period=1, period_unit="D", tables_as_figures=True, quantiles=5, bins=None, lag=5, periods_per_year=None, turnover_period_labels=None, binning_by_group=False, equal_weight=False)`
 Wrapper for alphalens full tear sheet function.
 
 **Arguments**
@@ -130,6 +131,7 @@ Wrapper for alphalens full tear sheet function.
 - `turnover_period` — Number of periods for turnover analysis.
 - `period_unit` — Unit of time for turnover analysis (default: `"D"`).
 - `quantiles` / `bins` — Exactly one must be provided for factor bucketing.
+- `equal_weight` — Forwarded to `return_analysis_wrapper`; defaults to `False`. Controls portfolio weighting independently of factor bucketing, IC, and turnover analysis.
 - `binning_by_group` ?? Defaults to `False`: form buckets across all assets at each date, even when a `group` column is present. Set to `True` to form buckets separately within each group; a `group` column is required. This is independent of `group_neutral` (demeaning/weighting) and `by_group` (report breakdown).
 - `lag` — Number of lags for Ljung-Box autocorrelation diagnostics and Newey-West-adjusted IC t-statistics in information analysis.
 
