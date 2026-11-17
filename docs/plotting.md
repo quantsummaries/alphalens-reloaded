@@ -47,7 +47,7 @@ A seaborn axes style object suitable for use in `with` statements.
 ## Data table displays
 
 ### `plot_returns_table(alpha_beta, mean_ret_quantile, mean_ret_spread_quantile, tables_as_figures=True, ax=None)`
-Summarize portfolio alpha/beta and quantile returns in basis points.
+Display portfolio annualized alpha, beta, their OLS t-statistics, and quantile-return summaries. Alpha is a decimal annualized return; beta and t-statistics are dimensionless. Only the quantile returns and spread are converted to basis points. The `t-stat(alpha)` and `t-stat(beta)` rows supplied by `factor_alpha_beta()` are included in text and figure modes.
 
 ### `plot_turnover_table(autocorrelation_data, quantile_turnover, tables_as_figures=True, ax=None)`
 Summarize mean quantile turnover and factor rank autocorrelation.

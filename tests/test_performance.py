@@ -952,7 +952,8 @@ class PerformanceTestCase(TestCase):
             columns=["1D"], index=["Ann. alpha", "beta"], data=[alpha, beta]
         )
 
-        assert_frame_equal(ab, expected)
+        assert_frame_equal(ab.loc[["Ann. alpha", "beta"]], expected)
+        self.assertEqual(ab.index.tolist(), ["Ann. alpha", "t-stat(alpha)", "beta", "t-stat(beta)"])
 
     @parameterized.expand(
         [

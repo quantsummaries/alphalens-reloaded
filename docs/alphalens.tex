@@ -507,7 +507,7 @@ If \texttt{demeaned=False}, the same formula is used, but the weights come direc
 \paragraph{Returns}
 A \texttt{DataFrame} of period returns, or asset-level weighted returns when \texttt{by\_asset=True}.
 
-\subsubsection{\texttt{factor\_alpha\_beta(factor\_data: pd.DataFrame, returns: Optional[Union[pd.DataFrame, pd.Series]]=None, demeaned: bool=True, group\_adjust: bool=False, equal\_weight: bool=False) -> pd.DataFrame}}
+\subsubsection{\texttt{factor\_alpha\_beta(factor\_data: pd.DataFrame, returns: Optional[Union[pd.DataFrame, pd.Series]]=None, demeaned: bool=True, group\_adjust: bool=False, equal\_weight: bool=False, periods\_per\_year: Optional[Union[float, Mapping[str, float]]]=None) -> pd.DataFrame}}
 Estimate alpha and beta for a factor portfolio using OLS regression.
 
 \paragraph{Behavior}
@@ -515,11 +515,18 @@ Estimate alpha and beta for a factor portfolio using OLS regression.
   \item Uses factor portfolio returns as the dependent variable.
   \item Uses the universe mean return as the explanatory variable.
   \item If \texttt{returns} is not provided, it is computed using \texttt{factor\_returns()}.
-  \item Annualizes alpha using a 252-trading-day convention.
+  \item Runs \texttt{statsmodels.OLS} with an intercept and \texttt{missing="drop"}.
+  \item Reports \texttt{Ann. alpha}, \texttt{t-stat(alpha)}, \texttt{beta}, and \texttt{t-stat(beta)} per horizon.
+  \item Annualizes alpha with either:
+  \begin{itemize}
+    \item default duration-based scaling: \(\texttt{Timedelta("252Days")} / \texttt{Timedelta(period)}\), or
+    \item explicit \texttt{periods\_per\_year} (scalar or per-horizon mapping).
+  \end{itemize}
+  \item \texttt{periods\_per\_year} affects annualized alpha only (not beta or t-stats).
 \end{itemize}
 
 \paragraph{Returns}
-A \texttt{DataFrame} containing at least annualized alpha and beta by forward-return horizon.
+A \texttt{DataFrame} indexed by \texttt{Ann. alpha}, \texttt{t-stat(alpha)}, \texttt{beta}, and \texttt{t-stat(beta)} with one column per forward-return horizon.
 
 \paragraph{How alpha and beta are calculated}
 For each forward-return horizon (for example \texttt{1D}, \texttt{5D}), the function runs:
@@ -533,10 +540,12 @@ r_{\text{factor}}[t] = \alpha + \beta \cdot r_{\text{universe}}[t] + \varepsilon
   \item \(r_{\text{universe}}[t]\): cross-sectional mean universe return for the same horizon.
   \item \(\beta\): OLS slope (sensitivity to universe return).
   \item \(\alpha\): OLS intercept, then annualized as
-  \( (1 + \alpha)^{\texttt{Timedelta("252Days")} / \texttt{Timedelta(period)}} - 1 \).
+  \( (1 + \alpha)^{f_{\text{annual}}} - 1 \),
+  where \(f_{\text{annual}}=\texttt{Timedelta("252Days")} / \texttt{Timedelta(period)}\) by default, or \texttt{periods\_per\_year[period]} (or scalar \texttt{periods\_per\_year}) when provided.
+  \item \texttt{t-stat(alpha)} and \texttt{t-stat(beta)} are OLS t-values for the per-period intercept and slope (not annualized).
 \end{itemize}
 
-The output currently stores rows labeled \texttt{Ann. alpha} and \texttt{beta} per horizon.
+The output stores rows labeled \texttt{Ann. alpha}, \texttt{t-stat(alpha)}, \texttt{beta}, and \texttt{t-stat(beta)} per horizon.
 
 \subsubsection{\texttt{cumulative\_returns(returns)}}
 Convert simple returns into cumulative returns.

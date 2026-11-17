@@ -51,7 +51,7 @@ Detailed tear sheet focused on returns analysis by factor quantile.
 **Behavior**
 
 - Computes factor portfolio returns.
-- Displays alpha and beta metrics.
+- Displays annualized alpha, beta, and their conventional OLS t-statistics (`t-stat(alpha)` and `t-stat(beta)`). The alpha t-statistic tests the per-period intercept against zero; t-statistics are not annualized or Newey-West adjusted.
 - Shows mean quantile returns as a bar chart.
 - Plots return distributions using violin plots (by date across periods).
 - If '1D' returns are available, plots cumulative portfolio returns and quantile-level cumulative returns.

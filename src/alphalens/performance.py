@@ -335,11 +335,11 @@ def factor_alpha_beta(
     periods_per_year: Optional[Union[float, Mapping[str, float]]] = None,
 ) -> pd.DataFrame:
     """
-    Compute the alpha (excess returns), alpha t-stat (alpha significance),
-    and beta (market exposure) of a factor. A regression is run with
-    the period wise factor universe mean return as the independent variable
-    and mean period wise return from a portfolio weighted by factor values
-    as the dependent variable.
+    Compute annualized alpha, beta, and their OLS t-statistics.
+
+    Regress period-wise portfolio returns on an intercept and the period-wise
+    universe mean return. T-statistics test the per-period intercept and slope
+    against zero using conventional OLS standard errors; they are not annualized.
 
     Parameters
     ----------
@@ -373,9 +373,12 @@ def factor_alpha_beta(
 
     Returns
     -------
-    alpha_beta : pd.Series
-        A list containing the alpha, beta, a t-stat(alpha)
-        for the given factor and forward returns.
+    alpha_beta : pd.DataFrame
+        Rows are 'Ann. alpha', 't-stat(alpha)', 'beta', and 't-stat(beta)',
+        with one column per forward-return horizon. The alpha t-statistic
+        refers to the per-period intercept, before annualization. No robust
+        or Newey-West covariance adjustment is applied. Undefined statistics
+        are NaN, including t-statistics with no residual degrees of freedom.
     """
 
     if returns is None:
@@ -415,7 +418,11 @@ def factor_alpha_beta(
             raise ValueError("periods_per_year must contain finite positive numbers")
         annualization[period] = float(value)
 
-    alpha_beta = pd.DataFrame()
+    alpha_beta = pd.DataFrame(
+        index=["Ann. alpha", "t-stat(alpha)", "beta", "t-stat(beta)"],
+        columns=returns.columns,
+        dtype=float,
+    )
     for period in returns.columns.values:
         x = universe_ret[period].values
         y = returns[period].values
@@ -425,13 +432,18 @@ def factor_alpha_beta(
         try:
             alpha, beta = reg_fit.params
         except ValueError:
-            alpha_beta.loc["Ann. alpha", period] = np.nan
-            alpha_beta.loc["beta", period] = np.nan
+            # Keep all four rows undefined when an intercept/slope pair is absent.
+            continue
         else:
             freq_adjust = annualization[period]
 
             alpha_beta.loc["Ann. alpha", period] = (1 + alpha) ** freq_adjust - 1
             alpha_beta.loc["beta", period] = beta
+            if reg_fit.df_resid > 0:
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    alpha_beta.loc[["t-stat(alpha)", "t-stat(beta)"], period] = (
+                        reg_fit.tvalues
+                    )
 
     return alpha_beta
 

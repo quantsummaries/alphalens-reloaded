@@ -6,11 +6,6 @@ import inspect
 import os
 from collections.abc import Mapping, Sequence
 
-import warnings
-
-# Suppress the specific warning from Alphalens
-warnings.filterwarnings("ignore", message="'freq' not set in factor_data index: assuming business day")
-
 import pandas as pd
 
 import alphalens
@@ -81,12 +76,19 @@ def return_analysis_wrapper(data: pd.DataFrame,
             periods_per_year=periods_per_year
         )
         mean_quant_ret, _ = alphalens.performance.mean_return_by_quantile(
-            data, by_group=False, demeaned=long_short, group_adjust=group_neutral
+            data, by_group=by_group, demeaned=long_short, group_adjust=group_neutral
         )
         mean_quant_bydate, _ = alphalens.performance.mean_return_by_quantile(
-            data, by_date=True, by_group=False,
+            data, by_date=True, by_group=by_group,
             demeaned=long_short, group_adjust=group_neutral,
         )
+        if by_group:
+            mean_quant_ret = mean_quant_ret.groupby(
+                level=["factor_quantile"], observed=True
+            ).mean()
+            mean_quant_bydate = mean_quant_bydate.groupby(
+                level=["factor_quantile", "date"], observed=True
+            ).mean()
         base_period = mean_quant_ret.columns[0]
         mean_quant_rateret = mean_quant_ret.apply(
             alphalens.utils.rate_of_return, axis=0, base_period=base_period
@@ -277,6 +279,11 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     Returns:
         dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
     """
+    if not factors:
+        raise ValueError("factors must contain at least one factor column name")
+    missing_factors = [f for f in factors if f not in data.columns]
+    if missing_factors:
+        raise ValueError(f"Factor columns not found in data: {missing_factors}")
     if (quantiles is None) == (bins is None):
         raise ValueError("Exactly one of quantiles or bins must be provided")
     if binning_by_group and "group" not in data.columns:
