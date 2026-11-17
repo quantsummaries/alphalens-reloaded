@@ -302,6 +302,28 @@ class UtilsTestCase(TestCase):
         ).dropna()
         assert_series_equal(quantized_factor, expected)
 
+    @parameterized.expand(
+        [
+            ("quantiles_odd", 5, None),
+            ("quantiles_small", 1, None),
+            ("bins_odd", None, 5),
+            ("bins_small", None, 1),
+        ]
+    )
+    def test_quantize_factor_zero_aware_requires_even_integer_ge_2(
+        self, _name, quantiles, bins
+    ):
+        with self.assertRaisesRegex(
+            ValueError,
+            "zero_aware=True requires an even integer >= 2",
+        ):
+            quantize_factor(
+                self.biased_factor_data,
+                quantiles=quantiles,
+                bins=bins,
+                zero_aware=True,
+            )
+
     def test_get_clean_factor_and_forward_returns_1(self):
         """
         Test get_clean_factor_and_forward_returns with a daily factor

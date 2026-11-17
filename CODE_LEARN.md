@@ -25,6 +25,7 @@ Companion docs: `CODE_OVERVIEW.md` (module-by-module writeup + known findings),
 - [9. `alphalens.extra` — small helpers](#9-alphalensextra--small-helpers)
 - [10. Cross-repo integration](#10-cross-repo-integration)
 - [11. Known quirks / pitfalls to watch for](#11-known-quirks--pitfalls-to-watch-for)
+- [Understanding Event Study Code](#understanding-event-study-code)
 - [Suggested order](#suggested-order)
 
 ## 0. Layout at a glance
@@ -258,6 +259,56 @@ From `CODE_OVERVIEW.md` (re-verified 2026-10-28 at HEAD `6d4e1cd`):
 - [ ] `utils.get_forward_returns_columns(..., warn_on_drop=True)` emits the
       non-exact-day warning at most once per process; suppress it with
       `warn_on_drop=False` in noisy loops.
+
+[⬆ 回到目录](#table-of-contents)
+
+## Understanding Event Study Code
+
+The event-study code spans three modules:
+
+| Function | Role | Source |
+| --- | --- | --- |
+| `create_event_study_tear_sheet()` | Complete report: event counts, cumulative event curves, and quantile-return plots. | [tears.py:913](src/alphalens/tears.py#L913) |
+| `create_event_returns_tear_sheet()` | Event-window cumulative-return charts, optionally by group. | [tears.py:807](src/alphalens/tears.py#L807) |
+| `average_cumulative_return_by_quantile()` | Computes event-path means and standard deviations by quantile. | [performance.py:917](src/alphalens/performance.py#L917) |
+| `common_start_returns()` | Extracts windows around event dates and rebases each asset's path to zero. | [performance.py:819](src/alphalens/performance.py#L819) |
+| `cumulative_returns()` | Compounds simple returns into wealth before event windows are normalized. | [performance.py:472](src/alphalens/performance.py#L472) |
+| `plot_quantile_average_cumulative_return()` | Draws event curves and optional error bars. | [plotting.py:1092](src/alphalens/plotting.py#L1092) |
+| `plot_events_distribution()` | Draws event counts over time, including the single-date case. | [plotting.py:1203](src/alphalens/plotting.py#L1203) |
+
+**Main calculation path**
+
+```text
+create_event_study_tear_sheet
+├── plot_events_distribution
+└── create_event_returns_tear_sheet
+    ├── average_cumulative_return_by_quantile
+    │   ├── cumulative_returns
+    │   └── common_start_returns
+    └── plot_quantile_average_cumulative_return
+```
+
+For understanding the mathematics, start with `common_start_returns()`, then
+read `average_cumulative_return_by_quantile()`.
+
+**Example**
+
+```python
+from alphalens import tears
+
+daily_returns = prices.pct_change(fill_method=None)
+
+tears.create_event_returns_tear_sheet(
+    factor_data,
+    daily_returns,
+    avgretplot=(5, 15),
+    long_short=False,
+)
+```
+
+The window includes up to five observations before and fifteen after each
+event. Event time zero has return zero. The input return data should extend
+beyond the event dates to cover this window.
 
 [⬆ 回到目录](#table-of-contents)
 

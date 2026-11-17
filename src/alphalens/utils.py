@@ -172,6 +172,14 @@ def quantize_factor(
     if zero_aware and not (isinstance(quantiles, int) or isinstance(bins, int)):
         msg = "zero_aware should only be True when quantiles or bins is an" " integer"
         raise ValueError(msg)
+    if zero_aware:
+        steps = quantiles if quantiles is not None else bins
+        if steps is not None and (steps < 2 or steps % 2 != 0):
+            msg = (
+                "zero_aware=True requires an even integer >= 2 for "
+                "'quantiles' or 'bins'"
+            )
+            raise ValueError(msg)
 
     def quantile_calc(x, _quantiles, _bins, _zero_aware, _no_raise):
         try:
