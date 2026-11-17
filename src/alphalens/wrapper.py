@@ -40,6 +40,9 @@ def return_analysis_wrapper(data: pd.DataFrame,
             group_neutral -> group_adjust in factor_weights(...) -> changes whether weights are built/normalized in a
             group-neutral way. Defaults to False.
         by_group (bool): If True, display graphs separately for each group.
+            Returned quantile statistics include a group level. The overall
+            return-summary table pools assets within each quantile in both
+            saved and unsaved reports; it does not average group means.
         tables_as_figures (bool): Render tables as figures when True (default); otherwise display text.
         tear_sheet_filepath (str): File path to save the tear sheet. Do not save if None.
         periods_per_year (float or mapping, optional): Alpha annualization override; see performance.factor_alpha_beta.
@@ -76,19 +79,12 @@ def return_analysis_wrapper(data: pd.DataFrame,
             periods_per_year=periods_per_year
         )
         mean_quant_ret, _ = alphalens.performance.mean_return_by_quantile(
-            data, by_group=by_group, demeaned=long_short, group_adjust=group_neutral
+            data, by_group=False, demeaned=long_short, group_adjust=group_neutral
         )
         mean_quant_bydate, _ = alphalens.performance.mean_return_by_quantile(
-            data, by_date=True, by_group=by_group,
+            data, by_date=True, by_group=False,
             demeaned=long_short, group_adjust=group_neutral,
         )
-        if by_group:
-            mean_quant_ret = mean_quant_ret.groupby(
-                level=["factor_quantile"], observed=True
-            ).mean()
-            mean_quant_bydate = mean_quant_bydate.groupby(
-                level=["factor_quantile", "date"], observed=True
-            ).mean()
         base_period = mean_quant_ret.columns[0]
         mean_quant_rateret = mean_quant_ret.apply(
             alphalens.utils.rate_of_return, axis=0, base_period=base_period
@@ -127,7 +123,9 @@ def information_analysis_wrapper(data: pd.DataFrame,
         lag (int): Observation lags for Ljung-Box diagnostics and Newey-West
             adjusted IC t-statistics. Defaults to 5.
     Returns:
-        dict[str, pd.DataFrame]: Dictionary containing information coefficient and rank IC data frames.
+        dict[str, pd.DataFrame]: Dictionary containing information summaries.
+            With by_group=True, columns have (group, horizon) levels; each
+            group's temporal diagnostics use only its own date series.
     """
 
     if tear_sheet_filepath:
@@ -148,7 +146,7 @@ def information_analysis_wrapper(data: pd.DataFrame,
                 by_group=by_group, ic_type=ic_type,
             )
             summaries[ic_type] = alphalens.plotting.plot_information_table(
-                daily_ic.dropna(), tables_as_figures=tables_as_figures, ic_type=ic_type,
+                daily_ic, tables_as_figures=tables_as_figures, ic_type=ic_type,
                 lag=lag,
             )
     return {f"ic_{ic_type}": summary.T for ic_type, summary in summaries.items()}

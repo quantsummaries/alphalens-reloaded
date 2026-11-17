@@ -15,6 +15,7 @@
 
 import warnings
 import io
+from numbers import Integral
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -71,10 +72,42 @@ class GridFigure(object):
         self.gs = None
 
 
+def _resolve_turnover_lags(factor_data, turnover_lags=None, turnover_periods=None):
+    """Select positive observation lags without truncating intraday horizons."""
+    if turnover_lags is not None and turnover_periods is not None:
+        raise ValueError("Specify only one of turnover_lags and turnover_periods")
+
+    if turnover_periods is not None:
+        try:
+            durations = [utils._coerce_timedelta(p) for p in turnover_periods]
+        except (TypeError, ValueError) as exc:
+            raise ValueError("turnover_periods must be positive whole-day durations") from exc
+        if not durations or any(
+            pd.isna(p) or p <= pd.Timedelta(0) or p % pd.Timedelta(days=1) != pd.Timedelta(0)
+            for p in durations
+        ):
+            raise ValueError("turnover_periods must be positive whole-day durations; use turnover_lags for observation counts")
+        turnover_lags = [p.days for p in durations]
+    elif turnover_lags is None:
+        columns = utils.get_forward_returns_columns(
+            factor_data.columns, require_exact_day_multiple=True, warn_on_drop=False
+        )
+        turnover_lags = [utils._coerce_timedelta(p).days for p in columns]
+        turnover_lags = [lag for lag in turnover_lags if lag > 0] or [1]
+
+    try:
+        lags = list(turnover_lags)
+    except TypeError as exc:
+        raise ValueError("turnover_lags must be a non-empty sequence of positive integers") from exc
+    if not lags or any(isinstance(lag, bool) or not isinstance(lag, Integral) or lag <= 0 for lag in lags):
+        raise ValueError("turnover_lags must be a non-empty sequence of positive integers")
+    return list(dict.fromkeys(int(lag) for lag in lags))
+
+
 @plotting.customize
 def create_summary_tear_sheet(
     factor_data, long_short=True, group_neutral=False, tables_as_figures=True,
-    periods_per_year=None,
+    periods_per_year=None, turnover_lags=None,
 ):
     """
     Creates a small summary tear sheet with returns, information, and turnover
@@ -97,7 +130,12 @@ def create_summary_tear_sheet(
     periods_per_year : float or mapping[str, float], optional
         Annualization override for alpha; see performance.factor_alpha_beta.
         None preserves duration-based annualization. Other statistics are unchanged.
+    turnover_lags : sequence[int], optional
+        Positive observation lags. Defaults to positive whole-day horizon counts,
+        or [1] when no such horizons exist, including intraday-only inputs.
     """
+
+    periods = _resolve_turnover_lags(factor_data, turnover_lags=turnover_lags)
 
     # Returns Analysis
     mean_quant_ret, std_quantile = perf.mean_return_by_quantile(
@@ -141,10 +179,7 @@ def create_summary_tear_sheet(
         std_err=compstd_quant_daily,
     )
 
-    periods = utils.get_forward_returns_columns(factor_data.columns)
-    periods = [utils._coerce_timedelta(str(p)).days for p in periods]
-
-    fr_cols = len(periods)
+    fr_cols = len(utils.get_forward_returns_columns(factor_data.columns))
     vertical_sections = 2 + fr_cols * 3 + int(tables_as_figures)
     gf = GridFigure(rows=vertical_sections, cols=1)
 
@@ -163,7 +198,7 @@ def create_summary_tear_sheet(
     )
 
     # Information Analysis
-    ic = perf.factor_information_coefficient(factor_data)
+    ic = perf.factor_information_coefficient(factor_data, group_adjust=group_neutral)
     plotting.plot_information_table(ic, tables_as_figures=tables_as_figures)
 
     # Turnover Analysis
@@ -452,6 +487,7 @@ def create_information_tear_sheet(
     Creates a tear sheet for information analysis of a factor.
 
     First set of plots show IC statistics: mean, std, skew, kurtosis, IC IR, Ljung-Box test, t-statistics (w.i. and w.o. Newey-West adjustment).
+    Each method (Spearman and Pearson) has its own explicitly labeled charts.
     Second set of plots show time series of IC values.
     Third set of plots show histogram and QQ-plot of IC values.
     Fourth set of plots show monthly IC heatmaps if not by group and mean IC values if by group.
@@ -475,10 +511,12 @@ def create_information_tear_sheet(
         If provided, the tear sheet will be saved to the specified file path beside being displayed interactively.
     tables_as_figures : bool
         If True (default), render summary tables in the tear sheet; otherwise dgitisplay text.
-        Return a dictionary of Spearman and Pearson summary DataFrames in either mode.
+        Return a dictionary of Spearman and Pearson summary DataFrames in either
+        mode. With by_group=True, each summary has a (group, horizon) index;
+        temporal diagnostics are calculated independently within each group.
     """
     existing_figures = set(plt.get_fignums())
-    gf = None
+    grid_figures = []
     completed = False
     summaries = {}
     try:
@@ -486,7 +524,6 @@ def create_information_tear_sheet(
             ic = perf.factor_information_coefficient(
                 factor_data, group_neutral, by_group=by_group, ic_type=ic_type
             )
-            ic = ic.dropna()
             summaries[ic_type] = plotting.plot_information_table(
                 ic,
                 tables_as_figures=tables_as_figures,
@@ -494,42 +531,44 @@ def create_information_tear_sheet(
                 lag=lag,
             )
 
-        if by_group:
-            # Time-series charts need one IC per date rather than a date/group index.
-            ic = perf.factor_information_coefficient(
-                factor_data, group_neutral, ic_type="pearson"
-            ).dropna()
+            if by_group:
+                # Time-series charts need one IC per date rather than a date/group index.
+                ic = perf.factor_information_coefficient(
+                    factor_data, group_neutral, ic_type=ic_type
+                )
 
-        columns_wide = 2
-        fr_cols = len(ic.columns)
-        rows_when_wide = ((fr_cols - 1) // columns_wide) + 1
-        vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
-        gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+            columns_wide = 2
+            fr_cols = len(ic.columns)
+            rows_when_wide = ((fr_cols - 1) // columns_wide) + 1
+            vertical_sections = fr_cols + 3 * rows_when_wide + 2 * fr_cols
+            gf = GridFigure(rows=vertical_sections, cols=columns_wide)
+            grid_figures.append(gf)
 
-        ax_ic_ts = [gf.next_row() for _ in range(fr_cols)]
-        plotting.plot_ic_ts(ic, ax=ax_ic_ts)
+            ax_ic_ts = [gf.next_row() for _ in range(fr_cols)]
+            plotting.plot_ic_ts(ic, ax=ax_ic_ts, ic_type=ic_type)
 
-        ax_ic_hqq = [gf.next_cell() for _ in range(fr_cols * 2)]
-        plotting.plot_ic_hist(ic, ax=ax_ic_hqq[::2])
-        plotting.plot_ic_qq(ic, ax=ax_ic_hqq[1::2])
+            ax_ic_hqq = [gf.next_cell() for _ in range(fr_cols * 2)]
+            plotting.plot_ic_hist(ic, ax=ax_ic_hqq[::2], ic_type=ic_type)
+            plotting.plot_ic_qq(ic, ax=ax_ic_hqq[1::2], ic_type=ic_type)
 
-        if not by_group:
+            if not by_group:
 
-            mean_monthly_ic = perf.mean_information_coefficient(
-                factor_data,
-                group_adjust=group_neutral,
-                by_group=False,
-                by_time="ME",
-            )
-            ax_monthly_ic_heatmap = [gf.next_cell() for x in range(fr_cols)]
-            plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ax=ax_monthly_ic_heatmap)
+                mean_monthly_ic = perf.mean_information_coefficient(
+                    factor_data,
+                    group_adjust=group_neutral,
+                    by_group=False,
+                    by_time="ME",
+                    ic_type=ic_type,
+                )
+                ax_monthly_ic_heatmap = [gf.next_cell() for x in range(fr_cols)]
+                plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ax=ax_monthly_ic_heatmap, ic_type=ic_type)
 
-        if by_group:
-            mean_group_ic = perf.mean_information_coefficient(
-                factor_data, group_adjust=group_neutral, by_group=True
-            )
+            if by_group:
+                mean_group_ic = perf.mean_information_coefficient(
+                    factor_data, group_adjust=group_neutral, by_group=True, ic_type=ic_type
+                )
 
-            plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row())
+                plotting.plot_ic_by_group(mean_group_ic, ax=gf.next_row(), ic_type=ic_type)
 
         if save_file is not None:
             if save_file.endswith(".pdf"):
@@ -584,14 +623,14 @@ def create_information_tear_sheet(
         if save_file is not None or not completed:
             for num in set(plt.get_fignums()) - existing_figures:
                 plt.close(num)
-        if gf is not None:
+        for gf in grid_figures:
             gf.close()
 
 
 @plotting.customize
 def create_turnover_tear_sheet(
         factor_data, turnover_periods=None, tables_as_figures=True, save_file=None,
-        turnover_period_labels=None):
+        turnover_period_labels=None, turnover_lags=None):
     """
     Creates a tear sheet for analyzing the turnover properties of a factor.
 
@@ -604,12 +643,12 @@ def create_turnover_tear_sheet(
         (optionally) the group the asset belongs to.
         - See full explanation in utils.get_clean_factor_and_forward_returns
     turnover_periods : sequence[string], optional
-        Periods to compute turnover analysis on. By default periods in
-        'factor_data' are used but custom periods can provided instead. This
-        can be useful when periods in 'factor_data' are not multiples of the
-        frequency at which factor values are computed i.e. the periods
-        are 2h and 4h and the factor is computed daily and so values like
-        ['1D', '2D'] could be used instead
+        Legacy positive whole-day durations, converted to observation counts:
+        ['1D', '2D'] means lags [1, 2], regardless of sampling frequency.
+        Cannot be combined with turnover_lags.
+    turnover_lags : sequence[int], optional
+        Positive observation lags. With neither selection supplied, use positive
+        whole-day horizon counts from factor_data, or [1] for intraday-only data.
     save_file : str or None
         If specified, the tear sheet will be saved to this file. If the file
         extension is ".pdf", the tear sheet will be saved as a PDF. Otherwise,
@@ -624,20 +663,13 @@ def create_turnover_tear_sheet(
         Resolved labels must be unique across lags or a ValueError is raised.
     """
 
+    turnover_periods = _resolve_turnover_lags(
+        factor_data, turnover_lags=turnover_lags, turnover_periods=turnover_periods
+    )
     existing_figures = set(plt.get_fignums())
     gf = None
     completed = False
     try:
-        if turnover_periods is None:
-            input_periods = utils.get_forward_returns_columns(
-                factor_data.columns,
-                require_exact_day_multiple=True,
-                warn_on_drop=False,
-            ).to_numpy()
-            turnover_periods = utils.timedelta_strings_to_integers(input_periods)
-        else:
-            turnover_periods = utils.timedelta_strings_to_integers(turnover_periods)
-
         period_labels = {} if turnover_period_labels is None else turnover_period_labels
         quantile_factor = factor_data["factor_quantile"]
 
@@ -721,7 +753,7 @@ def create_turnover_tear_sheet(
 @plotting.customize
 def create_full_tear_sheet(
     factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True,
-    periods_per_year=None,
+    periods_per_year=None, turnover_lags=None,
 ):
     """
     Creates a full tear sheet for analysis and evaluating single
@@ -750,7 +782,12 @@ def create_full_tear_sheet(
     periods_per_year : float or mapping[str, float], optional
         Annualization override for alpha; see performance.factor_alpha_beta.
         None preserves duration-based annualization. Other statistics are unchanged.
+    turnover_lags : sequence[int], optional
+        Positive observation lags forwarded to create_turnover_tear_sheet.
+        Defaults to positive whole-day horizon counts, or [1] for intraday data.
     """
+
+    turnover_lags = _resolve_turnover_lags(factor_data, turnover_lags=turnover_lags)
 
     plotting.plot_quantile_statistics_table(factor_data)
     create_returns_tear_sheet(
@@ -760,7 +797,10 @@ def create_full_tear_sheet(
     create_information_tear_sheet(
         factor_data, group_neutral, by_group, tables_as_figures=tables_as_figures, set_context=False
     )
-    create_turnover_tear_sheet(factor_data, tables_as_figures=tables_as_figures, set_context=False)
+    create_turnover_tear_sheet(
+        factor_data, tables_as_figures=tables_as_figures, set_context=False,
+        turnover_lags=turnover_lags,
+    )
 
 
 @plotting.customize

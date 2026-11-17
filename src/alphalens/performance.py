@@ -126,7 +126,7 @@ def factor_information_coefficient(factor_data, group_adjust=False, by_group=Fal
 
 
 def mean_information_coefficient(
-    factor_data, group_adjust=False, by_group=False, by_time=None
+    factor_data, group_adjust=False, by_group=False, by_time=None, ic_type="spearman"
 ):
     """
     Get the mean information coefficient of specified groups.
@@ -152,14 +152,19 @@ def mean_information_coefficient(
         See http://pandas.pydata.org/pandas-docs/stable/timeseries.html
         for available options.
 
+    ic_type : str, optional
+        Correlation method: "spearman" (default) or "pearson".
+
     Returns
     -------
     ic : pd.DataFrame
-        Mean Spearman Rank correlation between factor and provided
+        Mean correlation using the selected method between factor and provided
         forward price movement windows.
     """
 
-    ic = factor_information_coefficient(factor_data, group_adjust, by_group)
+    ic = factor_information_coefficient(
+        factor_data, group_adjust, by_group, ic_type=ic_type
+    )
 
     grouper = []
     if by_time is not None:
@@ -246,6 +251,10 @@ def factor_weights(factor_data, demeaned=True, group_adjust=False, equal_weight=
                     group[positive_mask] /= positive_mask.sum()
 
         elif _demeaned:
+            # A constant decimal can leave a nonzero rounding residual after
+            # subtracting its mean. Never normalize that noise into exposure.
+            if group.nunique() <= 1:
+                return group * 0.0
             group = group - group.mean()
 
         gross = group.abs().sum()
@@ -349,10 +358,12 @@ def factor_alpha_beta(
         each period, the factor quantile/bin that factor value belongs to, and
         (optionally) the group the asset belongs to.
         - See full explanation in utils.get_clean_factor_and_forward_returns
-    returns : pd.DataFrame, optional
+    returns : pd.DataFrame or pd.Series, optional
         Period wise factor returns. If this is None then it will be computed
         with 'factor_returns' function and the passed flags: 'demeaned',
         'group_adjust', 'equal_weight'
+        A Series name identifies its forward-return horizon. An unnamed Series
+        is accepted only when factor_data has exactly one return horizon.
     demeaned : bool
         Control how to build factor returns used for alpha/beta computation
         -- see performance.factor_return for a full explanation
@@ -393,8 +404,14 @@ def factor_alpha_beta(
     )
 
     if isinstance(returns, pd.Series):
-        returns.name = universe_ret.columns.values[0]
-        returns = pd.DataFrame(returns)
+        horizon = returns.name
+        if horizon is None:
+            if len(universe_ret.columns) != 1:
+                raise ValueError("An unnamed returns Series requires exactly one forward-return horizon")
+            horizon = universe_ret.columns[0]
+        if horizon not in universe_ret.columns:
+            raise ValueError(f"Unknown return horizon {horizon!r}")
+        returns = returns.to_frame(name=horizon)
 
     annualization = {}
     for period in returns.columns:
@@ -426,9 +443,13 @@ def factor_alpha_beta(
     for period in returns.columns.values:
         x = universe_ret[period].values
         y = returns[period].values
-        x = add_constant(x)
+        valid = np.isfinite(x) & np.isfinite(y)
+        if not valid.any():
+            # A missing horizon must not prevent other horizons from fitting.
+            continue
+        x = add_constant(x[valid])
 
-        reg_fit = OLS(y, x, missing="drop").fit()
+        reg_fit = OLS(y[valid], x).fit()
         try:
             alpha, beta = reg_fit.params
         except ValueError:
@@ -488,7 +509,8 @@ def positions(weights, period, freq=None):
         ('1 days', '1D', '30m', '3h', '1D1h', etc)
     freq : pandas DateOffset, optional
         Used to specify a particular trading calendar. If not present
-        weights.index.freq will be used
+        weights.index.freq will be used. Fixed intraday frequencies use elapsed
+        holding durations; daily calendar multipliers do not scale the period.
 
     Returns
     -------
@@ -712,38 +734,30 @@ def quantile_turnover(quantile_factor, quantile, period=1):
     Returns
     -------
     quant_turnover : pd.Series
-        Period by period turnover for that quantile.
+        Period by period turnover for that quantile. Empty current quantiles
+        and missing comparisons are NaN. Re-entry after an observed empty
+        quantile counts as entirely new membership.
     """
 
     # keep DateTimeIndex frequency information
     date_idx = quantile_factor.index.names.index("date")
     freq = getattr(quantile_factor.index.levels[date_idx], "freq", None)
 
-    quant_names = quantile_factor[quantile_factor == quantile]
+    # Include observed dates with no members, while leaving unobserved dates
+    # missing when frequency alignment inserts them.
+    quant_name_sets = quantile_factor.groupby(level="date").apply(
+        lambda x: set(x[x == quantile].index.get_level_values("asset"))
+    )
     if freq is not None:
-        quant_name_sets = (
-            quant_names.groupby(level=["date"])
-            .apply(lambda x: set(x.index.get_level_values("asset")))
-            .asfreq(freq)
-        )
-    else:
-        quant_name_sets = (
-            quant_names.groupby(level=["date"])
-            .apply(lambda x: set(x.index.get_level_values("asset")))
-        )
-
-    name_shifted = quant_name_sets.shift(periods=period)
-
-    new_names = (quant_name_sets - name_shifted).dropna()
-
-    def f(xs):
-        return 0 if pd.isna(xs) else len(xs)
-
-    def g(xs):
-        return 1 if pd.isna(xs) else len(xs)
-
-    quant_turnover = (new_names.apply(f) / quant_name_sets.apply(g)).rename(quantile)
-    return quant_turnover
+        quant_name_sets = quant_name_sets.asfreq(freq)
+    previous = quant_name_sets.shift(periods=period)
+    values = [
+        len(current - prior) / len(current)
+        if isinstance(current, set) and current and isinstance(prior, set)
+        else np.nan
+        for current, prior in zip(quant_name_sets, previous)
+    ]
+    return pd.Series(values, index=quant_name_sets.index, name=quantile, dtype=float)
 
 
 def factor_rank_autocorrelation(factor_data, period=1):
@@ -833,8 +847,10 @@ def common_start_returns(
     after:
         How many returns to load after factor date
     cumulative: bool, optional
-        Whether the given returns are cumulative. If False the given
-        returns are assumed to be daily.
+        Whether the input contains cumulative wealth (e.g. starting at 1).
+        Otherwise compound the supplied simple daily returns first. Each
+        asset's window is rebased to zero at the event date before demeaning
+        or averaging. A zero event-date wealth produces undefined values.
     mean_by_date: bool, optional
         If True, compute mean returns for each date and return that
         instead of a return series for each asset
@@ -875,6 +891,10 @@ def common_start_returns(
         series = returns.loc[
             returns.index[starting_index:ending_index], list(equities_slice)
         ]
+        # Normalize each asset before averaging or subtracting its benchmark.
+        # Zero wealth cannot define an event-relative return.
+        baseline = returns.loc[timestamp, list(equities_slice)].replace(0, np.nan)
+        series = series.div(baseline, axis="columns").sub(1)
         series.index = range(
             starting_index - day_zero_index, ending_index - day_zero_index
         )
@@ -883,6 +903,8 @@ def common_start_returns(
             mean = series.loc[:, demean_equities].mean(axis=1)
             series = series.loc[:, equities]
             series = series.sub(mean, axis=0)
+        else:
+            series = series.loc[:, equities]
 
         if mean_by_date:
             series = series.mean(axis=1)
@@ -900,6 +922,7 @@ def average_cumulative_return_by_quantile(
     demeaned=True,
     group_adjust=False,
     by_group=False,
+    cumulative=False,
 ):
     """
     Plots average cumulative returns by factor quantiles in the period range
@@ -915,7 +938,8 @@ def average_cumulative_return_by_quantile(
         - See full explanation in utils.get_clean_factor_and_forward_returns
     returns : pd.DataFrame
         A wide form Pandas DataFrame indexed by date with assets in the
-        columns. Returns data should span the factor analysis time period
+        columns, containing simple daily returns unless cumulative=True.
+        Returns data should span the factor analysis time period
         plus/minus an additional buffer window corresponding to periods_after/
         periods_before parameters.
     periods_before : int, optional
@@ -929,6 +953,10 @@ def average_cumulative_return_by_quantile(
         neutral portfolio)
     by_group : bool
         If True, compute cumulative returns separately for each group
+    cumulative : bool, optional
+        If True, returns contains cumulative wealth rather than simple daily
+        returns. Otherwise compound simple daily returns first. Both input
+        forms are rebased to zero at each event date.
 
     Returns
     -------
@@ -954,6 +982,9 @@ def average_cumulative_return_by_quantile(
                 ...     |                 ...
             ---------------------------------------------------
     """
+
+    if not cumulative:
+        returns = returns.apply(cumulative_returns, axis=0)
 
     def cumulative_return_around_event(q_fact, demean_by):
         return common_start_returns(
@@ -1299,12 +1330,12 @@ def create_pyfolio_input(
         groups,
     )
     cumrets = cumrets.resample("1D").last().ffill()
-    returns = cumrets.pct_change().fillna(0)
+    returns = cumrets.div(cumrets.shift(1, fill_value=1.0)).sub(1)
 
     #
     # Build positions. As pyfolio asks for daily position we have to resample
-    # the positions returned by 'factor_positions' at 1 day frequency and
-    # recompute the weights so that the sum of daily weights is 1.0
+    # the positions returned by 'factor_positions' at 1 day frequency, taking
+    # the final allocation rather than summing intraday position snapshots.
     #
     positions = factor_positions(
         factor_data,
@@ -1315,13 +1346,15 @@ def create_pyfolio_input(
         quantiles,
         groups,
     )
-    positions = positions.resample("1D").sum().ffill()
+    positions = positions.resample("1D").last().ffill()
     positions = positions.div(positions.abs().sum(axis=1), axis=0).fillna(0)
     positions["cash"] = 1.0 - positions.sum(axis=1)
 
     # transform percentage positions to dollar positions
     if capital is not None:
-        positions = positions.mul(cumrets.reindex(positions.index) * capital, axis=0)
+        positions = positions.mul(
+            cumrets.reindex(positions.index, method="ffill") * capital, axis=0
+        )
 
     #
     #
@@ -1342,7 +1375,9 @@ def create_pyfolio_input(
             equal_weight=True,
         )
         benchmark_rets = benchmark_rets.resample("1D").last().ffill()
-        benchmark_rets = benchmark_rets.pct_change().fillna(0)
+        benchmark_rets = benchmark_rets.div(
+            benchmark_rets.shift(1, fill_value=1.0)
+        ).sub(1)
         benchmark_rets.name = "benchmark"
     else:
         benchmark_rets = None

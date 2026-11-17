@@ -55,7 +55,9 @@ def customize(func):
                     category=PendingDeprecationWarning,
                 )
                 with plotting_context(), axes_style(), color_palette:
-                    sns.despine(left=True)
+                    # despine() otherwise creates a figure before argument validation.
+                    if plt.get_fignums():
+                        sns.despine(left=True)
                     return func(*args, **kwargs)
         else:
             return func(*args, **kwargs)
@@ -251,7 +253,27 @@ def plot_information_table(
 
     lag is the observation lag count for Ljung-Box diagnostics and Newey-West
     adjusted IC t-statistics (default 5).
+    A date/group MultiIndex is summarized independently per group, with a
+    (group, horizon) result index and a separate display table for each group.
+    Missing observations are excluded separately for each horizon.
     """
+
+    if isinstance(ic_data.index, pd.MultiIndex) and "group" in ic_data.index.names:
+        summaries = {}
+        for group, group_ic in ic_data.groupby(level="group", observed=True):
+            if not return_df and not tables_as_figures:
+                print(f"Group: {group}")
+            summaries[group] = plot_information_table(
+                group_ic.droplevel("group").sort_index(),
+                return_df=return_df,
+                tables_as_figures=tables_as_figures,
+                ic_type=ic_type,
+                lag=lag,
+            )
+            if not return_df and tables_as_figures:
+                axis = plt.gcf().axes[0]
+                axis.set_title(f"Information Analysis Summary ({ic_type}), group={group}")
+        return pd.concat(summaries, names=["group", "horizon"])
 
     def _safe_ttest_1samp(series):
         clean = series.dropna()
@@ -338,9 +360,9 @@ def plot_quantile_statistics_table(factor_data, return_df=False):
         utils.print_table(quantile_stats)
 
 
-def plot_ic_ts(ic, ax=None):
+def plot_ic_ts(ic, ax=None, ic_type="spearman"):
     """
-    Plots Spearman Rank Information Coefficient and IC moving
+    Plots Information Coefficient and IC moving
     average for a given factor.
 
     Parameters
@@ -349,6 +371,10 @@ def plot_ic_ts(ic, ax=None):
         DataFrame indexed by date, with IC for each forward return.
     ax : matplotlib.Axes, optional
         Axes upon which to plot.
+
+    ic_type : str, optional
+        Correlation method used to compute the supplied IC; labels charts only.
+        Defaults to "spearman".
 
     Returns
     -------
@@ -360,19 +386,25 @@ def plot_ic_ts(ic, ax=None):
     num_plots = len(ic.columns)
     if ax is None:
         f, ax = plt.subplots(num_plots, 1, figsize=(18, num_plots * 7))
-        ax = np.asarray([ax]).flatten()
+    ax = np.asarray(ax, dtype=object).reshape(-1)
+    if len(ax) < num_plots:
+        raise ValueError(f"Expected at least {num_plots} axes, received {len(ax)}")
 
     ymin, ymax = (None, None)
     for a, (period_num, ic) in zip(ax, ic.items()):
+        if ic.dropna().empty:
+            a.set_title(f"{period_num} Period Forward Return {ic_type.title()} IC")
+            a.text(0.5, 0.5, "No valid IC observations", ha="center", transform=a.transAxes)
+            continue
         ic.plot(alpha=0.7, ax=a, lw=0.7, color="steelblue")
         ic.rolling(window=22).mean().plot(ax=a, color="forestgreen", lw=2, alpha=0.8)
 
         a.set(ylabel="IC", xlabel="")
         a.set_title(
-            "{} Period Forward Return Information Coefficient (IC)".format(period_num)
+            f"{period_num} Period Forward Return {ic_type.title()} IC"
         )
         a.axhline(0.0, linestyle="-", color="black", lw=1, alpha=0.8)
-        a.legend(["IC", "1 month moving avg"], loc="upper right")
+        a.legend(["IC", "22-observation moving average"], loc="upper right")
         a.text(
             0.05,
             0.95,
@@ -393,9 +425,9 @@ def plot_ic_ts(ic, ax=None):
     return ax
 
 
-def plot_ic_hist(ic, ax=None, plot_kws=None):
+def plot_ic_hist(ic, ax=None, plot_kws=None, ic_type="spearman"):
     """
-    Plots Spearman Rank Information Coefficient histogram for a given factor.
+    Plots Information Coefficient histogram for a given factor.
 
     Parameters
     ----------
@@ -405,6 +437,10 @@ def plot_ic_hist(ic, ax=None, plot_kws=None):
         Axes upon which to plot.
     plot_kws : dict, optional
         Additional keyword arguments passed to sns.histplot. E.g., plot_kws={"bins": 20}.
+
+    ic_type : str, optional
+        Correlation method used to compute the supplied IC; labels charts only.
+        Defaults to "spearman".
 
     Returns
     -------
@@ -422,10 +458,16 @@ def plot_ic_hist(ic, ax=None, plot_kws=None):
 
     if ax is None:
         f, ax = plt.subplots(v_spaces, 3, figsize=(18, v_spaces * 6))
-        ax = ax.flatten()
+    ax = np.asarray(ax, dtype=object).reshape(-1)
+    if len(ax) < num_plots:
+        raise ValueError(f"Expected at least {num_plots} axes, received {len(ax)}")
 
     for a, (period_num, ic) in zip(ax, ic.items()):
         clean_ic = ic.dropna()
+        if clean_ic.empty:
+            a.set_title(f"{period_num} Period {ic_type.title()} IC")
+            a.text(0.5, 0.5, "No valid IC observations", ha="center", transform=a.transAxes)
+            continue
 
         has_variance = clean_ic.nunique() > 1
 
@@ -438,7 +480,7 @@ def plot_ic_hist(ic, ax=None, plot_kws=None):
         merged_kws = {**default_kws, **plot_kws}
 
         sns.histplot(clean_ic, ax=a, **merged_kws)
-        a.set(title="%s Period IC" % period_num, xlabel="IC")
+        a.set(title=f"{period_num} Period {ic_type.title()} IC", xlabel="IC")
         a.set_xlim([-1, 1])
         a.text(
             0.05,
@@ -457,9 +499,9 @@ def plot_ic_hist(ic, ax=None, plot_kws=None):
     return ax
 
 
-def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None):
+def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None, ic_type="spearman"):
     """
-    Plots Spearman Rank Information Coefficient "Q-Q" plot relative to
+    Plots Information Coefficient "Q-Q" plot relative to
     a theoretical distribution.
 
     Parameters
@@ -471,6 +513,10 @@ def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None):
         scipy.stats.t are popular options.
     ax : matplotlib.Axes, optional
         Axes upon which to plot.
+
+    ic_type : str, optional
+        Correlation method used to compute the supplied IC; labels charts only.
+        Defaults to "spearman".
 
     Returns
     -------
@@ -486,7 +532,9 @@ def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None):
 
     if ax is None:
         f, ax = plt.subplots(v_spaces, 3, figsize=(18, v_spaces * 6))
-        ax = ax.flatten()
+    ax = np.asarray(ax, dtype=object).reshape(-1)
+    if len(ax) < num_plots:
+        raise ValueError(f"Expected at least {num_plots} axes, received {len(ax)}")
 
     if isinstance(theoretical_dist, stats.norm.__class__):
         dist_name = "Normal"
@@ -496,6 +544,10 @@ def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None):
         dist_name = "Theoretical"
 
     for a, (period_num, ic) in zip(ax, ic.items()):
+        if ic.dropna().empty:
+            a.set_title(f"{period_num} Period {ic_type.title()} IC {dist_name} Dist. Q-Q")
+            a.text(0.5, 0.5, "No valid IC observations", ha="center", transform=a.transAxes)
+            continue
         sm.qqplot(
             ic.dropna().values,
             theoretical_dist,
@@ -504,7 +556,7 @@ def plot_ic_qq(ic, theoretical_dist=stats.norm, ax=None):
             ax=a,
         )
         a.set(
-            title="{} Period IC {} Dist. Q-Q".format(period_num, dist_name),
+            title=f"{period_num} Period {ic_type.title()} IC {dist_name} Dist. Q-Q",
             ylabel="Observed Quantile",
             xlabel="{} Distribution Quantile".format(dist_name),
         )
@@ -723,7 +775,7 @@ def plot_mean_quantile_returns_spread_time_series(
     mean_returns_spread_bps.rolling(window=22).mean().plot(
         color="orangered", alpha=0.7, ax=ax
     )
-    ax.legend(["mean returns spread", "1 month moving avg"], loc="upper right")
+    ax.legend(["mean returns spread", "22-observation moving average"], loc="upper right")
 
     if std_err is not None:
         std_err_bps = std_err * DECIMAL_TO_BPS
@@ -751,9 +803,9 @@ def plot_mean_quantile_returns_spread_time_series(
     return ax
 
 
-def plot_ic_by_group(ic_group, ax=None):
+def plot_ic_by_group(ic_group, ax=None, ic_type="spearman"):
     """
-    Plots Spearman Rank Information Coefficient for a given factor over
+    Plots Information Coefficient for a given factor over
     provided forward returns. Separates by group.
 
     Parameters
@@ -762,6 +814,10 @@ def plot_ic_by_group(ic_group, ax=None):
         group-wise mean period wise returns.
     ax : matplotlib.Axes, optional
         Axes upon which to plot.
+
+    ic_type : str, optional
+        Correlation method used to compute the supplied IC; labels charts only.
+        Defaults to "spearman".
 
     Returns
     -------
@@ -772,7 +828,7 @@ def plot_ic_by_group(ic_group, ax=None):
         f, ax = plt.subplots(1, 1, figsize=(18, 6))
     ic_group.plot(kind="bar", ax=ax)
 
-    ax.set(title="Information Coefficient By Group", xlabel="")
+    ax.set(title=f"{ic_type.title()} Information Coefficient By Group", xlabel="")
     ax.set_xticklabels(ic_group.index, rotation=45)
 
     return ax
@@ -868,7 +924,7 @@ def plot_top_bottom_quantile_turnover(quantile_turnover, period=1, ax=None, peri
     return ax
 
 
-def plot_monthly_ic_heatmap(mean_monthly_ic, ax=None):
+def plot_monthly_ic_heatmap(mean_monthly_ic, ax=None, ic_type="spearman"):
     """
     Plots a heatmap of the information coefficient or returns by month.
 
@@ -876,6 +932,10 @@ def plot_monthly_ic_heatmap(mean_monthly_ic, ax=None):
     ----------
     mean_monthly_ic : pd.DataFrame
         The mean monthly IC for N periods forward.
+
+    ic_type : str, optional
+        Correlation method used to compute the supplied IC; labels charts only.
+        Defaults to "spearman".
 
     Returns
     -------
@@ -918,7 +978,7 @@ def plot_monthly_ic_heatmap(mean_monthly_ic, ax=None):
         )
         a.set(ylabel="", xlabel="")
 
-        a.set_title("Monthly Mean {} Period IC".format(periods_num))
+        a.set_title(f"Monthly Mean {periods_num} Period {ic_type.title()} IC")
 
     if num_plots < len(ax):
         ax[-1].set_visible(False)
@@ -1163,9 +1223,14 @@ def plot_events_distribution(events, num_bars=50, ax=None):
 
     start = events.index.get_level_values("date").min()
     end = events.index.get_level_values("date").max()
-    group_interval = (end - start) / num_bars
-    grouper = pd.Grouper(level="date", freq=group_interval)
-    events.groupby(grouper).count().plot(kind="bar", grid=False, ax=ax)
+    if start == end:
+        # A single timestamp has no interval to divide into time bins.
+        counts = events.groupby(level="date").count()
+    else:
+        group_interval = (end - start) / num_bars
+        grouper = pd.Grouper(level="date", freq=group_interval)
+        counts = events.groupby(grouper).count()
+    counts.plot(kind="bar", grid=False, ax=ax)
     ax.set(
         ylabel="Number of events",
         title="Distribution of events in time",

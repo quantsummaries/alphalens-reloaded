@@ -1069,13 +1069,18 @@ def add_custom_calendar_timedelta(input, timedelta, freq):
     ----------
     input : pd.DatetimeIndex or pd.Timestamp
     timedelta : pd.Timedelta
-    freq : pd.DataOffset (CustomBusinessDay, Day or BusinessDay)
+    freq : pandas DateOffset
+        Daily trading calendar or fixed intraday frequency. Intraday offsets
+        add elapsed time; daily offsets use their unit calendar, ignoring the
+        sampling multiplier while preserving holidays and weekmask.
 
     Returns
     -------
     pd.DatetimeIndex or pd.Timestamp
         input + timedelta
     """
+    if isinstance(freq, Tick) and freq.nanos < Day().nanos:
+        return input + timedelta
     if not isinstance(freq, (Day, BusinessDay, CustomBusinessDay)):
         raise ValueError("freq must be Day, BDay or CustomBusinessDay")
     days = timedelta.days
@@ -1086,11 +1091,12 @@ def add_custom_calendar_timedelta(input, timedelta, freq):
             message="Non-vectorized DateOffset being applied to Series or DatetimeIndex\\.",
             category=pd.errors.PerformanceWarning,
         )
-        return input + freq * days + offset
+        return input + freq.base * days + offset
 
 
 def make_naive_ts(t):
-    return t.tz_convert(None) if t.tzinfo is not None else t.tz_localize(None)
+    """Remove timezone metadata while preserving the local clock and date."""
+    return t.tz_localize(None)
 
 
 def diff_custom_calendar_timedeltas(start, end, freq):
@@ -1119,9 +1125,14 @@ def diff_custom_calendar_timedeltas(start, end, freq):
 
     timediff = end - start
 
-    # Intraday fixed offsets (hours/minutes/seconds/...) use wall-clock deltas.
+    # Intraday fixed offsets (hours/minutes/seconds/...) use elapsed time.
     if isinstance(freq, Tick) and freq.nanos < Day().nanos:
         return timediff
+
+    # A trading day follows the local calendar, including across DST changes.
+    # Use the same local timestamps for date counting and the residual time.
+    local_start = make_naive_ts(start)
+    local_end = make_naive_ts(end)
 
     weekmask = getattr(freq, "weekmask", None)
     holidays = getattr(freq, "holidays", None)
@@ -1137,8 +1148,8 @@ def diff_custom_calendar_timedeltas(start, end, freq):
     if weekmask is not None and holidays is not None:
         # we prefer this method as it is faster
         actual_days = np.busday_count(
-            np.array(make_naive_ts(start)).astype("datetime64[D]"),
-            np.array(make_naive_ts(end)).astype("datetime64[D]"),
+            np.array(local_start).astype("datetime64[D]"),
+            np.array(local_end).astype("datetime64[D]"),
             weekmask,
             holidays,
         )
@@ -1148,7 +1159,7 @@ def diff_custom_calendar_timedeltas(start, end, freq):
         if not freq.is_on_offset(start):
             actual_days -= 1
 
-    timediff = pd.Timedelta(end.to_pydatetime() - start.to_pydatetime())
+    timediff = local_end - local_start
     delta_days = int(timediff.days - actual_days)
     return timediff - _coerce_timedelta_days(delta_days)
 
