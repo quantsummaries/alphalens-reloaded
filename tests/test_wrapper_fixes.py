@@ -80,8 +80,10 @@ def test_return_wrapper_honors_by_group_without_save(monkeypatch):
 
     assert len(calls) == 3
     assert calls[0] == {"by_date": False, "by_group": True}
-    assert calls[1] == {"by_date": False, "by_group": True}
-    assert calls[2] == {"by_date": True, "by_group": True}
+    # The returned breakout uses groups; the displayed overall table pools
+    # assets directly, matching the saved tear sheet's aggregation.
+    assert calls[1] == {"by_date": False, "by_group": False}
+    assert calls[2] == {"by_date": True, "by_group": False}
 
 
 def test_full_wrapper_rejects_empty_factors(tmp_path):

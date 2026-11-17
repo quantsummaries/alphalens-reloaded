@@ -271,8 +271,8 @@ Add a `Timedelta` to a timestamp or `DatetimeIndex` while respecting a custom tr
 
 Return a timezone-naive timestamp.
 
-- If `t` is timezone-aware, it is converted to naive UTC-localized time.
-- Otherwise it is localized to `None`.
+- Removes timezone metadata while preserving the local clock and calendar date; timezone-naive inputs retain their values.
+- Trading-calendar calculations use these local dates, avoiding a shift into the previous or next day caused by UTC conversion.
 
 ---
 
@@ -282,6 +282,9 @@ Return a timezone-naive timestamp.
 Compute the effective elapsed time between two timestamps under a custom calendar.
 
 This is used when forward-return horizons must respect trading days, weekends, and holidays.
+
+Daily calendar calculations preserve local clock time across daylight-saving
+changes. Fixed intraday frequencies measure elapsed time instead.
 
 **Accepted `freq` values**
 

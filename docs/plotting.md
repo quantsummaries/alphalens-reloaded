@@ -59,6 +59,7 @@ Summarize IC mean, standard deviation, ICIR, t-statistics, skewness, kurtosis, a
 
 - Uses `ic_type` to label the summary row as `IC Mean (spearman)` or `IC Mean (pearson)`.
 - Adds lag-based autocorrelation diagnostics from `utils.ic_autocor_adj(ic_data, lag=lag)` before returning the table.
+- With a `(date, group)` input index, computes a separate summary and display table for each group. Returns a `(group, horizon)` index; group names appear in the displayed tables. Missing values are excluded separately for each horizon.
 - Keeps the rest of the IC summary statistics unchanged.
 
 All three helpers use one display flag:
@@ -87,7 +88,7 @@ Pretty-printed table or a `DataFrame` when `return_df=True`.
 
 ## Information Coefficient visualization
 
-### `plot_ic_ts(ic, ax=None)`
+### `plot_ic_ts(ic, ax=None, ic_type="spearman")`
 Plot the Information Coefficient time series with a rolling 22-day average.
 
 **Behavior**
@@ -103,12 +104,13 @@ A numpy array of matplotlib axes.
 
 ---
 
-### `plot_ic_hist(ic, ax=None, plot_kws=None)`
+### `plot_ic_hist(ic, ax=None, plot_kws=None, ic_type="spearman")`
 Plot IC as a histogram with kernel density estimate.
 
 **Behavior**
 
 - Creates a 3-column grid of histograms, one per forward-return period.
+- Accepts a single supplied `Axes` for one horizon or an axes array for multiple horizons. Returns a flat axes array and raises `ValueError` if too few axes are supplied.
 - Includes a vertical line at the mean.
 - Uses default histogram settings (`bins=20`, `binrange=[-1, 1]`) unless overridden via `plot_kws`.
 - Enables KDE only when the series has non-zero variance; otherwise KDE is disabled.
@@ -120,12 +122,13 @@ A numpy array of matplotlib axes.
 
 ---
 
-### `plot_ic_qq(ic, theoretical_dist=scipy.stats.norm, ax=None)`
+### `plot_ic_qq(ic, theoretical_dist=scipy.stats.norm, ax=None, ic_type="spearman")`
 Plot IC values against a theoretical distribution using a Q-Q plot.
 
 **Behavior**
 
 - Creates a 3-column grid of Q-Q plots.
+- Accepts a single supplied `Axes` for one horizon or an axes array for multiple horizons. Returns a flat axes array and raises `ValueError` if too few axes are supplied.
 - Supports normal and Student-t distributions.
 - Uses `statsmodels.qqplot()` for plotting.
 
@@ -135,7 +138,7 @@ A numpy array of matplotlib axes.
 
 ---
 
-### `plot_ic_by_group(ic_group, ax=None)`
+### `plot_ic_by_group(ic_group, ax=None, ic_type="spearman")`
 Plot IC by group as a bar chart.
 
 **Behavior**
@@ -149,7 +152,7 @@ A matplotlib axes object.
 
 ---
 
-### `plot_monthly_ic_heatmap(mean_monthly_ic, ax=None)`
+### `plot_monthly_ic_heatmap(mean_monthly_ic, ax=None, ic_type="spearman")`
 Plot IC or returns as a month/year heatmap with color coding.
 
 **Behavior**
@@ -295,6 +298,7 @@ Plot the distribution of factor events across time.
 
 - Divides the time span into `num_bars` intervals.
 - Counts events in each interval.
+- If all events share one timestamp, renders a single bar with their non-missing count.
 - Displays as a bar chart.
 
 **Returns**
@@ -343,3 +347,5 @@ Example call: `plot_ic_ts(ic_data)` or `plot_quantile_returns_bar(mean_ret_by_q)
 - Return values vary: some functions print tables directly, others return `DataFrame`s or axes.
 - The `return_df=False` parameter on table functions controls printing vs. returning.
 - Most functions are designed for Jupyter notebooks but work in any matplotlib environment.
+
+IC chart helpers accept `ic_type="spearman"` or `"pearson"` to label the supplied values. They do not recompute correlations; callers must pass the method used to calculate the data.

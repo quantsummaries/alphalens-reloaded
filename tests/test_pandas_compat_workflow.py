@@ -34,9 +34,9 @@ def test_timezone_price_workflow_keeps_returns_and_daily_cash_on_supported_panda
     np.testing.assert_allclose(means["1D"], [0.002, 0.008], atol=1e-12)
 
     returns, positions, benchmark = performance.create_pyfolio_input(panel, "1D")
-    np.testing.assert_allclose(returns.iloc[0], 0, atol=1e-12)
+    np.testing.assert_allclose(returns.iloc[0], 0.00375, atol=1e-12)
     np.testing.assert_allclose(
-        returns, [0, 0.00375, 0, 0, 0.00375, 0.00375, 0.00375, 0.00375], atol=1e-12
+        returns, [0.00375, 0.00375, 0, 0, 0.00375, 0.00375, 0.00375, 0.00375], atol=1e-12
     )
     np.testing.assert_allclose(positions.sum(axis=1), 1, atol=1e-12)
     np.testing.assert_allclose(positions.iloc[-1].drop("cash"), 0, atol=1e-12)

@@ -28,6 +28,7 @@ flowchart TD
     Compound["cumulative_returns"] --> Cum
     Compound --> Events["common_start_returns"]
     Events --> AvgEvents["average_cumulative_return_by_quantile"]
+    Compound --> AvgEvents
     Weights --> Holdings["factor_positions"]
     Pos["positions"] --> Holdings
     Cum --> Pyfolio["create_pyfolio_input"]
@@ -151,13 +152,13 @@ A `DataFrame` of IC values indexed by date, or by date and group when `by_group=
 ---
 
 ### `mean_information_coefficient`
-**Signature:** `mean_information_coefficient(factor_data, group_adjust=False, by_group=False, by_time=None)`
+**Signature:** `mean_information_coefficient(factor_data, group_adjust=False, by_group=False, by_time=None, ic_type="spearman")`
 
 Compute the mean IC across the full sample or over a time window.
 
 **Behavior**
 
-- Delegates to `factor_information_coefficient()` using its default IC type (Spearman); call the lower-level helper directly if you need Pearson IC.
+- Forwards `ic_type` to `factor_information_coefficient()`: `"spearman"` (default) or `"pearson"`.
 - Can aggregate by time period using a pandas time rule such as monthly or weekly windows.
 - Can aggregate by group when `by_group=True`.
 
@@ -334,7 +335,8 @@ Estimate alpha and beta for a factor portfolio using OLS regression.
 - Uses factor portfolio returns as the dependent variable.
 - Uses the universe mean return as the explanatory variable.
 - If `returns` is not provided, it is computed using `factor_returns()`.
-- Aligns universe mean returns to the supplied portfolio-return index and drops missing regression observations.
+- A supplied return `Series` uses its name to select the horizon; the input is not renamed or modified. An unnamed Series is accepted only when there is exactly one forward-return horizon. Unknown names and ambiguous unnamed inputs raise `ValueError`.
+- Aligns universe mean returns to the supplied portfolio-return index. For each horizon, fits only pairs where both universe and portfolio returns are finite, excluding missing values and infinities. A horizon with no valid pairs retains four `NaN` results without preventing other horizons from fitting.
 - By default, annualizes alpha with an exponent of `Timedelta("252Days") / Timedelta(period)`.
 - `periods_per_year` overrides that exponent for annualized alpha only. A scalar applies to all return columns; a mapping must cover every column being analyzed. Values must be finite, positive real numbers; booleans and missing mapping entries raise `ValueError`.
 - For one intraday trade per session, use `periods_per_year=252`; for one trade every two sessions, use `126`. This avoids treating an intraday holding duration as continuous trading throughout a 252-day year.
@@ -479,6 +481,7 @@ Build a time series of portfolio positions from factor weights.
 - Treats weights as active for a holding period defined by `period`.
 - Uses the provided trading calendar frequency, or reads the frequency metadata from the unstacked weight index.
 - Falls back to `BDay` and emits a warning if no frequency is available.
+- Daily calendar multipliers describe sampling, not holding duration: with frequency `2B`, a `2D` allocation still expires after two business days. Fixed intraday frequencies use elapsed time.
 - Builds timestamps from the union of trade times and calendar-adjusted expiry times, removing duplicates.
 - Sums all still-active allocations and normalizes their net asset exposures to gross leverage 1 when nonzero. Allocations expire at their expiry timestamp.
 
@@ -611,6 +614,7 @@ Measure the proportion of current names that are new to a given quantile relativ
 
 - Compares current membership in the selected quantile against membership `period` rows earlier, dividing the number of new names by the current quantile size.
 - Aligns membership sets with `.asfreq(freq)` when the input date level has frequency metadata; otherwise, shifts over observed dates. `period` is a row lag, not an elapsed calendar duration.
+- An observed date with no members is an empty set, so all members returning on the next date count as new. Current empty quantiles yield `NaN`. Dates inserted by frequency alignment remain missing observations, not empty sets.
 
 **Worked example**
 
@@ -706,9 +710,9 @@ Align return windows around common event dates.
 
 - Builds a return window around each factor date and asset pair.
 - Aligns all windows to a common event-time index.
-- Expects wide return data indexed by date with assets as columns. With `cumulative=False`, compounds simple returns across the full input first; with `cumulative=True`, uses the supplied cumulative values directly.
-- Does not rebase each window to zero or one at the event date.
-- Can subtract the reference universe's mean cumulative value at each relative time using `demean_by`.
+- Expects wide return data indexed by date with assets as columns. With `cumulative=False`, compounds simple daily returns first; with `cumulative=True`, accepts cumulative wealth (for example starting at 1).
+- Rebases each asset's window as `wealth[t] / wealth[event_date] - 1`, so event time zero is zero. A zero event-date wealth produces undefined values. Columns retain the event assets' order.
+- Can subtract the reference universe's mean event-relative return at each relative time using `demean_by`, after rebasing individual assets.
 - Can average across assets by date.
 - Counts `before` and `after` in input rows, truncates windows at data boundaries, and skips factor dates absent from the returns index.
 
@@ -721,13 +725,15 @@ A `DataFrame` indexed by relative row offsets from `-before` to `after`, as avai
 ---
 
 ### `average_cumulative_return_by_quantile`
-**Signature:** `average_cumulative_return_by_quantile(factor_data, returns, periods_before=10, periods_after=15, demeaned=True, group_adjust=False, by_group=False)`
+**Signature:** `average_cumulative_return_by_quantile(factor_data, returns, periods_before=10, periods_after=15, demeaned=True, group_adjust=False, by_group=False, cumulative=False)`
 
 Compute average cumulative returns around factor events by quantile.
 
 **Behavior**
 
-- Calls `common_start_returns()` with `cumulative=True` and `mean_by_date=True`. Supply wide cumulative return data; this function does not compound simple returns or rebase event windows.
+- Accepts wide simple daily returns by default and compounds them once. Set `cumulative=True` for already compounded wealth. Calls `common_start_returns()` to rebase every event window to zero before demeaning or averaging.
+- For constant daily returns of `1%`, an undemeaned event path is `0` at the event date, `1%` one observation later, and `2.01%` two observations later, independent of prior wealth.
+- Existing callers supplying price levels or compounded wealth must set `cumulative=True`; the default now follows the event tear sheets' daily-return input contract. Event-relative paths replace the former unrebased values.
 - First averages assets within each event date, then computes mean and sample standard deviation across those event-date averages. With `group_adjust=True` and `by_group=False`, aggregates across group/date averages.
 - Can separate results by group.
 - Supports group-neutral and universe-demeaned variants.
@@ -792,10 +798,10 @@ Create returns, positions, and benchmark data in the format expected by Pyfolio.
 **Behavior**
 
 - Builds cumulative strategy returns.
-- Resamples cumulative strategy wealth with daily `.last().ffill()`, then uses `.pct_change().fillna(0)` for noncumulative daily returns. The first daily return is zero.
-- Resamples positions with daily `.sum().ffill()`, then normalizes asset weights by their absolute sum and fills missing values with zero.
+- Resamples cumulative strategy wealth with daily `.last().ffill()`, then divides by previous daily wealth and subtracts one. Uses initial wealth `1` for the first denominator, preserving the first day's return.
+- Resamples positions with daily `.last().ffill()` to retain the final allocation each day and carry held positions across days without changes. Then normalizes asset weights by their absolute sum and fills missing values with zero.
 - Adds `cash = 1 - sum(asset_weights)` to the positions output.
-- With `capital`, multiplies positions (including cash) by daily cumulative strategy wealth times the initial capital, aligned to the positions index.
+- With `capital`, multiplies positions (including cash) by daily cumulative strategy wealth times the initial capital. Carries terminal wealth through later position-expiry timestamps, leaving zero assets and the final portfolio value in cash after liquidation.
 - When `benchmark_period` is available, builds an equal-weighted, long-only benchmark from nonzero absolute factor values across the full factor universe. Strategy quantile/group filters do not apply to the benchmark; zero factor values receive zero weight.
 - Resamples benchmark wealth to daily frequency and converts it to simple returns in the same way as the strategy. The benchmark is named `benchmark`; it is `None` when the requested horizon is unavailable.
 
@@ -890,7 +896,7 @@ consecutive business days. The helper catches the index constructor's
 | `quantile_turnover` | Measure membership turnover for a quantile over a lag period. | - | - | `pd.isna` |
 | `factor_rank_autocorrelation` | Compute autocorrelation of mean factor rank across dates. | - | - | - |
 | `common_start_returns` | Align returns around event dates into common-relative windows. | `cumulative_returns` | - | - |
-| `average_cumulative_return_by_quantile` | Compute average cumulative event returns by quantile (optionally by group). | `common_start_returns` | - | `np.inf` |
+| `average_cumulative_return_by_quantile` | Compute average cumulative event returns by quantile (optionally by group). | `cumulative_returns`, `common_start_returns` | - | `np.inf` |
 | `factor_cumulative_returns` | Simulate portfolio and return cumulative returns for a chosen period. | `factor_returns`, `cumulative_returns` | `get_forward_returns_columns` | - |
 | `factor_positions` | Simulate portfolio and return position matrix over time. | `factor_weights`, `positions` | `get_forward_returns_columns` | - |
 | `create_pyfolio_input` | Build returns/positions/benchmark outputs formatted for Pyfolio. | `factor_cumulative_returns`, `factor_positions` | `get_forward_returns_columns` | - |

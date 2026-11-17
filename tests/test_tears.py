@@ -369,7 +369,7 @@ class TearsTestCase(TestCase):
 
             create_event_returns_tear_sheet(
                 factor_data,
-                prices,
+                prices.pct_change(fill_method=None),
                 avgretplot=(5, 11),
                 long_short=False,
                 group_neutral=False,
@@ -377,7 +377,7 @@ class TearsTestCase(TestCase):
             )
             create_event_returns_tear_sheet(
                 factor_data,
-                prices,
+                prices.pct_change(fill_method=None),
                 avgretplot=(5, 11),
                 long_short=True,
                 group_neutral=False,
@@ -385,7 +385,7 @@ class TearsTestCase(TestCase):
             )
             create_event_returns_tear_sheet(
                 factor_data,
-                prices,
+                prices.pct_change(fill_method=None),
                 avgretplot=(5, 11),
                 long_short=False,
                 group_neutral=True,
@@ -393,7 +393,7 @@ class TearsTestCase(TestCase):
             )
             create_event_returns_tear_sheet(
                 factor_data,
-                prices,
+                prices.pct_change(fill_method=None),
                 avgretplot=(5, 11),
                 long_short=False,
                 group_neutral=False,
@@ -401,7 +401,7 @@ class TearsTestCase(TestCase):
             )
             create_event_returns_tear_sheet(
                 factor_data,
-                prices,
+                prices.pct_change(fill_method=None),
                 avgretplot=(5, 11),
                 long_short=True,
                 group_neutral=False,
@@ -409,12 +409,13 @@ class TearsTestCase(TestCase):
             )
             create_event_returns_tear_sheet(
                 factor_data,
-                prices,
+                prices.pct_change(fill_method=None),
                 avgretplot=(5, 11),
                 long_short=False,
                 group_neutral=True,
                 by_group=True,
             )
+
 
     @parameterized.expand(
         [
@@ -441,4 +442,6 @@ class TearsTestCase(TestCase):
                 filter_zscore=filter_zscore,
             )
 
-            create_event_study_tear_sheet(factor_data, prices, avgretplot=avgretplot)
+            create_event_study_tear_sheet(
+                factor_data, prices.pct_change(fill_method=None), avgretplot=avgretplot
+            )

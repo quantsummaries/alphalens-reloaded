@@ -240,9 +240,20 @@ def test_analysis_export_owns_figures(
                 assert display.call_count == (
                     0 if tables_as_figures else (1 if analysis == "returns" else 2)
                 )
-                assert len(exported) == (
-                    3 if tables_as_figures and analysis == "information" else 1
+                # Information exports contain a grid for each correlation
+                # method, plus a table for each method in figure-table mode.
+                expected_figures = (
+                    2 + 2 * int(tables_as_figures) if analysis == "information" else 1
                 )
+                assert len(exported) == expected_figures
+                if analysis == "information":
+                    chart_figures = [
+                        figure for figure in exported
+                        if not any(axis.tables for axis in figure.axes)
+                    ]
+                    assert len(chart_figures) == 2
+                    for figure, method in zip(chart_figures, ["Spearman", "Pearson"], strict=True):
+                        assert all(method in axis.get_title() for axis in figure.axes)
                 assert unrelated not in exported
                 assert set(plt.get_fignums()) == preserved_figures
                 assert plt.figure(unrelated.number) is unrelated

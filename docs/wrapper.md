@@ -69,6 +69,7 @@ Run return-oriented analysis and optionally save a return tear sheet.
 - `long_short` affects factor weight construction: it is forwarded to `performance.factor_returns(...)`, then to `performance.factor_weights(..., demeaned=long_short, ...)`, so factor values are demeaned before normalization when enabled.
 - `group_neutral` affects factor weight construction: it is forwarded to `performance.factor_returns(...)`, then to `performance.factor_weights(..., group_adjust=group_neutral, ...)`, enabling group-neutral weight construction when enabled.
 - `by_group` does not affect factor weight construction: it controls group-level breakout of return summaries/plots, but is not used by `performance.factor_weights(...)`.
+- The overall return-summary table pools assets within each quantile before averaging across dates, in both saved and unsaved reports. Enabling `by_group` retains group-level statistics in the returned data; it does not give small and large groups equal weight in the overall table. Setting a save path does not change the reported values.
 
 **Returns**
 

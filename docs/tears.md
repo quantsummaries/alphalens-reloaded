@@ -27,7 +27,7 @@ Utility class for managing matplotlib grid-based subplot layouts with automatic 
 
 All tear sheet functions are decorated with `@plotting.customize` to apply consistent styling automatically. The `set_context=False` parameter can be passed to any tear sheet to skip the decorator.
 
-### `create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False, tables_as_figures=True)`
+### `create_summary_tear_sheet(factor_data, long_short=True, group_neutral=False, tables_as_figures=True, periods_per_year=None, turnover_lags=None)`
 Generate a compact tear sheet with key returns, information, and turnover statistics.
 
 **Behavior**
@@ -37,6 +37,7 @@ Generate a compact tear sheet with key returns, information, and turnover statis
 - Plots factor quantile returns bar chart.
 - Computes and displays IC summary statistics.
 - Analyzes turnover and factor rank autocorrelation.
+- `turnover_lags` selects positive integer observation counts, such as `[1, 2]`. Defaults use positive whole-day horizon counts; when none exist (including intraday-only data), the default is `[1]`. Intraday durations are never truncated to a zero lag.
 - All metrics respect the `long_short` and `group_neutral` flags.
 
 **Returns**
@@ -81,45 +82,24 @@ Tear sheet focused on Information Coefficient (IC) analysis.
 **Behavior**
 
 - Displays IC summary statistics (mean, std, risk-adjusted IC, t-stat, p-value, skewness, kurtosis).
-- Plots IC time series with 22-day rolling average for each forward-return period.
+- Plots IC time series with a 22-observation rolling average for each forward-return period.
 - Plots IC histograms with KDE.
 - Plots IC Q-Q plots against normal distribution.
 - When `by_group=False` (default), creates a heatmap of monthly mean IC.
 - When `by_group=True`, shows mean IC separately for each group.
-- Computes and labels both Spearman and Pearson IC statistics in the information summary tables.
+- With `by_group=True`, summary tables and temporal diagnostics are calculated independently for each group and returned with a `(group, horizon)` index. Wrapper outputs transpose these levels onto the columns.
+- Missing IC observations are handled per horizon. An undefined horizon retains `NaN` summary statistics and an empty-chart annotation without deleting valid observations from other horizons.
+- Computes both Spearman and Pearson IC summaries and separate chart sets. Every chart title names its correlation method; monthly and group aggregates explicitly use the same method as the corresponding time series.
 - When `save_file` is set, saves all generated figures into one file (`*.pdf` multipage, otherwise stitched image).
 
-**Parameter flow call graph (`group_neutral`, `by_group`)**
+**Parameter flow (`group_neutral`, `by_group`, `ic_type`)**
 
-```text
-create_information_tear_sheet(factor_data, group_neutral, by_group, ...)
-|
-+- for ic_type in ["spearman", "pearson"]:
-|  perf.factor_information_coefficient(
-|      factor_data,
-|      group_adjust=group_neutral,
-|      by_group=False,          # default in callee (not overridden here)
-|      ic_type=ic_type
-|  )
-|  -> plotting.plot_information_table(ic, ...)
-|
-+- if by_group is False:
-|  perf.mean_information_coefficient(
-|      factor_data,
-|      group_adjust=group_neutral,
-|      by_group=False,
-|      by_time="ME"
-|  )
-|  -> plotting.plot_monthly_ic_heatmap(mean_monthly_ic, ...)
-|
-+- if by_group is True:
-   perf.mean_information_coefficient(
-       factor_data,
-       group_adjust=group_neutral,
-       by_group=True
-   )
-   -> plotting.plot_ic_by_group(mean_group_ic, ...)
-```
+For each method (`"spearman"`, `"pearson"`), compute the summary with
+`factor_information_coefficient(..., group_adjust=group_neutral, by_group=by_group, ic_type=ic_type)`.
+Plot that method's time series, histogram and Q-Q plot with an explicit `ic_type` label.
+With `by_group=True`, these time-series plots use pooled date-level IC for the same method.
+Monthly heatmaps use `mean_information_coefficient(..., by_time="ME", ic_type=ic_type)`;
+group bars use `mean_information_coefficient(..., by_group=True, ic_type=ic_type)`.
 
 **Low-level behavior in `performance.py`**
 
@@ -145,7 +125,7 @@ Always returns a dictionary of summary DataFrames keyed by `"spearman"` and `"pe
 
 ---
 
-### `create_turnover_tear_sheet(factor_data, turnover_periods=None, tables_as_figures=True, save_file=None)`
+### `create_turnover_tear_sheet(factor_data, turnover_periods=None, tables_as_figures=True, save_file=None, turnover_period_labels=None, turnover_lags=None)`
 Tear sheet analyzing factor turnover and rank stability.
 
 **Behavior**
@@ -154,12 +134,13 @@ Tear sheet analyzing factor turnover and rank stability.
 - Displays factor rank autocorrelation statistics.
 - Plots time series of top and bottom quantile turnover for each period.
 - Plots factor rank autocorrelation over time for each period.
-- Automatically extracts day-multiple forward-return periods if `turnover_periods` is not provided.
+- Defaults to positive exact-day forward-return horizon counts, or `[1]` if none exist. Labels describe observation counts, independently of the observation sampling interval.
 - Supports `save_file` output (`*.pdf` or image via matplotlib save).
 
 **Parameters**
 
-- `turnover_periods` — Custom periods for turnover analysis. If not provided, uses exact day multiples from `factor_data`.
+- `turnover_lags` — Explicit positive integer observation counts, for example `[1, 2]` for adjacent observations and two observations apart. Duplicates are removed while preserving order.
+- `turnover_periods` — Legacy positive whole-day durations: `['1D', '2D']` selects observation lags `[1, 2]`. Cannot be combined with `turnover_lags`. Empty selections, nonpositive values, and fractional-day durations raise `ValueError` before figures are created.
 - `tables_as_figures` — Render summary tables in the tear sheet when `True` (default); otherwise display text tables and omit table figures.
 - `save_file` — Output path for saving generated plots.
 
@@ -169,7 +150,7 @@ Always returns `(turnover_table, auto_corr)` summary DataFrames, independently o
 
 ---
 
-### `create_full_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True)`
+### `create_full_tear_sheet(factor_data, long_short=True, group_neutral=False, by_group=False, tables_as_figures=True, periods_per_year=None, turnover_lags=None)`
 Comprehensive tear sheet combining all analysis perspectives.
 
 **Behavior**
@@ -177,7 +158,7 @@ Comprehensive tear sheet combining all analysis perspectives.
 - Displays factor quantile statistics.
 - Calls `create_returns_tear_sheet()` with all parameters passed through.
 - Calls `create_information_tear_sheet()` with appropriate flags.
-- Calls `create_turnover_tear_sheet()` with defaults.
+- Calls `create_turnover_tear_sheet()`, forwarding `turnover_lags`. Intraday-only inputs default to a one-observation lag.
 - All component tear sheets skip automatic styling via `set_context=False` to apply consistent styling once.
 
 **Parameters**
@@ -185,6 +166,15 @@ Comprehensive tear sheet combining all analysis perspectives.
 - `long_short` — Enable long-short demeaning.
 - `group_neutral` — Enable group-neutral normalization.
 - `by_group` — Separate analysis per group.
+
+To analyze hourly observations with both turnover lags:
+
+```python
+create_full_tear_sheet(factor_data, turnover_lags=[1, 2])
+```
+
+The labels are `1 observation` and `2 observations`. An irregular observation
+schedule still uses row lags; it does not infer elapsed holding durations.
 
 **Returns**
 
@@ -198,6 +188,7 @@ Tear sheet analyzing average cumulative returns around factor events (event stud
 **Behavior**
 
 - Computes average cumulative returns within a window before and after each factor event.
+- Accepts simple daily returns, compounds them, and rebases each asset's event window to zero at the event date before demeaning or averaging. Convert price data with `prices.pct_change(fill_method=None)` before calling this tear sheet.
 - Plots overall average cumulative returns with optional error bands.
 - When `std_bar=True`, plots separate cumulative return traces for each quantile with standard deviation error bars.
 - When `by_group=True`, repeats the analysis separately for each asset group.
@@ -206,7 +197,7 @@ Tear sheet analyzing average cumulative returns around factor events (event stud
 **Parameters**
 
 - `factor_data` — MultiIndex factor data (no forward returns required for this tear sheet).
-- `returns` — DataFrame of asset returns indexed by date.
+- `returns` — DataFrame of simple daily asset returns indexed by date, with assets as columns.
 - `avgretplot` — Tuple of `(periods_before, periods_after)` for the event window.
 - `long_short` — Demean cumulative returns.
 - `group_neutral` — Normalize returns by group.
