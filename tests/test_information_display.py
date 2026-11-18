@@ -53,6 +53,7 @@ def test_full_wrapper_forwards_table_display(
             return_value={
                 "mean_return_by_q": summary.copy(),
                 "std_err_by_q": summary.copy(),
+                "return_summary": summary.copy(),
             },
         ) as returns,
         patch(
@@ -75,7 +76,7 @@ def test_full_wrapper_forwards_table_display(
         assert wrapper.call_count == 1
         assert wrapper.call_args.kwargs["tables_as_figures"] is tables_as_figures
     assert information.call_args.kwargs["lag"] == lag
-    assert len(result) == 6
+    assert len(result) == 7
 
 
 @pytest.mark.parametrize("tables_as_figures", [False, True])

@@ -69,7 +69,8 @@ def test_grouped_return_summary_is_identical_when_saved(
     assert destination.is_file()
     assert len(tables) == 2
     pd.testing.assert_frame_equal(tables[0], tables[1])
-    for result in [unsaved, saved]:
+    for result, table in zip([unsaved, saved], tables, strict=True):
+        pd.testing.assert_frame_equal(result["return_summary"], table)
         pd.testing.assert_frame_equal(result["mean_return_by_q"], expected_mean)
         pd.testing.assert_frame_equal(result["std_err_by_q"], expected_error)
         assert result["mean_return_by_q"].index.names == ["factor_quantile", "group"]

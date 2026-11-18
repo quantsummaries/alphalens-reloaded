@@ -83,7 +83,7 @@ def test_labels_preserve_adjacent_observation_calculations(
         })
         monkeypatch.setattr(wrapper, 'return_analysis_wrapper', lambda **kwargs: {
             key: pd.DataFrame({'1D5h50m': [.01]})
-            for key in ['mean_return_by_q', 'std_err_by_q']
+            for key in ['mean_return_by_q', 'std_err_by_q', 'return_summary']
         })
         result = wrapper.full_tear_sheet_wrapper(
             panel.rename(columns={'factor': 'signal'}).drop(columns='factor_quantile'),

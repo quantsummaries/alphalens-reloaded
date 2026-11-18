@@ -50,7 +50,9 @@ def return_analysis_wrapper(data: pd.DataFrame,
             instead of weighting by factor magnitude. Defaults to False. See
             performance.factor_weights for median ties and one-sided portfolios.
     Returns:
-        dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and standard error by quantile data frames.
+        dict[str, pd.DataFrame]: Dictionary containing mean / std error return by quantile and
+        ``return_summary``, the overall return table displayed in the report.
+        The summary is indexed by metric with forward-return horizon columns.
     """
     # data frames indexed by quantiles, with columns being the average forward returns or standard error of
     # average forward returns
@@ -95,12 +97,13 @@ def return_analysis_wrapper(data: pd.DataFrame,
         spread, _ = alphalens.performance.compute_mean_returns_spread(
             mean_quant_bydate, data["factor_quantile"].max(), data["factor_quantile"].min()
         )
-        alphalens.plotting.plot_returns_table(
+        rtrns_tbl = alphalens.plotting.plot_returns_table(
             alpha_beta, mean_quant_rateret, spread, tables_as_figures=tables_as_figures
         )
 
     return {'mean_return_by_q': mean_return_by_q,
-            'std_err_by_q': std_err_by_q}
+            'std_err_by_q': std_err_by_q,
+            'return_summary': rtrns_tbl}
 
 def information_analysis_wrapper(data: pd.DataFrame,
                                  group_neutral: bool = False,
@@ -275,7 +278,10 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
             each group when True. Requires a group column. Defaults to False, which
             pools assets across groups. Independent of group_neutral and by_group.
     Returns:
-        dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis, and turnover data frames for each factor.
+        dict[str, pd.DataFrame]: Dictionary containing information coefficient, return analysis,
+        and turnover data frames for each factor. ``return_summary`` contains
+        the displayed return tables, indexed by metric, with a ``factor``
+        column identifying each table and forward-return horizon columns.
     """
     if not factors:
         raise ValueError("factors must contain at least one factor column name")
@@ -329,6 +335,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
     else:
         grp_by_series = None
 
+    return_summary_list = []
     mean_return_by_q_list = []
     std_err_by_q_list = []
     turnover_list = []
@@ -353,6 +360,9 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
                                                                 tear_sheet_filepath=rtrn_tear_sheet,
                                                                 periods_per_year=periods_per_year,
                                                                 equal_weight=equal_weight)
+        summary = rtrn_result['return_summary'].copy()
+        summary.insert(0, 'factor', f)
+        return_summary_list.append(summary)
         rtrn_result['mean_return_by_q'].insert(0, 'factor', f)
         rtrn_result['std_err_by_q'].insert(0, 'factor', f)
         mean_return_by_q_list.append(rtrn_result['mean_return_by_q'])
@@ -372,6 +382,7 @@ def full_tear_sheet_wrapper(data: pd.DataFrame,
         factor_autocorr.insert(0, 'factor', f)
         factor_autocorr_list.append(factor_autocorr)
 
+    result['return_summary'] = pd.concat(return_summary_list, axis=0)
     result['mean_return_by_q'] = pd.concat(mean_return_by_q_list, axis=0)
     result['std_err_by_q'] = pd.concat(std_err_by_q_list, axis=0)
     result['turnover'] = pd.concat(turnover_list, axis=0)

@@ -31,7 +31,7 @@ def run_wrapper(data, tmp_path, **kwargs):
         }),
         patch.object(wrapper, "return_analysis_wrapper", return_value={
             key: pd.DataFrame({"1D": [.01]})
-            for key in ["mean_return_by_q", "std_err_by_q"]
+            for key in ["mean_return_by_q", "std_err_by_q", "return_summary"]
         }) as returns,
         patch.object(wrapper, "turnover_analysis_wrapper", return_value={
             "turnover": pd.DataFrame({1: [.1]}),
@@ -98,3 +98,47 @@ def test_group_binning_requires_group_column(panel, tmp_path):
                 fwd_rtrn_cols=["1D"], output_dir=str(tmp_path), binning_by_group=True,
             )
         information.assert_not_called()
+
+
+def test_full_wrapper_preserves_each_factors_return_summary(panel, tmp_path):
+    panel = panel.assign(second_signal=-panel["signal"])
+    summaries = [
+        pd.DataFrame({"1D": [0.01, 0.2], "5h50m": [0.03, 0.4]},
+                     index=["Ann. alpha", "beta"]),
+        pd.DataFrame({"1D": [-0.01, -0.2], "5h50m": [-0.03, -0.4]},
+                     index=["Ann. alpha", "beta"]),
+    ]
+    panel["5h50m"] = panel["1D"] / 2
+    original_summaries = [summary.copy(deep=True) for summary in summaries]
+    with (
+        patch.object(wrapper, "information_analysis_wrapper", side_effect=lambda **kwargs: {
+            f"ic_{kind}": pd.DataFrame({"1D": [.1]}, index=[f"IC Mean ({kind})"])
+            for kind in ["spearman", "pearson"]
+        }),
+        patch.object(wrapper, "return_analysis_wrapper", side_effect=[
+            {
+                "mean_return_by_q": pd.DataFrame({"1D": [.01]}),
+                "std_err_by_q": pd.DataFrame({"1D": [.001]}),
+                "return_summary": summary,
+            }
+            for summary in summaries
+        ]),
+        patch.object(wrapper, "turnover_analysis_wrapper", side_effect=lambda **kwargs: {
+            "turnover": pd.DataFrame({1: [.1]}),
+            "factor_autocorr": pd.Series([.2]),
+        }),
+    ):
+        result = wrapper.full_tear_sheet_wrapper(
+            panel, factors=["signal", "second_signal"],
+            fwd_rtrn_cols=["1D", "5h50m"], output_dir=str(tmp_path),
+        )
+    summary = result["return_summary"]
+    assert summary.columns.to_list() == ["factor", "1D", "5h50m"]
+    assert summary["factor"].to_list() == ["signal", "signal", "second_signal", "second_signal"]
+    for factor, expected, original in zip(
+        ["signal", "second_signal"], original_summaries, summaries, strict=True,
+    ):
+        pd.testing.assert_frame_equal(
+            summary.loc[summary["factor"] == factor].drop(columns="factor"), expected,
+        )
+        pd.testing.assert_frame_equal(original, expected)
